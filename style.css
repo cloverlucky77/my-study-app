@@ -10,99 +10,30 @@
     --danger: #f87171;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', -apple-system, sans-serif;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
+body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; padding: 40px 20px; }
+.dashboard-wrapper { width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 24px; }
 
-body {
-    background-color: var(--bg);
-    color: var(--text-main);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 40px 20px;
-}
-
-.dashboard-wrapper {
-    width: 100%;
-    max-width: 1200px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--panel-border);
-}
-
+.top-bar { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--panel-border); }
 .top-bar .brand { font-weight: 600; font-size: 0.95rem; letter-spacing: 2px; }
 .top-bar .clock { font-size: 0.95rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 24px;
-}
-
-@media (max-width: 1024px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
-}
-
+.dashboard-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; }
+@media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
 .col { display: flex; flex-direction: column; gap: 24px; }
 
-.panel {
-    background-color: var(--panel-bg);
-    border: 1px solid var(--panel-border);
-    border-radius: 12px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
+.panel { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
 .panel-header { display: flex; justify-content: space-between; align-items: center; }
 .panel-title { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 .badge { font-size: 0.75rem; background-color: #27272a; padding: 4px 10px; border-radius: 20px; color: #d4d4d8; }
 
-.inline-form {
-    display: flex;
-    gap: 8px;
-    background-color: var(--input-bg);
-    border: 1px solid var(--panel-border);
-    padding: 6px;
-    border-radius: 8px;
-    align-items: center;
-}
-
-.inline-form input {
-    background: transparent; border: none; color: var(--text-main); font-size: 0.85rem; outline: none; padding: 6px 8px;
-}
+.inline-form { display: flex; gap: 8px; background-color: var(--input-bg); border: 1px solid var(--panel-border); padding: 6px; border-radius: 8px; align-items: center; }
+.inline-form input { background: transparent; border: none; color: var(--text-main); font-size: 0.85rem; outline: none; padding: 6px 8px; }
 .inline-form input[type="text"] { flex: 1; }
 
-.date-input-wrapper {
-    border-left: 1px solid var(--panel-border);
-    padding-left: 8px;
-    display: flex;
-    align-items: center;
-}
-.inline-form input[type="date"] {
-    color: #ffffff !important;
-    font-size: 0.8rem;
-    cursor: pointer;
-    background: transparent;
-}
-
-.icon-btn-add {
-    background-color: var(--accent); color: #000; border: none; width: 32px; height: 32px;
-    border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;
-}
+.date-input-wrapper { border-left: 1px solid var(--panel-border); padding-left: 8px; display: flex; align-items: center; }
+.inline-form input[type="date"] { color: #ffffff !important; font-size: 0.8rem; cursor: pointer; background: transparent; }
+.icon-btn-add { background-color: var(--accent); color: #000; border: none; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
 .item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; }
 .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; }
@@ -112,10 +43,7 @@ body {
 .item-row.done { opacity: 0.35; }
 .item-row.done .item-text { text-decoration: line-through; }
 
-.compact-del-btn {
-    background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px;
-    font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: color 0.15s ease; margin-left: 8px;
-}
+.compact-del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: color 0.15s ease; margin-left: 8px; }
 .compact-del-btn:hover { color: var(--danger); }
 
 .dday-vertical-list { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; }
@@ -124,62 +52,52 @@ body {
 .dday-name { font-size: 0.88rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
 .dday-right-zone { display: flex; align-items: center; gap: 16px; }
+.dday-number { font-size: 0.88rem; font-weight: 600; color: #ffffff; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 80px; text-align: center; border: 1px solid #3f3f46; }
 
-/* 🎯 정밀 카운트다운 숫자가 들어가는 배지 스타일 보완 */
-.dday-number { font-size: 0.88rem; font-weight: 600; color: #ffffff; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 80px; text-align: center; letter-spacing: 0.5px; border: 1px solid #3f3f46; }
+/* 📁 대폭 수정: 파일 폴더 탐색기 그리드 레이아웃 */
+.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; max-height: 480px; overflow-y: auto; padding-top: 8px; }
+.folder-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 10px; padding: 18px 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; cursor: pointer; position: relative; transition: all 0.2s ease; }
+.folder-card:hover { border-color: #52525b; background-color: #1c1c1f; transform: translateY(-2px); }
+.folder-icon { font-size: 2.2rem; color: #f59e0b; }
+.folder-name { font-size: 0.85rem; font-weight: 500; color: var(--text-main); width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folder-memo-count { font-size: 0.7rem; color: var(--text-muted); background-color: #27272a; padding: 2px 8px; border-radius: 10px; }
 
-.folder-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
-.tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
-.tab-btn:hover { color: var(--text-main); background-color: #27272a; }
-.tab-btn.active { color: #000; background-color: #ffffff; font-weight: 500; }
+/* 폴더 개별 삭제 작은 엑스버튼 */
+.folder-del-btn { position: absolute; top: 6px; right: 6px; background: none; border: none; color: #52525b; cursor: pointer; font-size: 0.75rem; padding: 4px; display: none; }
+.folder-card:hover .folder-del-btn { display: block; }
+.folder-del-btn:hover { color: var(--danger); }
 
-.textarea-wrapper { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+/* 📝 메모장 편집 전용 모드 화면 컴포넌트 */
+.hidden { display: none !important; }
+.btn-primary-sm { background-color: #fff; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
+.btn-primary-sm:hover { background-color: var(--accent-hover); }
 
-/* 메모 윗줄 메타 영역 레이아웃 세분화 */
-.memo-meta-inline { display: flex; gap: 8px; width: 100%; align-items: stretch; }
-#memo-title-input { flex: 1; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
+.btn-back { background-color: #27272a; color: var(--text-main); border: 1px solid var(--panel-border); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+.btn-back:hover { background-color: #3f3f46; color: #fff; }
+.current-folder-indicator { font-size: 0.95rem; font-weight: 600; color: #f59e0b; display: flex; align-items: center; gap: 6px; }
+
+.textarea-wrapper { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+#memo-title-input { width: 100%; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
 #memo-title-input:focus { border-color: #52525b; }
-
-.category-dropdown {
-    max-width: 130px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px;
-    padding: 0 10px; color: var(--text-main); font-size: 0.85rem; outline: none; cursor: pointer;
-}
-.category-dropdown:focus { border-color: #52525b; }
-
-/* ➕ 분류 추가용 디자인 확장 버튼 */
-.btn-add-tag {
-    background-color: #27272a; color: var(--text-main); border: 1px solid var(--panel-border);
-    border-radius: 6px; padding: 0 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap;
-    display: flex; align-items: center; gap: 6px; transition: all 0.15s ease;
-}
-.btn-add-tag:hover { background-color: #3f3f46; color: #fff; }
-
-#memo-textarea { width: 100%; height: 160px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; line-height: 1.6; resize: none; outline: none; }
+#memo-textarea { width: 100%; height: 150px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; line-height: 1.6; resize: none; outline: none; }
 #memo-textarea:focus { border-color: #52525b; }
 
-.memo-buttons-group { display: flex; gap: 10px; }
-.btn-save { flex: 2; background-color: #ffffff; color: #09090b; border: none; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.btn-secondary { flex: 1; background-color: #27272a; color: var(--text-main); border: none; padding: 12px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
+.memo-buttons-group { display: flex; gap: 10px; margin-top: 4px; }
+.btn-save { flex: 2; background-color: #ffffff; color: #09090b; border: none; padding: 11px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-secondary { flex: 1; background-color: #27272a; color: var(--text-main); border: none; padding: 11px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
 .btn-save:hover { background-color: var(--accent-hover); }
 .btn-secondary:hover { background-color: #3f3f46; }
 
-.memo-list-header { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-top: 16px; border-top: 1px solid var(--panel-border); padding-top: 16px; }
-.memo-cards-grid { display: flex; flex-direction: column; gap: 12px; max-height: 260px; overflow-y: auto; padding-right: 4px; }
+.memo-list-header { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-top: 16px; border-top: 1px solid var(--panel-border); padding-top: 14px; }
+.memo-cards-grid { display: flex; flex-direction: column; gap: 10px; max-height: 200px; overflow-y: auto; margin-top: 8px; }
 
-/* 📅 날짜 그룹화 헤더 배지 */
-.memo-date-group-header {
-    font-size: 0.75rem; color: #a1a1aa; font-weight: 600; background-color: #1c1c1f;
-    padding: 4px 10px; border-radius: 4px; margin-top: 6px; display: inline-block; align-self: flex-start;
-}
-
-.memo-item-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.memo-date-group-header { font-size: 0.72rem; color: #a1a1aa; font-weight: 600; background-color: #1c1c1f; padding: 3px 8px; border-radius: 4px; margin-top: 4px; align-self: flex-start; }
+.memo-item-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 .memo-item-card:hover { border-color: #52525b; background-color: #202024; }
-.memo-card-main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-
-.memo-title-row { display: flex; align-items: center; gap: 8px; }
+.memo-card-main { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
 .memo-card-title { font-size: 0.85rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.memo-card-snippet { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.save-status { font-size: 0.75rem; color: #a1a1aa; }
 
-/* 🏷️ 자유 동적 생성 파일 태그 미니 디자인 */
-.file-tag { font-size: 0.7rem; background-color: #27272a; border: 1px solid #3f3f46; padding: 2px 6px; border-radius: 4px; color: #e4e4e7; font-weight: 500; }
-
-.memo-card-snippet { font-size: 0.7
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
