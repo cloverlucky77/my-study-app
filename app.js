@@ -13,7 +13,31 @@ const db = firebase.database();
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 🧭 사이드바 제어 및 시계 시스템 ---
+    // --- 🧭 사이드바 여닫기 토글 엔진 ---
+    const mainSidebar = document.getElementById('main-sidebar');
+    const btnCloseSidebar = document.getElementById('btn-close-sidebar');
+    const btnOpenSidebar = document.getElementById('btn-open-sidebar');
+    const outsideToggleButtons = document.querySelectorAll('.sidebar-toggle-outside');
+
+    function hideSidebar() {
+        mainSidebar.classList.add('collapsed');
+        outsideToggleButtons.forEach(btn => btn.classList.remove('hidden'));
+    }
+
+    function showSidebar() {
+        mainSidebar.classList.remove('collapsed');
+        outsideToggleButtons.forEach(btn => btn.classList.add('hidden'));
+    }
+
+    if(btnCloseSidebar) btnCloseSidebar.addEventListener('click', hideSidebar);
+    if(btnOpenSidebar) btnOpenSidebar.addEventListener('click', showSidebar);
+    
+    // 타 뷰에 분산 생성된 햄버거 메뉴에도 연동 적용
+    document.querySelectorAll('.aria-toggle-sidebar').forEach(btn => {
+        btn.addEventListener('click', showSidebar);
+    });
+
+    // --- 🧭 메뉴 변환 및 시계 ---
     const menuItems = document.querySelectorAll('.menu-item');
     const contentViews = document.querySelectorAll('.content-view');
     const sidebarSubFolders = document.getElementById('sidebar-sub-folders');
@@ -196,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('clear-memo-btn').addEventListener('click', resetEditor);
 
 
-    // --- 📚 2. 과목별 및 문제 유형별 오답노트 (유형 단원 드래그 정렬 엔진 탑재) ---
+    // --- 📚 2. 과목별 및 문제 유형별 오답노트 (터치 제어 드래그 엔진 탑재) ---
     const mathExplorerZone = document.getElementById('math-explorer-zone');
     const mathEditorZone = document.getElementById('math-editor-zone');
     const mathFolderGrid = document.getElementById('math-folder-grid');
@@ -292,7 +316,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else mathFolderGrid.insertBefore(draggingCard, afterElement);
     });
 
-    // 💡 공통 드래그 요소 연산 트래커 함수
     function getDragAfterElement(container, selector, x, y) {
         const draggableElements = [...container.querySelectorAll(`${selector}:not(.dragging)`)];
         return draggableElements.reduce((closest, child) => {
@@ -363,7 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
     mathBackBtn.addEventListener('click', exitMathFolder);
     function exitMathFolder() { activeMathFolder = null; mathEditorZone.classList.add('hidden'); mathExplorerZone.classList.remove('hidden'); }
 
-    // 🏷️ 순서값(order)이 정렬된 커스텀 단원배치 반영 함수
     function renderTypeDropdowns(typesObj) {
         const prevFilter = filterTypeSelect.value;
         const prevFormType = mathProbType.value;
@@ -468,17 +490,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     mathClearBtn.addEventListener('click', resetMathEditor);
 
-    // 🌟 [유형 단원 드래그 정렬 제어 엔진 구현부]
-    btnManageTypes.addEventListener('click', () => {
-        typeModal.classList.remove('hidden');
-    });
+
+    // 🌟 [유형 모달 전용: PC 드래그 + 모바일 터치 하이브리드 엔진]
+    btnManageTypes.addEventListener('click', () => { typeModal.classList.remove('hidden'); });
     closeTypeModal.addEventListener('click', () => typeModal.classList.add('hidden'));
 
     btnAddType.addEventListener('click', () => {
         const typeName = newTypeInput.value.trim().replace(/[.#$\[\]]/g, "");
         if(!typeName) return alert('유형 단원명을 입력해 주세요.');
-        
-        // 새로운 유형 추가 시 맨 마지막 순서로 저장
         db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes`).once('value', snap => {
             const data = snap.val() || {};
             const nextOrder = Object.keys(data).length;
@@ -506,16 +525,41 @@ document.addEventListener('DOMContentLoaded', () => {
             div.dataset.id = t.name;
             div.innerHTML = `<span>☰ 🏷️ ${t.name}</span><button class="compact-del-btn" onclick="deleteCustomType('${t.name}')"><i class="fa-regular fa-trash-can"></i></button>`;
             
+            // 1) 데스크탑 마우스 드래그 바인딩
             div.addEventListener('dragstart', () => div.classList.add('dragging'));
             div.addEventListener('dragend', () => {
                 div.classList.remove('dragging');
                 saveNewTypeOrder();
             });
+
+            // 2) 모바일 전용 터치 트래커 주입
+            div.addEventListener('touchstart', (e) => {
+                div.classList.add('dragging');
+            }, { passive: true });
+
+            div.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                // 손가락 위치 기반으로 아래에 깔린 타겟 엘리먼트 추적 연산
+                const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', touch.clientX, touch.clientY);
+                const draggingItem = document.querySelector('.type-manage-item.dragging');
+                if(!draggingItem) return;
+                
+                if (afterElement == null) customTypeList.appendChild(draggingItem);
+                else customTypeList.insertBefore(draggingItem, afterElement);
+            }, { passive: true });
+
+            div.addEventListener('touchend', () => {
+                if(div.classList.contains('dragging')) {
+                    div.classList.remove('dragging');
+                    saveNewTypeOrder();
+                }
+            });
+
             customTypeList.appendChild(div);
         });
     }
 
-    // 🖐️ 유형 편집기 내 순서 정렬 트래커 리스너
+    // 마우스 드래그 오버 보정
     customTypeList.addEventListener('dragover', e => {
         e.preventDefault();
         const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', e.clientX, e.clientY);
@@ -525,7 +569,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else customTypeList.insertBefore(draggingItem, afterElement);
     });
 
-    // 정렬된 유형 순서(order)를 파이어베이스에 업데이트
     function saveNewTypeOrder() {
         const items = [...customTypeList.querySelectorAll('.type-manage-item')];
         const updates = {};
