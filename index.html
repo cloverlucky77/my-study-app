@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultimate Cloud Workspace</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -56,15 +56,14 @@
                             <span id="calendar-month-year">May 2024</span>
                             <button id="next-month"><i class="fa-solid fa-chevron-right"></i></button>
                         </div>
-                        <div class="calendar-grid" id="calendar-days">
-                            </div>
+                        <div class="calendar-grid" id="calendar-days"></div>
                     </div>
 
                     <div class="daily-detail-stack">
                         <section class="panel">
                             <div class="panel-header">
                                 <span class="panel-title" id="selected-date-label">오늘의 할 일</span>
-                                <span class="badge" id="todo-stats">0/0</span>
+                                <span class="badge" id="todo-stats">0/0 완료</span>
                             </div>
                             <form id="todo-form" class="inline-form">
                                 <input type="text" id="todo-time-input" placeholder="시간" style="max-width: 70px;">
@@ -75,13 +74,28 @@
                         </section>
 
                         <section class="panel">
-                            <div class="panel-header"><span class="panel-title">기한 임박 디데이</span></div>
-                            <form id="dday-form" class="inline-form">
-                                <input type="text" id="dday-title" placeholder="목표 이름" required>
-                                <input type="date" id="dday-date" required>
-                                <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
-                            </form>
-                            <div id="dday-container" class="dday-vertical-list"></div>
+                            <div class="panel-header">
+                                <span class="panel-title"><i class="fa-regular fa-clock"></i> 하루 타임라인 정리 & 총평</span>
+                                <span class="save-status" id="planner-save-status">자동 저장됨</span>
+                            </div>
+                            <div class="timeline-planner-wrapper">
+                                <div class="timeline-row">
+                                    <span class="timeline-hour">오전 (AM)</span>
+                                    <input type="text" id="plan-am" class="planner-text-input" placeholder="오전 주요 일정 및 공부 계획을 정리하세요...">
+                                </div>
+                                <div class="timeline-row">
+                                    <span class="timeline-hour">오후 (PM)</span>
+                                    <input type="text" id="plan-pm" class="planner-text-input" placeholder="오후 핵심 스케줄을 기록하세요...">
+                                </div>
+                                <div class="timeline-row">
+                                    <span class="timeline-hour">저녁 (EVE)</span>
+                                    <input type="text" id="plan-eve" class="planner-text-input" placeholder="저녁 및 마무리 루틴을 정리하세요...">
+                                </div>
+                                <div class="timeline-review-zone">
+                                    <span class="timeline-review-title">오늘 하루 총평 및 피드백</span>
+                                    <textarea id="plan-review" class="planner-textarea-input" placeholder="오늘 하루를 되돌아보며 부족했던 점이나 칭찬할 점을 기록하세요..."></textarea>
+                                </div>
+                            </div>
                         </section>
                     </div>
                 </div>
@@ -94,39 +108,40 @@
                         <h2><i class="fa-regular fa-file-lines"></i> 메모장 시스템</h2>
                     </div>
                 </div>
-
                 <div class="memo-layout-split">
                     <section class="panel pinned-memo-panel">
                         <div class="panel-header">
                             <span class="panel-title"><i class="fa-solid fa-thumbtack"></i> 실시간 고정 메모 (자동 저장)</span>
                             <span class="save-status" id="pinned-save-status">저장됨</span>
                         </div>
-                        <textarea id="pinned-memo-textarea" placeholder="여기에 적는 내용은 하나로 유지되며 자동으로 수정/저장됩니다. 중요한 공지나 루틴을 적어두세요..."></textarea>
+                        <textarea id="pinned-memo-textarea" placeholder="여기에 중요한 내용을 적어두면 상시 고정됩니다..."></textarea>
                     </section>
-
-                    <section class="panel">
+                    <div class="memo-folders-container">
                         <div id="folder-explorer-zone">
-                            <div class="panel-header">
-                                <span class="panel-title">분류 보관함</span>
-                                <button type="button" id="create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 분류</button>
+                            <div class="explorer-header">
+                                <h3><i class="fa-solid fa-folder-tree"></i> 문서 분류 보관함</h3>
+                                <button type="button" id="create-folder-btn" class="action-btn-accent"><i class="fa-solid fa-folder-plus"></i> 보관함 추가</button>
                             </div>
-                            <div id="folder-grid-container" class="folder-grid"></div>
+                            <div class="folder-grid" id="folder-grid-container"></div>
                         </div>
                         <div id="memo-editor-zone" class="hidden">
-                            <div class="panel-header">
-                                <button type="button" id="back-to-folders-btn" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 목록</button>
-                                <span class="current-folder-indicator" id="current-folder-title">폴더명</span>
+                            <div class="editor-header">
+                                <button type="button" id="back-to-folders-btn" class="btn-text-nav"><i class="fa-solid fa-arrow-left"></i> 목록으로</button>
+                                <h3 id="current-folder-title">폴더 이름</h3>
                             </div>
-                            <div class="textarea-wrapper">
-                                <input type="text" id="memo-title-input" placeholder="제목">
-                                <textarea id="memo-textarea" placeholder="내용을 적으세요..."></textarea>
+                            <div class="memo-internal-workspace">
+                                <div class="memo-sidebar-list">
+                                    <h4>저장된 문서</h4>
+                                    <div id="saved-memos-container" class="item-list"></div>
+                                </div>
+                                <div class="memo-main-editor">
+                                    <input type="text" id="memo-title-input" placeholder="메모 제목을 입력하세요...">
+                                    <textarea id="memo-textarea" placeholder="내용을 마음껏 작성하세요..."></textarea>
+                                    <button type="button" id="save-memo-btn" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> 문서 저장 / 업데이트</button>
+                                </div>
                             </div>
-                            <div class="memo-buttons-group">
-                                <button id="save-memo-btn" class="btn-save">기록 저장</button>
-                            </div>
-                            <div id="saved-memos-container" class="memo-cards-grid"></div>
                         </div>
-                    </section>
+                    </div>
                 </div>
             </div>
 
@@ -134,29 +149,32 @@
                 <div class="view-header">
                     <div class="header-left-zone">
                         <button type="button" class="sidebar-toggle-outside hidden aria-toggle-sidebar"><i class="fa-solid fa-bars"></i></button>
-                        <h2><i class="fa-solid fa-book-open"></i> 오답노트</h2>
+                        <h2><i class="fa-solid fa-book-open"></i> 과목별 오답노트</h2>
                     </div>
                 </div>
-                <section class="panel">
+                <div class="math-layout-split">
                     <div id="math-explorer-zone">
-                        <div class="panel-header">
-                            <span class="panel-title">과목 폴더</span>
-                            <button type="button" id="math-create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 과목</button>
+                        <div class="explorer-header">
+                            <h3><i class="fa-solid fa-tags"></i> 과목 및 대단원 관리</h3>
+                            <button type="button" id="math-create-folder-btn" class="action-btn-accent"><i class="fa-solid fa-plus"></i> 새 과목 추가</button>
                         </div>
-                        <div id="math-folder-grid" class="folder-grid"></div>
+                        <div class="folder-grid" id="math-folder-grid"></div>
                     </div>
                     <div id="math-editor-zone" class="hidden">
-                        <div class="panel-header">
-                            <button type="button" id="math-back-btn" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 목록</button>
-                            <span id="math-current-folder-title">과목명</span>
-                            <button type="button" id="btn-manage-types" class="btn-secondary-sm">유형 편집</button>
+                        <div class="editor-header">
+                            <button type="button" id="math-back-btn" class="btn-text-nav"><i class="fa-solid fa-arrow-left"></i> 과목선택</button>
+                            <h3 id="math-current-folder-title">과목</h3>
+                            <button type="button" id="btn-open-type-modal" class="btn-manage-types"><i class="fa-solid fa-gear"></i> 유형 편집</button>
                         </div>
-                        <div class="math-split-container">
-                            <div class="math-left-list-panel">
-                                <select id="math-filter-type-select"><option value="ALL">전체</option></select>
-                                <div id="math-saved-list" class="notebook-vertical-list"></div>
+                        <div class="math-internal-workspace">
+                            <div class="math-sidebar-list">
+                                <div class="sidebar-header-row">
+                                    <h4>오답 리스트</h4>
+                                    <button type="button" id="math-new-prob-btn" class="btn-mini-add">+ 추가</button>
+                                </div>
+                                <div id="math-problems-container" class="item-list"></div>
                             </div>
-                            <div class="math-right-editor-panel">
+                            <div class="math-main-editor">
                                 <input type="text" id="math-prob-title" placeholder="문제 제목">
                                 <select id="math-prob-type"></select>
                                 <textarea id="math-prob-wrong" placeholder="틀린 이유"></textarea>
@@ -166,7 +184,7 @@
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
 
         </main>
