@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>깃허브 나만의 스마트 메모장</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <h2>🔒 로그인</h2>
+            <input type="password" id="login-password" placeholder="비밀번호 입력">
+            <button onclick="checkLogin()">로그인</button>
+        </div>
+    </div>
+
+    <div id="app-screen" class="app-container" style="display: none;">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>📚 과목 폴더</h3>
+                <button onclick="addCategory()" class="btn-add">+</button>
+            </div>
+            <ul id="category-list" class="category-list"></ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="main-header">
+                <h2 id="current-subject-title">과목을 선택해 주세요</h2>
+                <input type="text" id="search-input" placeholder="🔍 메모 내용 검색..." oninput="filterMemos()" disabled>
+            </div>
+
+            <div class="memo-write-box" id="write-box" style="display: none;">
+                <textarea id="new-memo-textarea" placeholder="여기에 새로운 메모를 작성하세요..."></textarea>
+                <button onclick="createNewMemo()" class="btn-save-memo">📝 새로운 메모 등록</button>
+            </div>
+
+            <div id="memo-list-container" class="memo-list-container"></div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

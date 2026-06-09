@@ -1,0 +1,29 @@
+body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, sans-serif; background-color: #f1f2f6; }
+.login-container { display: flex; justify-content: center; align-items: center; height: 100vh; background: #2f3542; }
+.login-box { background: white; padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+.login-box input { padding: 10px; width: 200px; margin-bottom: 15px; border: 1px solid #ced4da; border-radius: 4px; display: block; }
+.login-box button { padding: 10px 20px; background: #1e90ff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+.app-container { display: flex; height: 100vh; }
+.sidebar { width: 270px; background-color: #2f3542; color: white; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; }
+.sidebar-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #57606f; padding-bottom: 10px; }
+.btn-add { background: #57606f; border: none; color: white; font-size: 1.2rem; padding: 2px 12px; cursor: pointer; border-radius: 4px; }
+.category-list { list-style: none; padding: 0; margin: 20px 0; flex: 1; overflow-y: auto; }
+.category-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #57606f; margin-bottom: 8px; border-radius: 6px; cursor: grab; }
+.category-item.dragging { opacity: 0.4; }
+.badge { background: #ff4757; color: white; border-radius: 10px; padding: 2px 7px; font-size: 0.75rem; margin-left: 8px; font-weight: bold; }
+.btn-del { background: transparent; border: none; color: #ff6b6b; cursor: pointer; }
+
+.main-content { flex: 1; display: flex; flex-direction: column; padding: 25px; box-sizing: border-box; overflow-y: auto; }
+.main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+#search-input { padding: 8px 15px; width: 250px; border: 1px solid #ced4da; border-radius: 20px; outline: none; }
+
+.memo-write-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-direction: column; }
+#new-memo-textarea { width: 100%; height: 80px; resize: none; border: 1px solid #ced4da; border-radius: 6px; padding: 10px; box-sizing: border-box; outline: none; margin-bottom: 10px; }
+.btn-save-memo { background: #1e90ff; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; align-self: flex-end; }
+
+.memo-list-container { display: flex; flex-direction: column; gap: 15px; }
+.memo-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-left: 5px solid #1e90ff; position: relative; }
+.memo-card textarea { width: 100%; border: none; resize: none; font-size: 1rem; line-height: 1.5; outline: none; background: transparent; }
+.memo-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.8rem; color: #a4b0be; }
+.btn-card-del { background: transparent; border: none; color: #ff4757; cursor: pointer; font-weight: bold; }
