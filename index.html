@@ -3,7 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Workspace Final</title>
+    <title>Premium Workspace Final</title><!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Workspace Ultimate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        <header class="top-bar">
+            <div class="brand"><i class="fa-solid fa-layer-group"></i> WORKSPACE</div>
+            
+            <div class="master-date-selector">
+                <label for="global-date-picker"><i class="fa-regular fa-calendar-days"></i> 기준 날짜 선택:</label>
+                <input type="date" id="global-date-picker">
+            </div>
+
+            <div id="live-clock" class="clock">00:00:00</div>
+        </header>
+
+        <main class="dashboard-grid">
+            
+            <div class="col">
+                <section class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">
+                            <i class="fa-regular fa-calendar-check"></i> 
+                            <span id="selected-date-title-todo">선택된 날짜</span>의 플래너
+                        </span>
+                        <span class="badge" id="todo-stats">0 / 0 완료</span>
+                    </div>
+                    <form id="todo-form" class="inline-form">
+                        <input type="text" id="todo-time-input" placeholder="시간 (예: 1교시, 14:00)" style="max-width: 140px; border-right: 1px solid var(--panel-border);" required>
+                        <input type="text" id="todo-input" placeholder="계획을 입력하세요..." required>
+                        <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                    <ul id="todo-list" class="item-list"></ul>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">
+                            <i class="fa-solid fa-fire"></i> 
+                            <span id="selected-date-title-dday">선택된 날짜</span> 기준 디데이
+                        </span>
+                    </div>
+                    <form id="dday-form" class="inline-form">
+                        <input type="text" id="dday-title" placeholder="목표/시험 이름" required>
+                        <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                    <div id="dday-container" class="dday-vertical-list"></div>
+                </section>
+            </div>
+
+            <div class="col">
+                <section class="panel memo-panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><i class="fa-regular fa-folder-open"></i> 세분화 메모장</span>
+                        <span class="save-status" id="save-status">모드: 새 메모 작성</span>
+                    </div>
+                    
+                    <div class="folder-tabs">
+                        <button class="tab-btn active" data-folder="general">📁 일반</button>
+                        <button class="tab-btn" data-folder="idea">💡 아이디어</button>
+                        <button class="tab-btn" data-folder="study">📝 학습</button>
+                    </div>
+
+                    <div class="textarea-wrapper">
+                        <input type="text" id="memo-title-input" placeholder="메모 제목을 입력하세요 (미입력 시 첫줄 자동 지정)">
+                        <textarea id="memo-textarea" placeholder="기록할 메모 내용을 자유롭게 작성하세요..."></textarea>
+                    </div>
+                    
+                    <div class="memo-buttons-group">
+                        <button id="clear-memo-btn" class="btn-secondary">새 메모창 비우기</button>
+                        <button id="save-memo-btn" class="btn-save"><i class="fa-regular fa-floppy-disk"></i> 메모 저장하기</button>
+                    </div>
+
+                    <div class="memo-list-header">저장된 메모 기록 목록</div>
+                    <div id="saved-memos-container" class="memo-cards-grid"></div>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
