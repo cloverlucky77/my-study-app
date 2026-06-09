@@ -433,3 +433,35 @@ html, body {
     }
 }
 
+/* ==========================================================================
+   📱 모바일 달력/플래너 패널 정중앙 가로 배클 맞춤 패치
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* 1. 메인 본문 자체의 패딩 균형 조정 및 중앙 정렬 */
+    .main-content {
+        padding: 20px 16px !important; /* 양옆 여백을 16px로 동일하게 일치 */
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* 내부 아이템들을 가로 기준 정중앙 정렬 */
+    }
+
+    /* 2. 플래너를 담고 있는 그리드 박스를 화면 중앙으로 고정 */
+    .planner-integrated-grid {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important; /* 👈 왼쪽/오른쪽 여백을 완전히 똑같이 배분 */
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 3. 오른쪽으로 치우쳐져 보이게 만들던 달력 카드 폭 강제 교정 */
+    .calendar-panel.panel,
+    .daily-detail-stack .panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important; /* 내부 패딩이 박스를 밀어내지 않도록 방지 */
+    }
+}
+
