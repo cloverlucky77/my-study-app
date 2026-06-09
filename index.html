@@ -3,65 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All-in-One Daily Planner</title>
-    <!-- 구글 폰트 및 아이콘 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Minimal Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="container">
-        <!-- 헤더 영역 (한 줄 확언/로그 기능 포함) -->
-        <header>
-            <h1 id="app-title">DAILY PLANNER</h1>
-            <p id="live-clock" class="clock-text">00:00:00</p>
+    <div class="dashboard-wrapper">
+        <header class="top-bar">
+            <div class="brand">WORKSPACE</div>
+            <div id="live-clock" class="clock">00:00:00</div>
         </header>
 
-        <main class="grid-layout">
+        <main class="dashboard-grid">
             
-            <!-- 왼쪽: 메인 플래너 & 투두 -->
-            <div class="col-main">
-                <section class="card planner-section">
-                    <h2><i class="fa-regular fa-calendar-check"></i> 오늘의 플래너 (Planner)</h2>
-                    <form id="todo-form" class="input-group">
+            <div class="col">
+                <section class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><i class="fa-regular fa-calendar"></i> 오늘의 플래너</span>
+                    </div>
+                    <form id="todo-form" class="inline-form">
                         <select id="todo-time">
-                            <option value="일과">일과</option>
+                            <option value="ALL">일과</option>
                             <option value="09:00">09:00</option>
-                            <option value="11:00">11:00</option>
-                            <option value="13:00">13:00</option>
+                            <option value="12:00">12:00</option>
                             <option value="15:00">15:00</option>
-                            <option value="17:00">17:00</option>
-                            <option value="19:00">19:00</option>
+                            <option value="18:00">18:00</option>
                             <option value="21:00">21:00</option>
                         </select>
-                        <input type="text" id="todo-input" placeholder="계획이나 할 일을 입력하세요..." required>
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i></button>
+                        <input type="text" id="todo-input" placeholder="새로운 계획을 적어보세요..." required>
+                        <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
                     </form>
-                    <ul id="todo-list" class="list-container">
-                        <!-- 항목 동적 추가 -->
-                    </ul>
+                    <ul id="todo-list" class="item-list"></ul>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><i class="fa-solid fa-flag"></i> 주요 디데이 일정</span>
+                    </div>
+                    <form id="dday-form" class="inline-form">
+                        <input type="text" id="dday-title" placeholder="목표/시험 이름" required>
+                        <input type="date" id="dday-date" required>
+                        <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                    </form>
+                    <div id="dday-container" class="dday-grid"></div>
                 </section>
             </div>
 
-            <!-- 오른쪽: 메모장 & 유틸리티 포커스 -->
-            <div class="col-side">
-                <!-- 메모장 기능 (주기능) -->
-                <section class="card memo-section">
-                    <h2><i class="fa-regular fa-note-sticky"></i> 퀵 메모장 (Scratchpad)</h2>
-                    <p class="section-desc">작성한 내용은 브라우저에 실시간으로 자동 저장됩니다.</p>
-                    <textarea id="memo-textarea" placeholder="자유롭게 아이디어나 오늘의 메모를 기록하세요..."></textarea>
+            <div class="col">
+                <section class="panel memo-panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><i class="fa-regular fa-folder-open"></i> 세분화 메모장</span>
+                    </div>
+                    <div class="folder-tabs">
+                        <button class="tab-btn active" data-folder="general">📁 일반</button>
+                        <button class="tab-btn" data-folder="idea">💡 아이디어</button>
+                        <button class="tab-btn" data-folder="study">📝 학습</button>
+                    </div>
+                    <div class="textarea-wrapper">
+                        <textarea id="memo-textarea" placeholder="이 폴더에 남길 메모를 자유롭게 입력하세요..."></textarea>
+                    </div>
+                    <div class="save-status" id="save-status">변경사항 자동 저장됨</div>
                 </section>
 
-                <!-- 타이머 기능 (서브 기능으로 축소 및 깔끔하게 정리) -->
-                <section class="card timer-section">
-                    <h2><i class="fa-regular fa-hourglass-half"></i> 포커스 타이머</h2>
-                    <div class="timer-wrapper">
-                        <div class="timer-display" id="timer">25:00</div>
-                        <div class="button-group">
-                            <button id="start-btn" class="btn btn-primary">시작</button>
-                            <button id="pause-btn" class="btn btn-secondary">정지</button>
-                            <button id="reset-btn" class="btn btn-outline">리셋</button>
+                <section class="panel">
+                    <div class="timer-bar-layout">
+                        <div class="timer-meta">
+                            <span class="panel-title"><i class="fa-regular fa-hourglass"></i> 포커스</span>
+                            <div class="timer-digits" id="timer">25:00</div>
+                        </div>
+                        <div class="timer-controls">
+                            <button id="start-btn" class="ctrl-btn action">시작</button>
+                            <button id="pause-btn" class="ctrl-btn">정지</button>
+                            <button id="reset-btn" class="ctrl-btn text">리셋</button>
                         </div>
                     </div>
                 </section>
