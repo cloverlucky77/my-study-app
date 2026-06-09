@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WORKSPACE - 통합 플래너 & 달력</title>
   <style>
-    /* 기본 테마 및 레이아웃 설정 (이미지 속 다크모드 스타일 반영) */
+    /* 전체 레이아웃 초기화 및 테마 설정 */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -21,32 +21,36 @@
       overflow: hidden;
     }
 
-    /* 1. 왼쪽 사이드바 */
+    /* 왼쪽 사이드바 (WORKSPACE) */
     .sidebar-left {
-      width: 250px;
+      width: 260px;
       background-color: #13151a;
-      padding: 30px 20px;
+      padding: 30px 24px;
       display: flex;
       flex-direction: column;
       border-right: 1px solid #1f232b;
     }
 
     .logo {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
       letter-spacing: 1px;
       margin-bottom: 40px;
       color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .menu-item {
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin-bottom: 12px;
       cursor: pointer;
       color: #8a8f98;
       font-weight: 600;
-      transition: all 0.2s;
+      font-size: 14px;
+      transition: all 0.2s ease;
     }
 
     .menu-item.active {
@@ -54,33 +58,34 @@
       color: #000000;
     }
 
-    /* 2. 메인 콘텐츠 영역 (달력 + 우측 플래너) */
+    /* 메인 콘텐츠 영역 */
     .main-content {
       flex: 1;
       padding: 40px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 24px;
     }
 
     .main-header {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: bold;
     }
 
+    /* 대시보드 내부 양쪽 분할 레이아웃 */
     .content-body {
       display: flex;
-      gap: 25px;
+      gap: 24px;
       flex: 1;
       height: calc(100% - 60px);
     }
 
-    /* 3. 달력 섹션 */
+    /* [왼쪽] 달력 섹션 */
     .calendar-section {
-      flex: 1.3;
+      flex: 1.2;
       background-color: #13151a;
       border-radius: 16px;
-      padding: 25px;
+      padding: 30px;
       display: flex;
       flex-direction: column;
     }
@@ -89,7 +94,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 25px;
+      margin-bottom: 30px;
+    }
+
+    .calendar-header h2 {
+      font-size: 18px;
+      font-weight: 600;
     }
 
     .calendar-header button {
@@ -103,27 +113,27 @@
 
     .calendar-grid {
       display: grid;
-      grid-template-columns: repeat(7, 1px);
       grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
+      gap: 12px;
       flex: 1;
     }
 
     .day-label {
       text-align: center;
       color: #565d68;
-      font-weight: bold;
-      font-size: 14px;
-      padding-bottom: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      padding-bottom: 8px;
     }
 
     .day-cell {
       background-color: #1a1d24;
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
+      font-size: 15px;
+      font-weight: 500;
       cursor: pointer;
       transition: background 0.2s;
       aspect-ratio: 1;
@@ -133,92 +143,109 @@
       background-color: #242933;
     }
 
+    /* 선택된 오늘 날짜 강조 (스크린샷 스타일) */
     .day-cell.active {
       background-color: #ffffff;
       color: #000000;
       font-weight: bold;
     }
 
-    /* 4. 우측 플래너 섹션 (디데이를 없애고 높이를 100%로 채움) */
+    /* [오른쪽] 플래너 섹션 - 디데이를 없애고 꽉 차게 변경한 핵심 영역 */
     .planner-section {
       flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%; /* 전체 높이 유지 */
+      height: 100%; /* 우측 공간 전체 확보 */
     }
 
-    .todo-card {
+    /* 일정 관리 카드 */
+    .schedule-management-card {
       background-color: #13151a;
       border-radius: 16px;
-      padding: 25px;
+      padding: 30px;
       display: flex;
       flex-direction: column;
-      height: 100%; /* 부모 공간을 가득 채우도록 변경 */
+      height: 100%; /* 💡 디데이가 사라진 아래 빈 공간까지 카드가 늘어납니다 */
     }
 
     .todo-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+    }
+
+    .todo-header h3 {
+      font-size: 16px;
+      font-weight: 600;
     }
 
     .todo-stats {
       background-color: #1a1d24;
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
-      font-size: 13px;
+      font-size: 12px;
       color: #8a8f98;
+      font-weight: 600;
     }
 
-    /* 일정 입력창 영역 */
+    /* 일정 입력 레이아웃 */
     .todo-input-group {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .time-input {
       width: 80px;
       background-color: #1a1d24;
       border: 1px solid #242933;
-      border-radius: 8px;
+      border-radius: 10px;
       color: #fff;
-      padding: 10px;
+      padding: 12px;
       text-align: center;
+      font-size: 14px;
     }
 
     .text-input {
       flex: 1;
       background-color: #1a1d24;
       border: 1px solid #242933;
-      border-radius: 8px;
+      border-radius: 10px;
       color: #fff;
-      padding: 10px 15px;
+      padding: 12px 16px;
+      font-size: 14px;
+    }
+
+    .text-input::placeholder {
+      color: #565d68;
     }
 
     .add-btn {
       background-color: #ffffff;
       color: #000000;
       border: none;
-      border-radius: 8px;
-      width: 40px;
-      font-size: 20px;
+      border-radius: 10px;
+      width: 44px;
+      font-size: 22px;
       font-weight: bold;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* 디데이가 사라져서 길어진 투두 리스트 아이템 영역 */
+    /* 늘어난 일정 목록 출력 공간 */
     .todo-list {
       flex: 1;
-      overflow-y: auto; /* 내용이 많아지면 스크롤 생성 */
+      overflow-y: auto; /* 일정이 많아지면 카드 내부에서 스크롤 작동 */
       display: flex;
       flex-direction: column;
       gap: 12px;
-      padding-right: 5px;
+      padding-right: 4px;
     }
 
-    /* 스크롤바 커스텀 */
+    /* 내부 스크롤바 커스텀 */
     .todo-list::-webkit-scrollbar {
       width: 6px;
     }
@@ -229,8 +256,8 @@
 
     .todo-item {
       background-color: #1a1d24;
-      padding: 15px;
-      border-radius: 10px;
+      padding: 16px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -238,20 +265,33 @@
 
     .todo-content {
       display: flex;
-      gap: 15px;
+      gap: 12px;
       align-items: center;
+      font-size: 14px;
     }
 
     .todo-time {
       color: #8a8f98;
-      font-size: 14px;
       font-weight: 500;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #565d68;
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    
+    .delete-btn:hover {
+      color: #ff4d4d;
     }
 
     .empty-msg {
       color: #565d68;
       text-align: center;
-      margin-top: 40px;
+      margin: auto 0; /* 세로 중앙 정렬 */
       font-size: 14px;
     }
   </style>
@@ -266,7 +306,7 @@
   </div>
 
   <div class="main-content">
-    <div class="main-header">2026년 06월</div>
+    <div class="main-header">2024년 00월</div>
     
     <div class="content-body">
       
@@ -280,7 +320,7 @@
           <div class="day-label">일</div><div class="day-label">월</div><div class="day-label">화</div><div class="day-label">수</div><div class="day-label">목</div><div class="day-label">금</div><div class="day-label">토</div>
           
           <div class="day-cell"></div><div class="day-cell">1</div><div class="day-cell">2</div><div class="day-cell">3</div><div class="day-cell">4</div><div class="day-cell">5</div><div class="day-cell">6</div>
-          <div class="day-cell">7</div><div class="day-cell">8</div><div class="day-cell">9</div><div class="day-cell active" onclick="changeDate('6월 10일')">10</div><div class="day-cell" onclick="changeDate('6월 11일')">11</div><div class="day-cell" onclick="changeDate('6월 12일')">12</div><div class="day-cell">13</div>
+          <div class="day-cell">7</div><div class="day-cell">8</div><div class="day-cell">9</div><div class="day-cell active" onclick="updatePlannerDate('6월 10일')">10</div><div class="day-cell" onclick="updatePlannerDate('6월 11일')">11</div><div class="day-cell" onclick="updatePlannerDate('6월 12일')">12</div><div class="day-cell">13</div>
           <div class="day-cell">14</div><div class="day-cell">15</div><div class="day-cell">16</div><div class="day-cell">17</div><div class="day-cell">18</div><div class="day-cell">19</div><div class="day-cell">20</div>
           <div class="day-cell">21</div><div class="day-cell">22</div><div class="day-cell">23</div><div class="day-cell">24</div><div class="day-cell">25</div><div class="day-cell">26</div><div class="day-cell">27</div>
           <div class="day-cell">28</div><div class="day-cell">29</div><div class="day-cell">30</div>
@@ -288,16 +328,16 @@
       </div>
 
       <div class="planner-section">
-        <div class="todo-card">
+        <div class="schedule-management-card">
           <div class="todo-header">
-            <h3 id="target-date">6월 10일 일정 관리</h3>
+            <h3 id="planner-title">6월 10일 일정 관리</h3>
             <div class="todo-stats" id="todo-counter">0 / 0 완료</div>
           </div>
 
           <div class="todo-input-group">
             <input type="text" class="time-input" id="todo-time" placeholder="시간">
             <input type="text" class="text-input" id="todo-text" placeholder="할 일을 입력하세요...">
-            <button class="add-btn" onclick="addTodo()">+</button>
+            <button class="add-btn" onclick="addTodoItem()">+</button>
           </div>
 
           <div class="todo-list" id="todo-container">
@@ -310,47 +350,48 @@
   </div>
 
   <script>
-    let todos = [];
+    let todoItems = [];
 
-    // 달력 날짜 클릭 시 우측 플래너 타이틀 변경 기능
-    function changeDate(dateStr) {
-      document.getElementById('target-date').innerText = `${dateStr} 일정 관리`;
-      // 실제 구현 시 날짜별 데이터를 패치해오는 로직이 추가되면 좋습니다.
+    // 달력 클릭 시 일정 관리 제목 날짜 동적 변경
+    function updatePlannerDate(dateText) {
+      document.getElementById('planner-title').innerText = `${dateText} 일정 관리`;
     }
 
-    // 일정 추가 기능
-    function addTodo() {
+    // 새 일정 등록 기능
+    function addTodoItem() {
       const timeInput = document.getElementById('todo-time');
       const textInput = document.getElementById('todo-text');
 
       if (!textInput.value.trim()) return;
 
-      const newTodo = {
+      const newItem = {
         id: Date.now(),
-        time: timeInput.value ? timeInput.value : '종일',
-        text: textInput.value,
+        time: timeInput.value.trim() ? timeInput.value.trim() : '시간 지정 없음',
+        text: textInput.value.trim(),
         completed: false
       };
 
-      todos.push(newTodo);
+      todoItems.push(newItem);
+      
+      // 입력창 비우기
       timeInput.value = '';
       textInput.value = '';
       
-      renderTodos();
+      renderTodoList();
     }
 
     // 일정 삭제 기능
-    function deleteTodo(id) {
-      todos = todos.filter(todo => todo.id !== id);
-      renderTodos();
+    function deleteTodoItem(id) {
+      todoItems = todoItems.filter(item => item.id !== id);
+      renderTodoList();
     }
 
-    // 화면 그리기 및 카운터 갱신
-    function renderTodos() {
+    // 투두 리스트 갱신 및 상태 바 카운트 업데이트
+    function renderTodoList() {
       const container = document.getElementById('todo-container');
       const counter = document.getElementById('todo-counter');
       
-      if (todos.length === 0) {
+      if (todoItems.length === 0) {
         container.innerHTML = `<div class="empty-msg" id="empty-message">등록된 일정이 없습니다.</div>`;
         counter.innerText = '0 / 0 완료';
         return;
@@ -359,22 +400,22 @@
       container.innerHTML = '';
       let completedCount = 0;
 
-      todos.forEach(todo => {
-        if (todo.completed) completedCount++;
+      todoItems.forEach(item => {
+        if (item.completed) completedCount++;
         
-        const item = document.createElement('div');
-        item.className = 'todo-item';
-        item.innerHTML = `
+        const row = document.createElement('div');
+        row.className = 'todo-item';
+        row.innerHTML = `
           <div class="todo-content">
-            <span class="todo-time">[${todo.time}]</span>
-            <span>${todo.text}</span>
+            <span class="todo-time">${item.time}</span>
+            <span>${item.text}</span>
           </div>
-          <button style="background:none; border:none; color:#ff4d4d; cursor:pointer;" onclick="deleteTodo(${todo.id})">❌</button>
+          <button class="delete-btn" onclick="deleteTodoItem(${item.id})">✕</button>
         `;
-        container.appendChild(item);
+        container.appendChild(row);
       });
 
-      counter.innerText = `${completedCount} / ${todos.length} 완료`;
+      counter.innerText = `${completedCount} / ${todoItems.length} 완료`;
     }
   </script>
 </body>
