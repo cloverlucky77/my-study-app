@@ -1,18 +1,17 @@
 // ==========================================
-// 🔥 [필독] 구글 파이어베이스 설정 데이터 연동 영역
+// 🔥 구글 파이어베이스 클라우드 동기화 키 설정 완료
 // ==========================================
-// 본인의 파이어베이스 콘솔 프로젝트 설정화면에서 제공받은 config 값으로 꼭 교체해 주세요!
 const firebaseConfig = {
-    apiKey: "AIzaSyAs-YOUR-REAL-API-KEY-HERE",
-    authDomain: "your-project-id.firebaseapp.com",
-    databaseURL: "https://your-project-id-default-rtdb.firebaseio.com/", // ◀ 특히 실시간 디비 주소가 가장 중요합니다.
-    projectId: "your-project-id",
-    storageBucket: "your-project-id.appspot.com",
-    messagingSenderId: "1234567890",
-    appId: "1:1234567890:web:abcdefabcdef"
+    apiKey: "AIzaSyC1cf1kMJlsYHz7O-YPNDc-4MKpGL_fM3s",
+    authDomain: "my-workspace-app-7163f.firebaseapp.com",
+    databaseURL: "https://my-workspace-app-7163f-default-rtdb.firebaseio.com",
+    projectId: "my-workspace-app-7163f",
+    storageBucket: "my-workspace-app-7163f.firebasestorage.app",
+    messagingSenderId: "119886197584",
+    appId: "1:119886197584:web:53abc2966f016f9143f255"
 };
 
-// 파이어베이스 엔진 기동
+// 파이어베이스 데이터베이스 엔진 기동
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
@@ -45,14 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveStatus = document.getElementById('save-status');
     const savedMemosContainer = document.getElementById('saved-memos-container');
 
-    let activeFolderName = null; // 현재 어떤 파일(폴더)에 진입해 있는지 추적
+    let activeFolderName = null; 
     let editingMemoId = null;
 
-    // 파이어베이스 리스너: 실시간으로 동적 폴더 구조 및 폴더 내 메모 갯수 연산 감시
+    // 파이어베이스 실시간 수신 감지: 폴더 레이아웃 업데이트 및 갯수 실시간 연산
     db.ref('workspace/folders').on('value', (snapshot) => {
         const foldersData = snapshot.val() || {};
         
-        // 기본으로 깔고 갈 초기 폴더 데이터 설정 (디비에 아무것도 없을 때 자동 공급)
+        // 데이터베이스가 아예 비어있을 때 기본 폴더 세팅 공급
         if (Object.keys(foldersData).length === 0) {
             const initDirs = ['일반', '동아리', '수학', '일상'];
             initDirs.forEach(d => {
@@ -63,13 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderFolderDashboard(foldersData);
         
-        // 만약 특정 폴더 안에 진입해 있는 상태라면, 메모 리스트도 실시간 갱신 처리
+        // 특정 파일(폴더)에 진입해 있는 상태라면 리스트도 함께 실시간 동기화 갱신
         if (activeFolderName && foldersData[activeFolderName]) {
             renderFolderMemos(foldersData[activeFolderName].memos || {});
         }
     });
 
-    // 폴더 탐색기 대시보드 렌더링
+    // 파일 분류(폴더) 화면 구성
     function renderFolderDashboard(foldersData) {
         folderGridContainer.innerHTML = '';
         
@@ -86,23 +85,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="folder-memo-count">${memoCount}개의 기록</div>
                 <button class="folder-del-btn" onclick="deleteEntireFolder(event, '${folderName}')"><i class="fa-solid fa-xmark"></i></button>
             `;
-            // 폴더 클릭 시 -> 해당 파일 안으로 진입하는 핵심 핸들러 연동
             card.addEventListener('click', () => enterFolderScope(folderName));
             folderGridContainer.appendChild(card);
         });
     }
 
-    // 신규 파일 분류(폴더) 만들기 버튼
+    // 신규 분류 추가 버튼 클릭 시
     createFolderBtn.addEventListener('click', () => {
         const name = prompt('새로 만들 파일 분류(폴더)의 이름을 입력해 주세요:');
         if (!name) return;
-        const cleaned = name.trim().replace(/[.#$\[\]]/g, ""); // 파이어베이스 금지 기호 정제
+        const cleaned = name.trim().replace(/[.#$\[\]]/g, ""); 
         if (!cleaned) return;
 
         db.ref('workspace/folders/' + cleaned).update({ createdAt: Date.now() });
     });
 
-    // 파일 분류 완전 영구삭제
+    // 폴더 삭제
     window.deleteEntireFolder = (event, folderName) => {
         event.stopPropagation();
         if (confirm(`[${folderName}] 파일 분류 전체와 그 내부의 메모 기록을 클라우드 서버에서 영구 삭제할까요?`)) {
@@ -111,23 +109,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 📂 특정 파일(폴더) 안으로 들어가기!
+    // 파일(폴더) 내부 진입 -> 메모장 활성화
     function enterFolderScope(folderName) {
         activeFolderName = folderName;
         resetEditor();
 
-        // UI 토글 전환 (탐색기 숨기고 메모장 에디터 켜기)
         folderExplorerZone.classList.add('hidden');
         memoEditorZone.classList.remove('hidden');
         currentFolderTitle.innerHTML = `<i class="fa-regular fa-folder-open"></i> ${activeFolderName}`;
 
-        // 해당 폴더 안의 내용 즉시 가져와서 그리기
         db.ref('workspace/folders/' + folderName + '/memos').once('value', (snapshot) => {
             renderFolderMemos(snapshot.val() || {});
         });
     }
 
-    // ◀ 파일 밖으로 나가기 버튼 클릭 시
+    // 파일 밖으로 탈출
     backToFoldersBtn.addEventListener('click', exitFolderScope);
     function exitFolderScope() {
         activeFolderName = null;
@@ -135,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         folderExplorerZone.classList.remove('hidden');
     }
 
-    // 특정 파일 내부에 귀속된 메모들을 날짜별로 파싱하여 리스팅하는 엔진
+    // 진입한 폴더 내부의 메모들을 날짜 그룹별로 나누어 렌더링
     function renderFolderMemos(memosObj) {
         savedMemosContainer.innerHTML = '';
         const memoList = [];
@@ -149,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 날짜별 그룹 정렬 빌딩
         const grouped = {};
         memoList.forEach(m => {
             const dKey = m.date || '날짜 미상';
@@ -180,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 메모 클릭 시 에디터 서식창으로 데이터 업로드
+    // 메모 선택 시 에디터 로드
     window.loadMemoData = (id) => {
         db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).once('value', (snapshot) => {
             const data = snapshot.val();
@@ -194,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // 메모장 개별 지우기
+    // 메모 삭제
     window.deleteMemoData = (event, id) => {
         event.stopPropagation();
         db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).remove();
@@ -209,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveStatus.style.color = "#71717a";
     }
 
-    // 현재 열린 파일(폴더) 영역 안에 메모장 저장 트랜잭션 날리기
+    // 메모 저장 트랜잭션 (해당 파일 내부 트리 아래에 종속 저장)
     saveMemoBtn.addEventListener('click', () => {
         const textTitle = memoTitleInput.value.trim();
         const textContent = memoTextarea.value.trim();
@@ -296,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // --- 🎯 3. 디데이 카운트다운 클라우드 엔진 ---
+    // --- 🎯 3. 디데이 카운트다운 클라우드 엔진 (정밀 연산 기능 포함) ---
     const ddayForm = document.getElementById('dday-form');
     const ddayTitle = document.getElementById('dday-title');
     const ddayDate = document.getElementById('dday-date');
