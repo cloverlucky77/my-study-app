@@ -1,4 +1,4 @@
-/* Ultimate Cloud Workspace CSS - Complete & Integrated */
+/* Ultimate Cloud Workspace CSS - Complete Stylesheet */
 :root {
     --bg: #09090b;
     --sidebar-bg: #0f0f11;
@@ -224,6 +224,7 @@ body {
     justify-content: center; 
     cursor: pointer; 
 }
+.icon-btn-add:hover { background-color: var(--accent-hover); }
 
 .item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
 .item-row { 
@@ -240,7 +241,7 @@ body {
 .item-text { font-size: 0.85rem; cursor: pointer; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item-row.done { opacity: 0.35; }
 .item-row.done .item-text { text-decoration: line-through; }
-.compact-del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; }
+.compact-del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
 .compact-del-btn:hover { color: var(--danger); }
 
 /* 📅 캘린더 & 플래너 통합 레이아웃 */
@@ -276,7 +277,6 @@ body {
 .cal-date:hover { background: #27272a; border-color: #3f3f46; }
 .cal-date.today { border: 1px solid #60a5fa; color: #60a5fa; font-weight: 700; }
 .cal-date.selected { background: #ffffff; color: #000000; font-weight: 700; }
-.cal-dot { width: 4px; height: 4px; background: var(--success); border-radius: 50%; position: absolute; bottom: 4px; }
 
 .daily-detail-stack { display: flex; flex-direction: column; gap: 24px; }
 
@@ -290,12 +290,10 @@ body {
 .timeline-review-title { font-size: 0.8rem; font-weight: 500; color: #e4e4e7; }
 .planner-textarea-input { width: 100%; height: 80px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
 .planner-textarea-input::placeholder { color: #52525b; }
-.planner-textarea-input:focus, .timeline-row:focus-within { border-color: #52525b; }
 
 /* 📝 메모장 및 실시간 고정 메모 컴포넌트 */
 .memo-layout-split { display: flex; flex-direction: column; gap: 24px; }
 .pinned-memo-panel textarea { background: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; min-height: 100px; resize: vertical; outline: none; line-height: 1.5; }
-.pinned-memo-panel textarea:focus { border-color: #52525b; }
 .memo-folders-container { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
 .explorer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border); }
 .explorer-header h3 { font-size: 1rem; font-weight: 600; }
@@ -305,10 +303,8 @@ body {
 .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
 .folder-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; position: relative; transition: all 0.2s ease; }
 .folder-card:hover { border-color: #3f3f46; background-color: #202024; }
-.folder-card.dragging { opacity: 0.4; border: 1px dashed #fff; }
 .btn-folder-delete-absolute { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; opacity: 0; transition: opacity 0.15s; }
 .folder-card:hover .btn-folder-delete-absolute { opacity: 1; }
-.btn-folder-delete-absolute:hover { color: var(--danger); }
 .folder-icon { font-size: 2rem; color: #f59e0b; }
 .folder-name { font-size: 0.9rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .folder-memo-count { font-size: 0.75rem; color: var(--text-muted); }
@@ -319,50 +315,51 @@ body {
 .editor-header h3 { font-size: 1rem; font-weight: 600; color: #fff; }
 
 .memo-internal-workspace { display: grid; grid-template-columns: 240px 14.2fr; gap: 24px; min-height: 400px; }
-@media (max-width: 768px) { .memo-internal-workspace { grid-template-columns: 1fr; } }
 .memo-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
 .memo-sidebar-list h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 .memo-main-editor { display: flex; flex-direction: column; gap: 16px; }
 .memo-main-editor input { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; color: var(--text-main); font-size: 1rem; font-weight: 500; outline: none; }
-.memo-main-editor input:focus { border-color: #3f3f46; }
 .memo-main-editor textarea { flex: 1; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; color: var(--text-main); font-size: 0.92rem; outline: none; resize: none; line-height: 1.6; min-height: 280px; }
-.memo-main-editor textarea:focus { border-color: #3f3f46; }
 .btn-save { background-color: var(--accent); color: #000; border: none; border-radius: 8px; padding: 14px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
 .btn-save:hover { background-color: var(--accent-hover); }
 
 /* 📚 오답노트 전용 확장 레이아웃 */
 .math-layout-split { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
-.btn-manage-types { background-color: #1c1c1f; border: 1px solid var(--panel-border); color: #e4e4e7; border-radius: 6px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; margin-left: auto; display: flex; align-items: center; gap: 6px; }
-.btn-manage-types:hover { background-color: #27272a; color: #fff; }
+.btn-manage-types { background-color: #1c1c1f; border: 1px solid var(--panel-border); color: #e4e4e7; border-radius: 6px; padding: 6px 14px; font-size: 0.8rem; font-weight: 500; cursor: pointer; margin-left: auto; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.btn-manage-types:hover { background-color: #27272a; color: #fff; border-color: #3f3f46; }
 .math-internal-workspace { display: grid; grid-template-columns: 260px 1fr; gap: 24px; min-height: 480px; }
-@media (max-width: 768px) { .math-internal-workspace { grid-template-columns: 1fr; } }
 .math-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
 .sidebar-header-row { display: flex; justify-content: space-between; align-items: center; }
 .sidebar-header-row h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
-.btn-mini-add { background: #ffffff; color: #000; border: none; padding: 3px 8px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; cursor: pointer; }
+.btn-mini-add { background: #ffffff; color: #000; border: none; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; cursor: pointer; }
 .math-main-editor { display: flex; flex-direction: column; gap: 12px; }
 .math-main-editor input, .math-main-editor select { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
 .math-main-editor textarea { width: 100%; height: 75px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
 .math-main-editor textarea.tall-textarea { height: 130px; }
-.math-main-editor textarea:focus, .math-main-editor input:focus, .math-main-editor select:focus { border-color: #3f3f46; }
 
-/* 🪟 모달창 시스템 레이아웃 */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-.modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; width: 420px; max-width: 95%; padding: 24px; display: flex; flex-direction: column; gap: 15px; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
-.modal-header h3 { font-size: 1.05rem; font-weight: 600; color: #fff; }
-#close-type-modal { background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; }
+/* 🪟 [디자인 개선] 모달창 시스템 레이아웃 (이질감 제로 보장) */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
+.modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; width: 440px; max-width: 95%; padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 14px; }
+.modal-header h3 { font-size: 1.05rem; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+.modal-close-x { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; transition: color 0.2s; }
+.modal-close-x:hover { color: #fff; }
 
-.custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; margin-top: 5px; padding-right: 2px; }
+.modal-input-group { background-color: #18181b !important; border-color: var(--panel-border) !important; padding: 5px 5px 5px 12px !important; }
+.modal-list-title { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+.drag-hint { font-size: 0.7rem; font-weight: 400; color: #4b5563; }
+
+.custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; margin-top: 4px; padding-right: 4px; }
 .type-manage-item { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding: 10px 14px; 
+    padding: 11px 14px; 
     background-color: #18181b; 
     border: 1px solid var(--panel-border); 
-    border-radius: 6px; 
+    border-radius: 8px; 
     font-size: 0.85rem;
-    cursor: grab;
+    color: var(--text-main);
+    transition: background 0.15s;
 }
-.type-manage-item.dragging { opacity: 0.4; border-style: dashed; }
+.type-manage-item:hover { background-color: #1c1c1f; border-color: #3f3f46; }
