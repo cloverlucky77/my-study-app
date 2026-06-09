@@ -80,18 +80,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const todoList = document.getElementById('todo-list');
     const todoStats = document.getElementById('todo-stats');
 
+    // 🕒 신설된 하루 정리 플래너 DOM 엘리먼트 추적
+    const planAmInput = document.getElementById('plan-am');
+    const planPmInput = document.getElementById('plan-pm');
+    const planEveInput = document.getElementById('plan-eve');
+    const planReviewInput = document.getElementById('plan-review');
+    const plannerSaveStatus = document.getElementById('planner-save-status');
+
+    // --- 기존 app.js 내 renderCalendar 함수 수정 ---
     function renderCalendar() {
         if(!calendarDays) return;
         calendarDays.innerHTML = '';
         const year = currentViewDate.getFullYear();
         const month = currentViewDate.getMonth();
-        
+    
+    // 1. 달력 카드 내부의 연월 표시 (예: 2026년 6월)
         if(calendarMonthYear) {
             calendarMonthYear.textContent = `${year}년 ${month + 1}월`;
         }
-        
+    
+    // 🔍 [여기 수정] 왼쪽 위 대제목(2024년 00월)도 실시간으로 연동되도록 추가합니다!
+        const calendarViewTitle = document.getElementById('calendar-view-title');
+        if(calendarViewTitle) {
+            calendarViewTitle.textContent = `${year}년 ${String(month + 1).padStart(2, '0')}월`;
+        }
+    
         const firstDay = new Date(year, month, 1).getDay();
         const lastDate = new Date(year, month + 1, 0).getDate();
+    
+    // ... 이하 기존 달력 렌더링 코드 동일 ...
         
         // 요일 헤더 바인딩
         ['일','월','화','수','목','금','토'].forEach(d => {
@@ -138,11 +155,37 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTodoListData(list);
         });
         
-        // 디데이 컴포넌트 실시간 동기화
-        db.ref('workspace/ddays').on('value', (snapshot) => {
-            renderDDayListData(snapshot.val() || {});
+        // [새 기능] 날짜 변경 시 해당 날짜의 하루 일정 플래너 정보 불러오기
+        db.ref(`workspace/dayPlanners/${selectedFullDate}`).once('value', (snapshot) => {
+            const data = snapshot.val() || { am: '', pm: '', eve: '', review: '' };
+            if(planAmInput) planAmInput.value = data.am || '';
+            if(planPmInput) planPmInput.value = data.pm || '';
+            if(planEveInput) planEveInput.value = data.eve || '';
+            if(planReviewInput) planReviewInput.value = data.review || '';
+            if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
         });
     }
+
+    // 하루 일정 플래너 인풋 입력 시 디바운스 실시간 Firebase 전송 처리
+    let plannerTimeout;
+    function syncPlannerToCloud() {
+        if(plannerSaveStatus) plannerSaveStatus.textContent = "저장 중...";
+        clearTimeout(plannerTimeout);
+        plannerTimeout = setTimeout(() => {
+            db.ref(`workspace/dayPlanners/${selectedFullDate}`).set({
+                am: planAmInput.value,
+                pm: planPmInput.value,
+                eve: planEveInput.value,
+                review: planReviewInput.value
+            });
+            if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
+        }, 500);
+    }
+
+    if(planAmInput) planAmInput.oninput = syncPlannerToCloud;
+    if(planPmInput) planPmInput.oninput = syncPlannerToCloud;
+    if(planEveInput) planEveInput.oninput = syncPlannerToCloud;
+    if(planReviewInput) planReviewInput.oninput = syncPlannerToCloud;
 
     function renderTodoListData(filteredList) {
         if(!todoList) return;
@@ -188,64 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.toggleTodoState = (id, curStatus) => db.ref(`workspace/todos/${id}`).update({ completed: !curStatus });
     window.deleteTodoState = (id) => db.ref(`workspace/todos/${id}`).remove();
 
-    // 디데이 처리 모듈
-    const ddayForm = document.getElementById('dday-form');
-    const ddayTitle = document.getElementById('dday-title');
-    const ddayDate = document.getElementById('dday-date');
-    const ddayContainer = document.getElementById('dday-container');
-
-    function renderDDayListData(ddaysObj) {
-        if(!ddayContainer) return;
-        ddayContainer.innerHTML = '';
-        const now = new Date();
-        const todayTimestamp = Date.parse(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`);
-
-        const ddayKeys = Object.keys(ddaysObj);
-        if(ddayKeys.length === 0) {
-            ddayContainer.innerHTML = `<div style="color:#71717a; font-size:0.8rem; text-align:center; padding:10px;">지정된 디데이가 없습니다.</div>`;
-            return;
-        }
-
-        ddayKeys.forEach(id => {
-            const item = ddaysObj[id];
-            const targetTimestamp = Date.parse(item.date);
-            if (isNaN(targetTimestamp)) return;
-
-            const diffMs = targetTimestamp - todayTimestamp;
-            const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-            let displayD = '';
-            let isUrgent = false;
-
-            if (days === 0) { displayD = 'D-DAY'; isUrgent = true; }
-            else if (days > 0) { displayD = `D-${days}`; if(days <= 3) isUrgent = true; }
-            else { displayD = `D+${Math.abs(days)}`; }
-
-            const div = document.createElement('div');
-            div.className = `dday-card ${isUrgent ? 'urgent' : ''}`;
-            div.innerHTML = `
-                <div class="dday-info">
-                    <span class="dday-name">${item.title}</span>
-                    <span class="dday-date-text">목표일: ${item.date}</span>
-                </div>
-                <div class="dday-right-zone">
-                    <span class="dday-number">${displayD}</span>
-                    <button class="compact-del-btn" onclick="deleteDDayCloud('${id}')"><i class="fa-regular fa-trash-can"></i></button>
-                </div>
-            `;
-            ddayContainer.appendChild(div);
-        });
-    }
-
-    if(ddayForm) {
-        ddayForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if(!ddayDate.value) return alert('날짜를 정확히 선택해주세요.');
-            db.ref('workspace/ddays').push({ title: ddayTitle.value.trim(), date: ddayDate.value });
-            ddayForm.reset();
-        });
-    }
-    window.deleteDDayCloud = (id) => db.ref(`workspace/ddays/${id}`).remove();
-
 
     // --- 📝 3. 고정 단일 메모장 & 폴더 분류 보관함 시스템 ---
     const pinnedTextarea = document.getElementById('pinned-memo-textarea');
@@ -264,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeFolderName = null; 
     let editingMemoId = null;
 
-    // 3-1) 단일 고정 메모장 실시간 동기화 (Debounce 설계)
     if(pinnedTextarea) {
         db.ref('workspace/pinnedMemo').on('value', (snap) => {
             const val = snap.val();
@@ -283,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // 3-2) 분류 보관함 메인 대시보드 처리
     db.ref('workspace/folders').on('value', (snapshot) => {
         const foldersData = snapshot.val() || {};
         renderFolderDashboard(foldersData);
@@ -395,7 +378,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!savedMemosContainer) return;
         savedMemosContainer.innerHTML = '';
         const list = Object.keys(memosObj).map(id => ({ id, ...memosObj[id] }));
-        if(list.length === 0){ savedMemosContainer.innerHTML = `<div style="color:#71717a; font-size:0.8rem; text-align:center;">보관함이 비어있습니다.</div>`; return; }
+        if(list.length === 0){
+            savedMemosContainer.innerHTML = `<div style="color:#71717a; font-size:0.8rem; text-align:center;">보관함이 비어있습니다.</div>`;
+            return;
+        }
         list.forEach(memo => {
             const card = document.createElement('div');
             card.className = 'item-row';
@@ -410,22 +396,40 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadMemoData = (id) => {
         db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).once('value', (snapshot) => {
             const data = snapshot.val();
-            if (data) { memoTitleInput.value = data.title; memoTextarea.value = data.content; editingMemoId = id; }
+            if (data) {
+                memoTitleInput.value = data.title;
+                memoTextarea.value = data.content;
+                editingMemoId = id;
+            }
         });
     };
-    window.deleteMemoData = (event, id) => { event.stopPropagation(); db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).remove(); if(editingMemoId===id) resetMemoEditor(); };
-    function resetMemoEditor() { memoTitleInput.value = ''; memoTextarea.value = ''; editingMemoId = null; }
-    
+
+    window.deleteMemoData = (event, id) => {
+        event.stopPropagation();
+        db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).remove();
+        if(editingMemoId===id) resetMemoEditor();
+    };
+
+    function resetMemoEditor() {
+        memoTitleInput.value = '';
+        memoTextarea.value = '';
+        editingMemoId = null;
+    }
+
     if(saveMemoBtn) {
         saveMemoBtn.addEventListener('click', () => {
-            const text = memoTextarea.value.trim(); if (!text) return;
-            const payload = { title: memoTitleInput.value.trim() || text.substring(0,12), content: text, date: getTodayDateString() };
+            const text = memoTextarea.value.trim();
+            if (!text) return;
+            const payload = {
+                title: memoTitleInput.value.trim() || text.substring(0,12),
+                content: text,
+                date: getTodayDateString()
+            };
             if (editingMemoId) db.ref(`workspace/folders/${activeFolderName}/memos/${editingMemoId}`).update(payload);
             else db.ref(`workspace/folders/${activeFolderName}/memos`).push(payload);
             resetMemoEditor();
         });
     }
-
 
     // --- 📚 4. 과목별 및 문제 유형별 오답노트 시스템 ---
     const mathExplorerZone = document.getElementById('math-explorer-zone');
@@ -440,31 +444,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const mathProbApproach = document.getElementById('math-prob-approach');
     const mathProbSolution = document.getElementById('math-prob-solution');
     const mathSaveBtn = document.getElementById('math-save-btn');
-    const mathSavedList = document.getElementById('math-saved-list');
-    const filterTypeSelect = document.getElementById('math-filter-type-select');
-    const btnManageTypes = document.getElementById('btn-manage-types');
-    const typeModal = document.getElementById('type-modal');
+    const mathProblemsContainer = document.getElementById('math-problems-container');
+    const mathNewProbBtn = document.getElementById('math-new-prob-btn');
+    
+    const btnOpenTypeModal = document.getElementById('btn-open-type-modal');
+    const modalOverlay = document.getElementById('type-modal');
     const closeTypeModal = document.getElementById('close-type-modal');
     const newTypeInput = document.getElementById('new-type-input');
     const btnAddType = document.getElementById('btn-add-type');
     const customTypeList = document.getElementById('custom-type-list');
 
     let activeMathFolder = null;
-    let editingMathId = null;
+    let editingProbId = null;
 
     db.ref('workspace/mathNotebooks').on('value', (snapshot) => {
         const mathData = snapshot.val() || {};
         renderMathDashboard(mathData);
-        renderSidebarSubFolders(mathData); 
-
-        if (activeMathFolder) {
-            if (!mathData[activeMathFolder]) { 
-                exitMathFolder(); 
-            } else { 
-                const typesObj = mathData[activeMathFolder].customTypes || {};
-                renderTypeDropdowns(typesObj);
-                renderMathItems(mathData[activeMathFolder].problems || {}); 
-                renderModalTypeList(typesObj);
+        renderSidebarMathFolders(mathData);
+        if(activeMathFolder) {
+            if(!mathData[activeMathFolder]) { exitMathFolderScope(); }
+            else {
+                renderMathProblemsList(mathData[activeMathFolder].problems || {});
+                renderTypeSelectOptions(mathData[activeMathFolder].customTypes || {});
+                renderTypeManageItems(mathData[activeMathFolder].customTypes || {});
             }
         }
     });
@@ -483,20 +485,17 @@ document.addEventListener('DOMContentLoaded', () => {
             card.setAttribute('draggable', 'true');
             card.dataset.id = folder.name;
             card.innerHTML = `
-                <button class="btn-folder-delete-absolute" onclick="deleteMathFolder(event, '${folder.name}')"><i class="fa-regular fa-trash-can"></i></button>
-                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <button class="btn-folder-delete-absolute" onclick="deleteEntireMathFolder(event, '${folder.name}')"><i class="fa-regular fa-trash-can"></i></button>
+                <div class="folder-icon" style="color:#60a5fa;"><i class="fa-solid fa-book"></i></div>
                 <div class="folder-name">${folder.name}</div>
-                <div class="folder-memo-count">${count}개 문항</div>
+                <div class="folder-memo-count">${count}개 오답</div>
             `;
             card.addEventListener('click', (e) => {
                 if(e.target.closest('.btn-folder-delete-absolute')) return;
-                enterMathFolder(folder.name);
+                enterMathFolderScope(folder.name);
             });
             card.addEventListener('dragstart', () => card.classList.add('dragging'));
-            card.addEventListener('dragend', () => {
-                card.classList.remove('dragging');
-                saveNewFolderOrder();
-            });
+            card.addEventListener('dragend', () => { card.classList.remove('dragging'); saveNewMathFolderOrder(); });
             mathFolderGrid.appendChild(card);
         });
     }
@@ -512,14 +511,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function saveNewFolderOrder() {
+    function saveNewMathFolderOrder() {
         const cards = [...mathFolderGrid.querySelectorAll('.folder-card')];
         const updates = {};
         cards.forEach((card, index) => { updates[`workspace/mathNotebooks/${card.dataset.id}/order`] = index; });
         db.ref().update(updates);
     }
 
-    function renderSidebarSubFolders(mathData) {
+    function renderSidebarMathFolders(mathData) {
         if(!sidebarSubFolders) return;
         sidebarSubFolders.innerHTML = '';
         const sorted = Object.keys(mathData).map(name => ({
@@ -529,13 +528,13 @@ document.addEventListener('DOMContentLoaded', () => {
         sorted.forEach(folder => {
             const btn = document.createElement('button');
             btn.className = 'sub-menu-item';
-            btn.innerHTML = `<i class="fa-solid fa-square-root-variable"></i> ${folder.name}`;
+            btn.innerHTML = `<i class="fa-solid fa-book-open"></i> ${folder.name}`;
             btn.addEventListener('click', () => {
                 menuItems.forEach(b => b.classList.remove('active'));
                 document.getElementById('menu-btn-math').classList.add('active');
                 contentViews.forEach(v => v.id === 'view-math' ? v.classList.remove('hidden') : v.classList.add('hidden'));
                 sidebarSubFolders.classList.remove('hidden');
-                enterMathFolder(folder.name);
+                enterMathFolderScope(folder.name);
             });
             sidebarSubFolders.appendChild(btn);
         });
@@ -543,224 +542,156 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(mathCreateFolderBtn) {
         mathCreateFolderBtn.addEventListener('click', () => {
-            const name = prompt('새 과목 오답노트 이름:');
-            if (!name) return;
+            const name = prompt('새 오답노트 과목/대단원 이름 입력:');
+            if(!name) return;
             const cleaned = name.trim().replace(/[.#$\[\]]/g, "");
-            if (cleaned) {
-                db.ref('workspace/mathNotebooks/' + cleaned).set({ 
-                    createdAt: Date.now(), order: 999, problems: {}, 
-                    customTypes: { "기본개념": { order: 0 }, "응용심화": { order: 1 } }
-                });
-            }
+            if(cleaned) db.ref('workspace/mathNotebooks/' + cleaned).set({ createdAt: Date.now(), order: 999, problems: {} });
         });
     }
 
-    window.deleteMathFolder = (event, folderName) => {
+    window.deleteEntireMathFolder = (event, folderName) => {
         event.stopPropagation();
-        if (confirm(`[${folderName}] 과목 내부 기록이 모두 삭제됩니다.`)) {
+        if(confirm(`[${folderName}] 과목 내부의 모든 문항 데이터가 영구히 소멸됩니다.`)) {
             db.ref('workspace/mathNotebooks/' + folderName).remove();
         }
     };
 
-    function enterMathFolder(folderName) {
-        activeMathFolder = folderName; resetMathNotebookEditor();
+    function enterMathFolderScope(folderName) {
+        activeMathFolder = folderName; resetMathEditor();
         if(mathExplorerZone) mathExplorerZone.classList.add('hidden');
         if(mathEditorZone) mathEditorZone.classList.remove('hidden');
-        if(mathCurrentFolderTitle) mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-folder-open"></i> ${activeMathFolder}`;
-        if(filterTypeSelect) filterTypeSelect.value = "ALL";
+        if(mathCurrentFolderTitle) mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-book-open"></i> ${activeMathFolder}`;
     }
-    if(mathBackBtn) mathBackBtn.addEventListener('click', exitMathFolder);
-    function exitMathFolder() { activeMathFolder = null; if(mathEditorZone) mathEditorZone.classList.add('hidden'); if(mathExplorerZone) mathExplorerZone.classList.remove('hidden'); }
+    if(mathBackBtn) mathBackBtn.addEventListener('click', exitMathFolderScope);
+    function exitMathFolderScope() { activeMathFolder = null; if(mathEditorZone) mathEditorZone.classList.add('hidden'); if(mathExplorerZone) mathExplorerZone.classList.remove('hidden'); }
 
-    function renderTypeDropdowns(typesObj) {
-        if(!filterTypeSelect || !mathProbType) return;
-        const prevFilter = filterTypeSelect.value;
-        const prevFormType = mathProbType.value;
-
-        filterTypeSelect.innerHTML = '<option value="ALL">전체 유형</option>';
-        mathProbType.innerHTML = '';
-
-        const sortedTypes = Object.keys(typesObj).map(key => {
-            const val = typesObj[key];
-            return { name: key, order: (val && val.order !== undefined) ? val.order : 999 };
-        }).sort((a, b) => a.order - b.order);
-
-        if(sortedTypes.length === 0) sortedTypes.push({ name: "미분류", order: 0 });
-
-        sortedTypes.forEach(t => {
-            filterTypeSelect.innerHTML += `<option value="${t.name}">${t.name}</option>`;
-            mathProbType.innerHTML += `<option value="${t.name}">${t.name}</option>`;
-        });
-
-        if ([...filterTypeSelect.options].some(o => o.value === prevFilter)) filterTypeSelect.value = prevFilter;
-        if ([...mathProbType.options].some(o => o.value === prevFormType)) mathProbType.value = prevFormType;
-    }
-
-    if(filterTypeSelect) {
-        filterTypeSelect.addEventListener('change', () => {
-            db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).once('value', (snapshot) => { renderMathItems(snapshot.val() || {}); });
-        });
-    }
-
-    function renderMathItems(probsObj) {
-        if(!mathSavedList) return;
-        mathSavedList.innerHTML = '';
-        let list = Object.keys(probsObj).map(id => ({ id, ...probsObj[id] }));
-        
-        const selectedFilter = filterTypeSelect ? filterTypeSelect.value : "ALL";
-        if (selectedFilter !== "ALL") list = list.filter(p => p.type === selectedFilter);
-
-        if (list.length === 0) {
-            mathSavedList.innerHTML = `<div style="font-size:0.78rem; color:#71717a; text-align:center; padding:20px 0;">등록된 문항이 없습니다.</div>`;
+    function renderMathProblemsList(probsObj) {
+        if(!mathProblemsContainer) return;
+        mathProblemsContainer.innerHTML = '';
+        const list = Object.keys(probsObj).map(id => ({ id, ...probsObj[id] }));
+        if(list.length === 0) {
+            mathProblemsContainer.innerHTML = `<div style="color:#71717a; font-size:0.8rem; text-align:center;">오답 문항이 없습니다.</div>`;
             return;
         }
-        list.sort((a, b) => b.timestamp - a.timestamp);
-
-        list.forEach(p => {
+        list.forEach(prob => {
+            const typeLabel = prob.type ? `[${prob.type}] ` : '';
             const card = document.createElement('div');
-            card.className = `notebook-item-card ${editingMathId === p.id ? 'active-item' : ''}`;
+            card.className = 'item-row';
             card.innerHTML = `
-                <div class="notebook-card-main" onclick="loadMathData('${p.id}')">
-                    <span class="notebook-card-badge">${p.type || '미분류'}</span>
-                    <span class="notebook-card-title">${p.title}</span>
-                </div>
-                <button class="compact-del-btn" onclick="deleteMathData(event, '${p.id}')"><i class="fa-regular fa-trash-can"></i></button>
+                <span class="item-text" onclick="loadMathProbData('${prob.id}')"><b style="color:#f87171;">${typeLabel}</b>${prob.title}</span>
+                <button class="compact-del-btn" onclick="deleteMathProbData(event, '${prob.id}')"><i class="fa-regular fa-trash-can"></i></button>
             `;
-            mathSavedList.appendChild(card);
+            mathProblemsContainer.appendChild(card);
         });
     }
 
-    window.loadMathData = (id) => {
-        db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                editingMathId = id;
-                mathProbTitle.value = data.title;
-                mathProbType.value = data.type || '미분류';
-                mathProbWrong.value = data.wrong || '';
+    window.loadMathProbData = (id) => {
+        db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).once('value', (snap) => {
+            const data = snap.val();
+            if(data) {
+                mathProbTitle.value = data.title || '';
+                mathProbType.value = data.type || '';
+                mathProbWrong.value = data.wrongReason || '';
                 mathProbApproach.value = data.approach || '';
                 mathProbSolution.value = data.solution || '';
-                db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).once('value', (snap) => { renderMathItems(snap.val() || {}); });
+                editingProbId = id;
             }
         });
     };
 
-    window.deleteMathData = (event, id) => {
+    window.deleteMathProbData = (event, id) => {
         event.stopPropagation();
-        if(confirm("해당 문항을 영구 삭제합니까?")) {
+        if(confirm('이 문항을 삭제하시겠습니까?')) {
             db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).remove();
-            if (editingMathId === id) resetMathNotebookEditor();
+            if(editingProbId === id) resetMathEditor();
         }
     };
 
-    function resetMathNotebookEditor() {
-        editingMathId = null; 
-        if(mathProbTitle) mathProbTitle.value = ''; 
-        if(mathProbWrong) mathProbWrong.value = ''; 
-        if(mathProbApproach) mathProbApproach.value = ''; 
-        if(mathProbSolution) mathProbSolution.value = '';
-        if(activeMathFolder) db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).once('value', (snap) => { renderMathItems(snap.val() || {}); });
+    function resetMathEditor() {
+        mathProbTitle.value = '';
+        mathProbWrong.value = '';
+        mathProbApproach.value = '';
+        mathProbSolution.value = '';
+        editingProbId = null;
+        if(mathProbType.options.length > 0) mathProbType.selectedIndex = 0;
     }
+    if(mathNewProbBtn) mathNewProbBtn.addEventListener('click', resetMathEditor);
 
     if(mathSaveBtn) {
         mathSaveBtn.addEventListener('click', () => {
-            const title = mathProbTitle.value.trim(); if (!title) return alert('문항 제목을 입력하세요.');
+            const title = mathProbTitle.value.trim();
+            if(!title) return alert('문제 제목을 최소한 입력해주세요.');
             const payload = {
-                title: title, type: mathProbType.value || '미분류', wrong: mathProbWrong.value.trim(),
-                approach: mathProbApproach.value.trim(), solution: mathProbSolution.value.trim(), timestamp: Date.now()
+                title,
+                type: mathProbType.value,
+                wrongReason: mathProbWrong.value.trim(),
+                approach: mathProbApproach.value.trim(),
+                solution: mathProbSolution.value.trim(),
+                updatedAt: Date.now()
             };
-            if (editingMathId) db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${editingMathId}`).update(payload);
+            if(editingProbId) db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${editingProbId}`).update(payload);
             else db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).push(payload);
-            resetMathNotebookEditor();
+            resetMathEditor();
         });
     }
 
-    // 🌟 4-2) 유형 관리 모달 및 모바일 터치 드래그 스크롤 분리 로직
-    if(btnManageTypes) btnManageTypes.addEventListener('click', () => { if(typeModal) typeModal.classList.remove('hidden'); });
-    if(closeTypeModal) closeTypeModal.addEventListener('click', () => { if(typeModal) typeModal.classList.add('hidden'); });
+    function renderTypeSelectOptions(typesObj) {
+        if(!mathProbType) return;
+        const currentSelected = mathProbType.value;
+        mathProbType.innerHTML = '';
+        const sorted = Object.keys(typesObj).map(id => ({ id, ...typesObj[id], order: typesObj[id].order !== undefined ? typesObj[id].order : 999 })).sort((a,b) => a.order - b.order);
+        
+        if(sorted.length === 0) {
+            mathProbType.innerHTML = `<option value="">등록된 유형 없음</option>`;
+            return;
+        }
+        sorted.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id; opt.textContent = t.id;
+            if(t.id === currentSelected) opt.selected = true;
+            mathProbType.appendChild(opt);
+        });
+    }
+
+    if(btnOpenTypeModal) btnOpenTypeModal.onclick = () => modalOverlay.classList.remove('hidden');
+    if(closeTypeModal) closeTypeModal.onclick = () => modalOverlay.classList.add('hidden');
 
     if(btnAddType) {
-        btnAddType.addEventListener('click', () => {
-            const typeName = newTypeInput.value.trim().replace(/[.#$\[\]]/g, "");
-            if(!typeName) return alert('단원명을 기입해주세요.');
-            db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes`).once('value', snap => {
-                const data = snap.val() || {};
-                const nextOrder = Object.keys(data).length;
-                db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes/${typeName}`).set({ order: nextOrder });
-                newTypeInput.value = '';
-            });
-        });
+        btnAddType.onclick = () => {
+            const val = newTypeInput.value.trim().replace(/[.#$\[\]]/g, "");
+            if(!val) return;
+            db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes/${val}`).set({ order: 999 });
+            newTypeInput.value = '';
+        };
     }
 
-    let activeTouchDraggingItem = null;
-
-    function renderModalTypeList(typesObj) {
+    function renderTypeManageItems(typesObj) {
         if(!customTypeList) return;
         customTypeList.innerHTML = '';
-        const sortedTypes = Object.keys(typesObj).map(key => {
-            const val = typesObj[key];
-            return { name: key, order: (val && val.order !== undefined) ? val.order : 999 };
-        }).sort((a, b) => a.order - b.order);
+        const sorted = Object.keys(typesObj).map(id => ({ id, ...typesObj[id], order: typesObj[id].order !== undefined ? typesObj[id].order : 999 })).sort((a,b) => a.order - b.order);
 
-        if(sortedTypes.length === 0) { 
-            customTypeList.innerHTML = `<div style="font-size:0.75rem; color:#71717a; text-align:center; padding:10px;">등록된 유형이 없습니다.</div>`; 
-            return; 
-        }
-
-        sortedTypes.forEach(t => {
-            const div = document.createElement('div');
-            div.className = 'type-manage-item';
-            div.dataset.id = t.name;
-            div.innerHTML = `
-                <div>
-                    <span class="drag-handle">☰</span>
-                    <span>🏷️ ${t.name}</span>
-                </div>
-                <button class="compact-del-btn" onclick="deleteCustomType('${t.name}')"><i class="fa-regular fa-trash-can"></i></button>
+        sorted.forEach(t => {
+            const item = document.createElement('div');
+            item.className = 'type-manage-item';
+            item.setAttribute('draggable', 'true');
+            item.dataset.id = t.id;
+            item.innerHTML = `
+                <span><i class="fa-solid fa-bars" style="color:#4b5563; margin-right:8px; cursor:grab;"></i> ${t.id}</span>
+                <button class="compact-del-btn" onclick="deleteCustomType('${t.id}')"><i class="fa-regular fa-trash-can"></i></button>
             `;
-            
-            const handle = div.querySelector('.drag-handle');
-
-            // PC 드래그앤드롭 이벤트
-            div.setAttribute('draggable', 'true');
-            div.addEventListener('dragstart', () => div.classList.add('dragging'));
-            div.addEventListener('dragend', () => { div.classList.remove('dragging'); saveNewTypeOrder(); });
-
-            // 모바일 터치이벤트 인터셉터 로직 (스크롤 간섭 차단)
-            handle.addEventListener('touchstart', (e) => {
-                activeTouchDraggingItem = div;
-                div.classList.add('dragging');
-            }, { passive: true });
-
-            customTypeList.appendChild(div);
+            item.addEventListener('dragstart', () => item.classList.add('dragging'));
+            item.addEventListener('dragend', () => { item.classList.remove('dragging'); saveNewTypeOrder(); });
+            customTypeList.appendChild(item);
         });
     }
 
     if(customTypeList) {
-        customTypeList.addEventListener('touchmove', (e) => {
-            if (!activeTouchDraggingItem) return;
-            const touch = e.touches[0];
-            e.preventDefault(); // 정밀 핸들을 잡고 조작할 때만 브라우저 고유 스크롤 강제 잠금
-            
-            const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', touch.clientX, touch.clientY);
-            if (afterElement == null) customTypeList.appendChild(activeTouchDraggingItem);
-            else customTypeList.insertBefore(activeTouchDraggingItem, afterElement);
-        }, { passive: false });
-
-        customTypeList.addEventListener('touchend', () => {
-            if (activeTouchDraggingItem) {
-                activeTouchDraggingItem.classList.remove('dragging');
-                activeTouchDraggingItem = null;
-                saveNewTypeOrder();
-            }
-        });
-
         customTypeList.addEventListener('dragover', e => {
             e.preventDefault();
             const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', e.clientX, e.clientY);
-            const draggingItem = document.querySelector('.type-manage-item.dragging');
+            const draggingItem = document.querySelector('#custom-type-list .type-manage-item.dragging');
             if(!draggingItem) return;
-            if (afterElement == null) customTypeList.appendChild(draggingItem);
+            if(afterElement == null) customTypeList.appendChild(draggingItem);
             else customTypeList.insertBefore(draggingItem, afterElement);
         });
     }
@@ -787,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offsetX = x - box.left - box.width / 2;
-            const offsetY = y - box.top - box.height / 2;
+            const offsetY = y - box.top - box.width / 2; // 중앙점 기반 정밀 유도식 유지
             const distance = Math.sqrt(offsetX*offsetX + offsetY*offsetY);
             if (distance < closest.distance) return { distance: distance, element: child };
             else return closest;
@@ -799,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     }
 
-    // 초기 시동 연동
+    // 초기 시스템 기동
     renderCalendar();
     fetchDailyIntegratedData();
 });
