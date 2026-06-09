@@ -192,6 +192,7 @@ body {
 .panel-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .panel-title { font-size: 0.9rem; font-weight: 500; color: #e4e4e7; display: flex; align-items: center; gap: 8px; }
 .badge { font-size: 0.75rem; background-color: #27272a; padding: 4px 10px; border-radius: 20px; color: #d4d4d8; }
+.save-status { font-size: 0.75rem; color: var(--text-muted); }
 
 .inline-form { 
     display: flex; 
@@ -211,7 +212,6 @@ body {
     padding: 6px 8px; 
 }
 .inline-form input[type="text"] { flex: 1; }
-.inline-form input[type="date"] { color: #ffffff !important; font-size: 0.8rem; cursor: pointer; background: transparent; }
 .icon-btn-add { 
     background-color: var(--accent); 
     color: #000; 
@@ -225,7 +225,7 @@ body {
     cursor: pointer; 
 }
 
-.item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+.item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
 .item-row { 
     display: flex; 
     justify-content: space-between; 
@@ -276,94 +276,82 @@ body {
 .cal-date:hover { background: #27272a; border-color: #3f3f46; }
 .cal-date.today { border: 1px solid #60a5fa; color: #60a5fa; font-weight: 700; }
 .cal-date.selected { background: #ffffff; color: #000000; font-weight: 700; }
-.cal-dot { width: 4px; height: 4px; background: var(--danger); border-radius: 50%; position: absolute; bottom: 4px; }
+.cal-dot { width: 4px; height: 4px; background: var(--success); border-radius: 50%; position: absolute; bottom: 4px; }
 
 .daily-detail-stack { display: flex; flex-direction: column; gap: 24px; }
 
-/* 디데이 컴포넌트 */
-.dday-vertical-list { display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 2px; }
-.dday-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.dday-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
-.dday-name { font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
-.dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
-.dday-right-zone { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-.dday-number { font-size: 0.85rem; font-weight: 600; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 75px; text-align: center; border: 1px solid #3f3f46; color: #fff; }
-.dday-card.urgent .dday-number { background-color: #ef4444; border-color: #f87171; color: #fff; font-weight: 700; }
+/* 🕒 하루 타임라인 플래너 컴포넌트 */
+.timeline-planner-wrapper { display: flex; flex-direction: column; gap: 14px; }
+.timeline-row { display: flex; align-items: center; gap: 12px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 6px 12px; }
+.timeline-hour { font-size: 0.75rem; font-weight: 600; color: #a1a1aa; width: 65px; text-align: center; background: #27272a; padding: 4px 6px; border-radius: 4px; flex-shrink: 0; }
+.planner-text-input { flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 0.85rem; outline: none; padding: 6px 0; }
+.planner-text-input::placeholder { color: #52525b; }
+.timeline-review-zone { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.timeline-review-title { font-size: 0.8rem; font-weight: 500; color: #e4e4e7; }
+.planner-textarea-input { width: 100%; height: 80px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
+.planner-textarea-input::placeholder { color: #52525b; }
+.planner-textarea-input:focus, .timeline-row:focus-within { border-color: #52525b; }
 
 /* 📝 메모장 및 실시간 고정 메모 컴포넌트 */
 .memo-layout-split { display: flex; flex-direction: column; gap: 24px; }
-.pinned-memo-panel { background-color: #161619; border: 1px solid #2e2e33; }
-#pinned-memo-textarea { 
-    width: 100%; 
-    height: 130px; 
-    background: transparent; 
-    border: none; 
-    color: #fff; 
-    font-size: 0.92rem; 
-    line-height: 1.6; 
-    resize: none; 
-    outline: none; 
-    padding-top: 5px;
-}
+.pinned-memo-panel textarea { background: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; min-height: 100px; resize: vertical; outline: none; line-height: 1.5; }
+.pinned-memo-panel textarea:focus { border-color: #52525b; }
+.memo-folders-container { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
+.explorer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border); }
+.explorer-header h3 { font-size: 1rem; font-weight: 600; }
+.action-btn-accent { background-color: var(--accent); color: #000; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.85rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.action-btn-accent:hover { background-color: var(--accent-hover); }
 
-/* 폴더 대시보드 */
-.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; padding-top: 8px; }
-.folder-card { background-color: #161619; border: 1px solid var(--panel-border); border-radius: 10px; padding: 22px 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; cursor: grab; position: relative; transition: transform 0.15s, border-color 0.15s, opacity 0.15s; user-select: none; }
-.folder-card:active { cursor: grabbing; }
-.folder-card.dragging { opacity: 0.4; transform: scale(0.97); border-color: var(--success); }
-
-.folder-icon { font-size: 1.8rem; color: var(--warning); }
-#math-folder-grid .folder-icon { color: var(--success); }
-.folder-name { font-size: 0.88rem; font-weight: 500; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f4f4f5; }
-.folder-memo-count { font-size: 0.72rem; color: var(--text-muted); background-color: #202024; padding: 2px 8px; border-radius: 4px; }
-.btn-folder-delete-absolute { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #3f3f46; cursor: pointer; font-size: 0.78rem; }
+.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+.folder-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; position: relative; transition: all 0.2s ease; }
+.folder-card:hover { border-color: #3f3f46; background-color: #202024; }
+.folder-card.dragging { opacity: 0.4; border: 1px dashed #fff; }
+.btn-folder-delete-absolute { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; opacity: 0; transition: opacity 0.15s; }
+.folder-card:hover .btn-folder-delete-absolute { opacity: 1; }
 .btn-folder-delete-absolute:hover { color: var(--danger); }
+.folder-icon { font-size: 2rem; color: #f59e0b; }
+.folder-name { font-size: 0.9rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folder-memo-count { font-size: 0.75rem; color: var(--text-muted); }
 
-/* 메모 편집 창 */
-.btn-primary-sm { background-color: #fff; color: #000; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
-.btn-back { background-color: #27272a; color: var(--text-main); border: 1px solid var(--panel-border); padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
-.current-folder-indicator { font-size: 0.95rem; font-weight: 600; color: var(--warning); display: flex; align-items: center; gap: 6px; }
+.editor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border); }
+.btn-text-nav { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+.btn-text-nav:hover { color: #fff; }
+.editor-header h3 { font-size: 1rem; font-weight: 600; color: #fff; }
 
-#memo-title-input { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 12px; color: var(--text-main); font-size: 0.85rem; outline: none; width: 100%; }
-.textarea-wrapper { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
-#memo-textarea { width: 100%; height: 180px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; resize: none; outline: none; line-height: 1.5; }
-.memo-buttons-group { display: flex; gap: 10px; margin-top: 12px; }
-.btn-save { flex: 1; background-color: #ffffff; color: #09090b; border: none; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.btn-secondary { background-color: #27272a; color: var(--text-main); border: none; padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; }
-.memo-cards-grid { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; margin-top: 16px; border-top: 1px solid var(--panel-border); padding-top: 16px; }
+.memo-internal-workspace { display: grid; grid-template-columns: 240px 14.2fr; gap: 24px; min-height: 400px; }
+@media (max-width: 768px) { .memo-internal-workspace { grid-template-columns: 1fr; } }
+.memo-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
+.memo-sidebar-list h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.memo-main-editor { display: flex; flex-direction: column; gap: 16px; }
+.memo-main-editor input { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; color: var(--text-main); font-size: 1rem; font-weight: 500; outline: none; }
+.memo-main-editor input:focus { border-color: #3f3f46; }
+.memo-main-editor textarea { flex: 1; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; color: var(--text-main); font-size: 0.92rem; outline: none; resize: none; line-height: 1.6; min-height: 280px; }
+.memo-main-editor textarea:focus { border-color: #3f3f46; }
+.btn-save { background-color: var(--accent); color: #000; border: none; border-radius: 8px; padding: 14px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
+.btn-save:hover { background-color: var(--accent-hover); }
 
-/* 📚 과목 오답노트 전용 */
-#math-editor-zone .current-folder-indicator { color: var(--success); }
-.btn-secondary-sm { background-color: #27272a; color: #fff; border: 1px solid var(--panel-border); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
-.btn-secondary-sm:hover { background-color: #3f3f46; }
+/* 📚 오답노트 전용 확장 레이아웃 */
+.math-layout-split { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
+.btn-manage-types { background-color: #1c1c1f; border: 1px solid var(--panel-border); color: #e4e4e7; border-radius: 6px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.btn-manage-types:hover { background-color: #27272a; color: #fff; }
+.math-internal-workspace { display: grid; grid-template-columns: 260px 1fr; gap: 24px; min-height: 480px; }
+@media (max-width: 768px) { .math-internal-workspace { grid-template-columns: 1fr; } }
+.math-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
+.sidebar-header-row { display: flex; justify-content: space-between; align-items: center; }
+.sidebar-header-row h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.btn-mini-add { background: #ffffff; color: #000; border: none; padding: 3px 8px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; cursor: pointer; }
+.math-main-editor { display: flex; flex-direction: column; gap: 12px; }
+.math-main-editor input, .math-main-editor select { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
+.math-main-editor textarea { width: 100%; height: 75px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
+.math-main-editor textarea.tall-textarea { height: 130px; }
+.math-main-editor textarea:focus, .math-main-editor input:focus, .math-main-editor select:focus { border-color: #3f3f46; }
 
-.math-split-container { display: grid; grid-template-columns: 290px 1fr; gap: 20px; margin-top: 15px; height: calc(100vh - 260px); min-height: 500px; }
-@media (max-width: 768px) { .math-split-container { grid-template-columns: 1fr; height: auto; } }
-
-.math-left-list-panel { display: flex; flex-direction: column; gap: 10px; border-right: 1px solid var(--panel-border); padding-right: 15px; overflow-y: auto; }
-@media (max-width: 768px) { .math-left-list-panel { border-right: none; padding-right: 0; max-height: 200px; } }
-
-.math-right-editor-panel { overflow-y: auto; padding-left: 5px; display: flex; flex-direction: column; gap: 14px; }
-
-#math-filter-type-select, #math-prob-type { background-color: #18181b; color: #fff; border: 1px solid var(--panel-border); border-radius: 6px; padding: 8px; font-size: 0.82rem; outline: none; width: 100%; }
-
-.notebook-vertical-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
-.notebook-item-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; }
-.notebook-item-card.active-item { border-color: var(--success); background-color: #14221c; }
-.notebook-card-main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; padding-right: 8px; }
-.notebook-card-title { font-size: 0.85rem; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.notebook-card-badge { font-size: 0.7rem; color: var(--warning); background: #2a1f0c; padding: 2px 6px; border-radius: 4px; align-self: flex-start; font-weight: 500; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-
-#math-prob-title { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 12px; color: var(--text-main); font-size: 0.85rem; outline: none; width: 100%; }
-.math-right-editor-panel textarea { width: 100%; height: 80px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px; color: var(--text-main); font-size: 0.85rem; line-height: 1.5; resize: none; outline: none; }
-.math-right-editor-panel textarea.tall-textarea { height: 150px; }
-
-/* 🌟 유형 관리 모달창 및 모바일 스크롤 해제 터치엔진 설정 */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+/* 🪟 모달창 시스템 레이아웃 */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; }
 .modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; width: 420px; max-width: 95%; padding: 24px; display: flex; flex-direction: column; gap: 15px; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
 .modal-header h3 { font-size: 1.05rem; font-weight: 600; color: #fff; }
-.btn-close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.6rem; cursor: pointer; }
+#close-type-modal { background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; }
 
 .custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; margin-top: 5px; padding-right: 2px; }
 .type-manage-item { 
@@ -374,21 +362,7 @@ body {
     background-color: #18181b; 
     border: 1px solid var(--panel-border); 
     border-radius: 6px; 
-    font-size: 0.85rem; 
-    color:#fff; 
-    user-select: none; 
-    transition: background-color 0.1s;
-    touch-action: pan-y; /* 💡 상하 터치 스크롤 정상 허용 */
-}
-.type-manage-item.dragging { opacity: 0.4; border-color: var(--success); background-color: #111814; }
-
-/* 정밀 제어용 드래그 핸들 */
-.drag-handle {
+    font-size: 0.85rem;
     cursor: grab;
-    padding: 4px 8px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin-right: 6px;
-    display: inline-block;
 }
-.drag-handle:active { cursor: grabbing; color: #fff; }
+.type-manage-item.dragging { opacity: 0.4; border-style: dashed; }
