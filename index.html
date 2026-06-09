@@ -99,12 +99,12 @@
 
             <div id="view-math" class="content-view hidden">
                 <div class="view-header">
-                    <h2><i class="fa-solid fa-book-open"></i> 과목별 및 유형별 오답노트 관리</h2>
+                    <h2><i class="fa-solid fa-book-open"></i> 과목별 및 문제 유형별 오답노트 관리</h2>
                 </div>
                 <section class="panel">
                     <div id="math-explorer-zone">
                         <div class="panel-header">
-                            <span class="panel-title">과목 폴더 보관함 (🔼🔽 버튼으로 순서 조정 가능)</span>
+                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 폴더를 마우스나 손으로 끌어서 순서를 변경할 수 있습니다.</span>
                             <button type="button" id="math-create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 과목 추가</button>
                         </div>
                         <div id="math-folder-grid" class="folder-grid"></div>
@@ -116,7 +116,10 @@
                                 <button type="button" id="math-back-btn" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 폴더 목록</button>
                                 <span class="current-folder-indicator" id="math-current-folder-title">과목명</span>
                             </div>
-                            <span class="save-status" id="math-save-status">새 문항 등록 모드</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <button type="button" id="btn-manage-types" class="btn-secondary-sm"><i class="fa-solid fa-gear"></i> 유형 편집</button>
+                                <span class="save-status" id="math-save-status">새 문항 등록 모드</span>
+                            </div>
                         </div>
 
                         <div class="math-split-container">
@@ -124,11 +127,6 @@
                                 <div class="filter-wrapper">
                                     <select id="math-filter-type-select">
                                         <option value="ALL">전체 유형 보기</option>
-                                        <option value="개념실수">⚠️ 개념 실수</option>
-                                        <option value="계산실수">🧮 계산 실수</option>
-                                        <option value="조건오독">🔍 조건 오독</option>
-                                        <option value="고난도">🔥 고난도/신유형</option>
-                                        <option value="기타">📝 기타 분류</option>
                                     </select>
                                     <button type="button" id="btn-toggle-sort" class="btn-sort-toggle"><i class="fa-solid fa-arrow-down-9-1"></i> 최신순</button>
                                 </div>
@@ -139,17 +137,12 @@
                                 <div class="math-notebook-form">
                                     <div class="input-inline-group">
                                         <input type="text" id="math-prob-title" placeholder="문제 출처나 문항 제목을 적으세요 (예: 6월 모평 22번)" style="flex: 1;">
-                                        <select id="math-prob-type" style="width: 140px;">
-                                            <option value="개념실수">⚠️ 개념 실수</option>
-                                            <option value="계산실수">🧮 계산 실수</option>
-                                            <option value="조건오독">🔍 조건 오독</option>
-                                            <option value="고난도">🔥 고난도</option>
-                                            <option value="기타" selected>📝 기타</option>
-                                        </select>
+                                        <select id="math-prob-type" style="width: 160px;">
+                                            </select>
                                     </div>
                                     
                                     <div class="input-block">
-                                        <label><i class="fa-solid fa-circle-xmark" style="color:var(--danger);"></i> 틀린 이유 / 분석</label>
+                                        <label><i class="fa-solid fa-circle-xmark" style="color:var(--danger);"></i> 틀린 이유 / 분석 메모</label>
                                         <textarea id="math-prob-wrong" placeholder="무엇을 놓쳐서 틀렸는지 간단히 메모..."></textarea>
                                     </div>
                                     <div class="input-block">
@@ -173,6 +166,23 @@
             </div>
 
         </main>
+    </div>
+
+    <div id="type-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-tags"></i> 문제 유형(단원) 관리</h3>
+                <button type="button" id="close-type-modal" class="btn-close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">이 과목에서 사용할 문제 유형(예: 지수함수, 로그함수)을 자유롭게 추가하세요.</p>
+                <div class="inline-form" style="margin-bottom: 15px;">
+                    <input type="text" id="new-type-input" placeholder="새로운 유형 이름 입력...">
+                    <button type="button" id="btn-add-type" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div id="custom-type-list" class="custom-type-manage-list"></div>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
