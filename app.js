@@ -1,5 +1,5 @@
 // ==========================================
-// 🔥 구글 파이어베이스 클라우드 동기화 키 설정 완료
+// 🔥 파이어베이스 원격 데이터베이스 연결 설정
 // ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyC1cf1kMJlsYHz7O-YPNDc-4MKpGL_fM3s",
@@ -16,9 +16,10 @@ const db = firebase.database();
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 🧭 사이드바 탭 전환 제어기 ---
+    // --- 🧭 사이드바 탭 제어 엔진 ---
     const menuItems = document.querySelectorAll('.menu-item');
     const contentViews = document.querySelectorAll('.content-view');
+    const sidebarSubFolders = document.getElementById('sidebar-sub-folders');
 
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -30,10 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (view.id === targetId) view.classList.remove('hidden');
                 else view.classList.add('hidden');
             });
+
+            if (item.id !== 'menu-btn-math') {
+                sidebarSubFolders.classList.add('hidden');
+            } else {
+                sidebarSubFolders.classList.remove('hidden');
+            }
         });
     });
 
-    // --- 상단 실시간 시계 모듈 ---
     const clockDisplay = document.getElementById('live-clock');
     function updateClock() {
         const now = new Date();
@@ -45,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 
-    // --- 🗂️ 1. 일반 메모장 엔진 (클라우드 폴더형) ---
+    // --- 🗂️ 1. 일반 메모장 엔진 ---
     const folderExplorerZone = document.getElementById('folder-explorer-zone');
     const memoEditorZone = document.getElementById('memo-editor-zone');
     const folderGridContainer = document.getElementById('folder-grid-container');
@@ -65,11 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     db.ref('workspace/folders').on('value', (snapshot) => {
         const foldersData = snapshot.val() || {};
-        if (Object.keys(foldersData).length === 0) {
-            const initDirs = ['일반 메모', '아이디어'];
-            initDirs.forEach(d => db.ref('workspace/folders/' + d).set({ createdAt: Date.now() }));
-            return;
-        }
         renderFolderDashboard(foldersData);
         if (activeFolderName && foldersData[activeFolderName]) {
             renderFolderMemos(foldersData[activeFolderName].memos || {});
@@ -83,10 +84,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'folder-card';
             card.innerHTML = `
-                <div class="folder-icon"><i class="fa-solid fa-folder-open"></i></div>
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
                 <div class="folder-name">${folderName}</div>
-                <div class="folder-memo-count">${count}개의 기록</div>
-                <button class="folder-del-btn" onclick="deleteEntireFolder(event, '${folderName}')"><i class="fa-solid fa-xmark"></i></button>
+                <div class="folder-memo-count">${count}개 완료</div>
+                <div class="folder-action-bar">
+                    <button class="btn-folder-action del" onclick="deleteEntireFolder(event, '${folderName}')"><i class="fa-regular fa-trash-can"></i> 삭제</button>
+                </div>
             `;
             card.addEventListener('click', () => enterFolderScope(folderName));
             folderGridContainer.appendChild(card);
@@ -102,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.deleteEntireFolder = (event, folderName) => {
         event.stopPropagation();
-        if (confirm(`[${folderName}] 분류 전체와 그 내용물을 영구 삭제할까요?`)) {
+        if (confirm(`[${folderName}] 분류 전체를 삭제할까요?`)) {
             db.ref('workspace/folders/' + folderName).remove();
             if (activeFolderName === folderName) exitFolderScope();
         }
@@ -130,32 +133,20 @@ document.addEventListener('DOMContentLoaded', () => {
         savedMemosContainer.innerHTML = '';
         const list = Object.keys(memosObj).map(id => ({ id, ...memosObj[id] }));
         if (list.length === 0) {
-            savedMemosContainer.innerHTML = `<div style="font-size:0.8rem; color:#71717a; text-align:center; padding:15px;">저장된 기록이 없습니다.</div>`;
+            savedMemosContainer.innerHTML = `<div style="font-size:0.8rem; color:#71717a; text-align:center; padding:15px;">기록이 없습니다.</div>`;
             return;
         }
-        const grouped = {};
-        list.forEach(m => {
-            if(!grouped[m.date]) grouped[m.date] = [];
-            grouped[m.date].push(m);
-        });
-        Object.keys(grouped).sort((a,b)=>b.localeCompare(a)).forEach(date => {
-            const h = document.createElement('div');
-            h.className = 'memo-date-group-header';
-            h.innerHTML = `<i class="fa-regular fa-clock"></i> ${date}`;
-            savedMemosContainer.appendChild(h);
-
-            grouped[date].forEach(memo => {
-                const card = document.createElement('div');
-                card.className = 'memo-item-card';
-                card.innerHTML = `
-                    <div class="memo-card-main" onclick="loadMemoData('${memo.id}')">
-                        <span class="memo-card-title">${memo.title}</span>
-                        <span class="memo-card-snippet">${memo.content.substring(0,35)}...</span>
-                    </div>
-                    <button class="compact-del-btn" onclick="deleteMemoData(event, '${memo.id}')"><i class="fa-regular fa-trash-can"></i></button>
-                `;
-                savedMemosContainer.appendChild(card);
-            });
+        list.forEach(memo => {
+            const card = document.createElement('div');
+            card.className = 'memo-item-card';
+            card.innerHTML = `
+                <div class="memo-card-main" onclick="loadMemoData('${memo.id}')">
+                    <span class="memo-card-title">${memo.title}</span>
+                    <span class="memo-card-snippet">${memo.content.substring(0,35)}...</span>
+                </div>
+                <button class="compact-del-btn" onclick="deleteMemoData(event, '${memo.id}')"><i class="fa-regular fa-trash-can"></i></button>
+            `;
+            savedMemosContainer.appendChild(card);
         });
     }
 
@@ -186,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     saveMemoBtn.addEventListener('click', () => {
         const textContent = memoTextarea.value.trim();
-        if (!textContent) return alert('메모 내용을 입력하세요!');
+        if (!textContent) return alert('내용을 입력하세요!');
         const payload = {
             title: memoTitleInput.value.trim() || textContent.split('\n')[0].substring(0, 12),
             content: textContent,
@@ -199,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearMemoBtn.addEventListener('click', resetEditor);
 
 
-    // --- 📚 2. 과목별 오답노트 시스템 (추가/삭제/정렬 완비) ---
+    // --- 📚 2. 과목별 오답노트 시스템 (불러오기 + 심플 폴더 UI 완비) ---
     const mathExplorerZone = document.getElementById('math-explorer-zone');
     const mathEditorZone = document.getElementById('math-editor-zone');
     const mathFolderGrid = document.getElementById('math-folder-grid');
@@ -219,52 +210,125 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let activeMathFolder = null;
     let editingMathId = null;
-    let currentSortMode = 'latest'; // 'latest' (최신순) 혹은 'alpha' (이름순)
+    let currentSortMode = 'latest'; 
 
-    // 과목 폴더 실시간 데이터 동기화 리스너
     db.ref('workspace/mathNotebooks').on('value', (snapshot) => {
         const mathData = snapshot.val() || {};
-        // 첫 개설 시 기본 세팅 예시 공급 (원하는 대로 삭제 및 커스텀 가능)
-        if (Object.keys(mathData).length === 0) {
-            const defaultMathDirs = ['수학 고난도', '영어 빈칸추론', '국어 비문학'];
-            defaultMathDirs.forEach(d => db.ref('workspace/mathNotebooks/' + d).set({ createdAt: Date.now() }));
-            return;
-        }
         renderMathDashboard(mathData);
+        renderSidebarSubFolders(mathData); 
+
         if (activeMathFolder && mathData[activeMathFolder]) {
             renderMathItems(mathData[activeMathFolder].problems || {});
         }
     });
 
+    // 보기 편하게 최적화된 심플 폴더 그리드 출력 함수
     function renderMathDashboard(mathData) {
         mathFolderGrid.innerHTML = '';
-        Object.keys(mathData).forEach(folderName => {
-            const count = Object.keys(mathData[folderName].problems || {}).length;
+        
+        const sortedFolders = Object.keys(mathData).map(name => ({
+            name,
+            ...mathData[name],
+            order: mathData[name].order !== undefined ? mathData[name].order : 0
+        })).sort((a, b) => a.order - b.order);
+
+        if (sortedFolders.length === 0) {
+            mathFolderGrid.innerHTML = `<div style="grid-column:1/-1; font-size:0.85rem; color:#71717a; text-align:center; padding:20px;">생성된 폴더가 없습니다.</div>`;
+            return;
+        }
+
+        sortedFolders.forEach((folder) => {
+            const count = Object.keys(folder.problems || {}).length;
             const card = document.createElement('div');
             card.className = 'folder-card';
             card.innerHTML = `
-                <div class="folder-icon"><i class="fa-solid fa-book"></i></div>
-                <div class="folder-name">${folderName}</div>
-                <div class="folder-memo-count">${count}개의 기록</div>
-                <button class="folder-del-btn" onclick="deleteMathFolder(event, '${folderName}')"><i class="fa-solid fa-xmark"></i></button>
+                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
+                <div class="folder-name">${folder.name}</div>
+                <div class="folder-memo-count">${count}개 저장됨</div>
+                <div class="folder-action-bar">
+                    <button class="btn-folder-action" onclick="moveMathFolderOrder(event, '${folder.name}', -1)"><i class="fa-solid fa-chevron-up"></i></button>
+                    <button class="btn-folder-action" onclick="moveMathFolderOrder(event, '${folder.name}', 1)"><i class="fa-solid fa-chevron-down"></i></button>
+                    <button class="btn-folder-action del" onclick="deleteMathFolder(event, '${folder.name}')"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
             `;
-            card.addEventListener('click', () => enterMathFolder(folderName));
+            card.addEventListener('click', () => enterMathFolder(folder.name));
             mathFolderGrid.appendChild(card);
         });
     }
 
-    // [자유 추가 기능] 수학, 영어 등 자유로운 이름 기입 가능
+    function renderSidebarSubFolders(mathData) {
+        sidebarSubFolders.innerHTML = '';
+        const sortedFolders = Object.keys(mathData).map(name => ({
+            name,
+            order: mathData[name].order !== undefined ? mathData[name].order : 0
+        })).sort((a, b) => a.order - b.order);
+
+        if (sortedFolders.length === 0) return;
+
+        sortedFolders.forEach(folder => {
+            const subBtn = document.createElement('button');
+            subBtn.type = 'button';
+            subBtn.className = 'sub-menu-item';
+            subBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i> ${folder.name}`;
+            subBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuItems.forEach(btn => btn.classList.remove('active'));
+                document.getElementById('menu-btn-math').classList.add('active');
+                contentViews.forEach(view => {
+                    if (view.id === 'view-math') view.classList.remove('hidden');
+                    else view.classList.add('hidden');
+                });
+                sidebarSubFolders.classList.remove('hidden');
+                enterMathFolder(folder.name);
+            });
+            sidebarSubFolders.appendChild(subBtn);
+        });
+    }
+
+    window.moveMathFolderOrder = (event, folderName, direction) => {
+        event.stopPropagation();
+        db.ref('workspace/mathNotebooks').once('value', (snapshot) => {
+            const mathData = snapshot.val() || {};
+            const list = Object.keys(mathData).map(name => ({
+                name,
+                order: mathData[name].order !== undefined ? mathData[name].order : 0
+            })).sort((a, b) => a.order - b.order);
+
+            const index = list.findIndex(f => f.name === folderName);
+            if (index === -1) return;
+
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= list.length) return;
+
+            const temp = list[index];
+            list[index] = list[newIndex];
+            list[newIndex] = temp;
+
+            const updates = {};
+            list.forEach((f, idx) => { updates[`workspace/mathNotebooks/${f.name}/order`] = idx; });
+            db.ref().update(updates);
+        });
+    };
+
     mathCreateFolderBtn.addEventListener('click', () => {
-        const name = prompt('새로 추가할 오답노트 과목 또는 문제집 이름을 입력하세요:');
+        const name = prompt('새 오답노트 과목 폴더 이름을 입력하세요:');
         if (!name) return;
         const cleaned = name.trim().replace(/[.#$\[\]]/g, "");
-        if (cleaned) db.ref('workspace/mathNotebooks/' + cleaned).update({ createdAt: Date.now() });
+        if (!cleaned) return;
+
+        db.ref('workspace/mathNotebooks').once('value', (snapshot) => {
+            const mathData = snapshot.val() || {};
+            const nextOrder = Object.keys(mathData).length;
+            db.ref('workspace/mathNotebooks/' + cleaned).update({ 
+                createdAt: Date.now(),
+                order: nextOrder
+            });
+        });
     });
 
-    // [자유 삭제 기능] 과목 통째로 완파 제거
     window.deleteMathFolder = (event, folderName) => {
         event.stopPropagation();
-        if (confirm(`[${folderName}] 오답노트 폴더와 그 안의 모든 문항 수식이 삭제됩니다. 영구 삭제할까요?`)) {
+        if (confirm(`[${folderName}] 폴더와 내부의 모든 문제 기록을 삭제할까요?`)) {
             db.ref('workspace/mathNotebooks/' + folderName).remove();
             if (activeMathFolder === folderName) exitMathFolder();
         }
@@ -275,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetMathEditor();
         mathExplorerZone.classList.add('hidden');
         mathEditorZone.classList.remove('hidden');
-        mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${activeMathFolder}`;
+        mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-folder-open"></i> ${activeMathFolder}`;
         db.ref('workspace/mathNotebooks/' + folderName + '/problems').once('value', (snapshot) => {
             renderMathItems(snapshot.val() || {});
         });
@@ -288,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mathExplorerZone.classList.remove('hidden');
     }
 
-    // 🎛️ 정렬 기준 토글 버튼 리스너
     btnToggleSort.addEventListener('click', () => {
         if (currentSortMode === 'latest') {
             currentSortMode = 'alpha';
@@ -297,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentSortMode = 'latest';
             btnToggleSort.innerHTML = `<i class="fa-solid fa-arrow-down-9-1"></i> 최신순 보기`;
         }
-        // 활성화된 과목 데이터 다시 렌더링 요청
         if (activeMathFolder) {
             db.ref('workspace/mathNotebooks/' + activeMathFolder + '/problems').once('value', (snapshot) => {
                 renderMathItems(snapshot.val() || {});
@@ -305,24 +367,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 문항 리스트 렌더링 + 정렬 연산 탑재
+    // 💡 문항 리스트 렌더링 함수
     function renderMathItems(probsObj) {
         mathSavedList.innerHTML = '';
         let list = Object.keys(probsObj).map(id => ({ id, ...probsObj[id] }));
         
         if(list.length === 0) {
-            mathSavedList.innerHTML = `<div style="font-size:0.8rem; color:#71717a; text-align:center; padding:15px;">등록된 문제가 없습니다. 오답 노트를 기입해 보세요!</div>`;
+            mathSavedList.innerHTML = `<div style="font-size:0.8rem; color:#71717a; text-align:center; padding:15px;">저장된 문제 기록이 없습니다.</div>`;
             return;
         }
 
-        // [정렬 필터 기동]
-        if (currentSortMode === 'latest') {
-            // 최신순 정렬 (타임스탬프 역순)
-            list.sort((a, b) => b.timestamp - a.timestamp);
-        } else if (currentSortMode === 'alpha') {
-            // 이름순 정렬 (가나다 오름차순)
-            list.sort((a, b) => a.title.localeCompare(b.title));
-        }
+        if (currentSortMode === 'latest') list.sort((a, b) => b.timestamp - a.timestamp);
+        else if (currentSortMode === 'alpha') list.sort((a, b) => a.title.localeCompare(b.title));
 
         list.forEach(p => {
             const card = document.createElement('div');
@@ -330,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div class="memo-card-main" onclick="loadMathData('${p.id}')">
                     <span class="memo-card-title">${p.title}</span>
-                    <span class="memo-card-snippet" style="color:#f87171;">오답분석: ${p.wrong.substring(0, 35)}...</span>
+                    <span class="memo-card-snippet" style="color:#f87171;">오답분석: ${p.wrong.substring(0, 32)}...</span>
                 </div>
                 <button class="compact-del-btn" onclick="deleteMathData(event, '${p.id}')"><i class="fa-regular fa-trash-can"></i></button>
             `;
@@ -338,24 +394,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 💡 [새 기능] 메모장처럼 과거 기록을 터치하면 서식 창으로 원격 로드하는 함수
     window.loadMathData = (id) => {
         db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).once('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                // 입력창들에 과거 데이터를 주입
                 mathProbTitle.value = data.title;
                 mathProbWrong.value = data.wrong;
                 mathProbApproach.value = data.approach;
                 mathProbSolution.value = data.solution;
-                editingMathId = id;
+                
+                editingMathId = id; // 현재 수정 중인 키값 기억
                 mathSaveStatus.textContent = "문항 수정 중";
+                mathSaveStatus.style.color = "#60a5fa";
+                
+                // 터치 후 편집 편의를 위해 스크롤을 부드럽게 상단 편집 영역으로 올려줍니다.
+                document.getElementById('view-math').scrollIntoView({ behavior: 'smooth' });
             }
         });
     };
 
     window.deleteMathData = (event, id) => {
         event.stopPropagation();
-        db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).remove();
-        if (editingMathId === id) resetMathEditor();
+        if(confirm("이 오답 문항 기록을 영구 삭제할까요?")) {
+            db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).remove();
+            if (editingMathId === id) resetMathEditor();
+        }
     };
 
     function resetMathEditor() {
@@ -365,26 +430,27 @@ document.addEventListener('DOMContentLoaded', () => {
         mathProbSolution.value = '';
         editingMathId = null;
         mathSaveStatus.textContent = "새 문항 등록";
+        mathSaveStatus.style.color = "#71717a";
     }
 
+    // 저장 버튼 클릭 핸들러 (추가 및 수정을 동시에 분기 처리)
     mathSaveBtn.addEventListener('click', () => {
         const title = mathProbTitle.value.trim();
         const wrong = mathProbWrong.value.trim();
         const approach = mathProbApproach.value.trim();
         const solution = mathProbSolution.value.trim();
 
-        if (!title || !solution) return alert('문제 제목과 풀이과정은 필수로 기입하셔야 저장됩니다!');
+        if (!title || !solution) return alert('문제 제목과 풀이과정은 필수 기입 사항입니다.');
 
-        const payload = { 
-            title, 
-            wrong, 
-            approach, 
-            solution, 
-            timestamp: Date.now() // 정렬용 시각 정보 주입
-        };
+        const payload = { title, wrong, approach, solution, timestamp: Date.now() };
 
-        if (editingMathId) db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${editingMathId}`).update(payload);
-        else db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).push(payload);
+        if (editingMathId) {
+            // 💡 수정 상태일 때는 기존 경로에 덮어쓰기(Update) 수행
+            db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${editingMathId}`).update(payload);
+        } else {
+            // 💡 신규 상태일 때는 새로운 유니크 노드로 Push 수행
+            db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).push(payload);
+        }
         
         resetMathEditor();
     });
@@ -392,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
     mathClearBtn.addEventListener('click', resetMathEditor);
 
 
-    // --- 📅 3. 오늘의 플래너 클라우드 동기화 엔진 ---
+    // --- 📅 3. 오늘의 플래너 클라우드 엔진 ---
     const todoForm = document.getElementById('todo-form');
     const todoTimeInput = document.getElementById('todo-time-input');
     const todoInput = document.getElementById('todo-input');
