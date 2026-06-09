@@ -99,54 +99,75 @@
 
             <div id="view-math" class="content-view hidden">
                 <div class="view-header">
-                    <h2><i class="fa-solid fa-book-open"></i> 과목별 및 문제집별 오답노트 관리</h2>
+                    <h2><i class="fa-solid fa-book-open"></i> 과목별 및 유형별 오답노트 관리</h2>
                 </div>
                 <section class="panel">
                     <div id="math-explorer-zone">
                         <div class="panel-header">
-                            <span class="panel-title">오답노트 폴더 보관함 (🔼🔽 버튼으로 순서 조정 가능)</span>
+                            <span class="panel-title">과목 폴더 보관함 (🔼🔽 버튼으로 순서 조정 가능)</span>
                             <button type="button" id="math-create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 과목 추가</button>
                         </div>
-                        <div id="math-folder-grid" class="folder-grid font-minimal"></div>
+                        <div id="math-folder-grid" class="folder-grid"></div>
                     </div>
                     
                     <div id="math-editor-zone" class="hidden">
-                        <div class="panel-header">
-                            <button type="button" id="math-back-btn" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 폴더 목록으로</button>
-                            <span class="current-folder-indicator" id="math-current-folder-title">과목명</span>
-                            <span class="save-status" id="math-save-status">새 문항 등록</span>
+                        <div class="panel-header" style="grid-column: 1 / -1; margin-bottom: 10px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <button type="button" id="math-back-btn" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 폴더 목록</button>
+                                <span class="current-folder-indicator" id="math-current-folder-title">과목명</span>
+                            </div>
+                            <span class="save-status" id="math-save-status">새 문항 등록 모드</span>
                         </div>
-                        
-                        <div class="math-notebook-form">
-                            <input type="text" id="math-prob-title" placeholder="문제 출처 혹은 문항 제목을 입력하세요 (예: 미적분 수능기출 22번)">
-                            
-                            <div class="math-grid-inputs">
-                                <div class="input-block">
-                                    <label><i class="fa-solid fa-circle-xmark" style="color:var(--danger);"></i> 틀린 이유 / 오답 분석</label>
-                                    <textarea id="math-prob-wrong" placeholder="실수한 이유나 놓친 개념을 간략히 적어보세요."></textarea>
+
+                        <div class="math-split-container">
+                            <div class="math-left-list-panel">
+                                <div class="filter-wrapper">
+                                    <select id="math-filter-type-select">
+                                        <option value="ALL">전체 유형 보기</option>
+                                        <option value="개념실수">⚠️ 개념 실수</option>
+                                        <option value="계산실수">🧮 계산 실수</option>
+                                        <option value="조건오독">🔍 조건 오독</option>
+                                        <option value="고난도">🔥 고난도/신유형</option>
+                                        <option value="기타">📝 기타 분류</option>
+                                    </select>
+                                    <button type="button" id="btn-toggle-sort" class="btn-sort-toggle"><i class="fa-solid fa-arrow-down-9-1"></i> 최신순</button>
                                 </div>
-                                <div class="input-block">
-                                    <label><i class="fa-regular fa-lightbulb" style="color:#f59e0b;"></i> 핵심 실마리 / 접근 발상</label>
-                                    <textarea id="math-prob-approach" placeholder="문제를 풀기 위해 가장 먼저 떠올려야 하는 단서를 정리하세요."></textarea>
-                                </div>
+                                <div id="math-saved-list" class="notebook-vertical-list"></div>
                             </div>
 
-                            <div class="input-block full-width">
-                                <label><i class="fa-solid fa-signature" style="color:#60a5fa;"></i> 정밀 풀이과정 / 해설</label>
-                                <textarea id="math-prob-solution" class="tall-textarea" placeholder="정확한 풀이 과정 및 전개 수식을 기입해 주세요."></textarea>
+                            <div class="math-right-editor-panel">
+                                <div class="math-notebook-form">
+                                    <div class="input-inline-group">
+                                        <input type="text" id="math-prob-title" placeholder="문제 출처나 문항 제목을 적으세요 (예: 6월 모평 22번)" style="flex: 1;">
+                                        <select id="math-prob-type" style="width: 140px;">
+                                            <option value="개념실수">⚠️ 개념 실수</option>
+                                            <option value="계산실수">🧮 계산 실수</option>
+                                            <option value="조건오독">🔍 조건 오독</option>
+                                            <option value="고난도">🔥 고난도</option>
+                                            <option value="기타" selected>📝 기타</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="input-block">
+                                        <label><i class="fa-solid fa-circle-xmark" style="color:var(--danger);"></i> 틀린 이유 / 분석</label>
+                                        <textarea id="math-prob-wrong" placeholder="무엇을 놓쳐서 틀렸는지 간단히 메모..."></textarea>
+                                    </div>
+                                    <div class="input-block">
+                                        <label><i class="fa-regular fa-lightbulb" style="color:#f59e0b;"></i> 핵심 실마리 / 발상 아이디어</label>
+                                        <textarea id="math-prob-approach" placeholder="이 문제를 풀 때 꼭 꺼내 써야 하는 핵심 개념단서 메모..."></textarea>
+                                    </div>
+                                    <div class="input-block">
+                                        <label><i class="fa-solid fa-signature" style="color:#60a5fa;"></i> 전체 풀이 과정 / 해설</label>
+                                        <textarea id="math-prob-solution" class="tall-textarea" placeholder="정확한 전개 풀이를 메모장처럼 자유롭게 적으세요..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="memo-buttons-group">
+                                    <button id="math-clear-btn" class="btn-secondary">입력창 비우기</button>
+                                    <button id="math-save-btn" class="btn-save"><i class="fa-regular fa-floppy-disk"></i> 오답 기록 저장/수정</button>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="memo-buttons-group">
-                            <button id="math-clear-btn" class="btn-secondary">초기화</button>
-                            <button id="math-save-btn" class="btn-save"><i class="fa-regular fa-floppy-disk"></i> 오답노트 문항 저장</button>
-                        </div>
-
-                        <div class="memo-list-header justify-space">
-                            <span>이 폴더에 저장된 오답 문항 기록 (터치 시 내용 불러오기)</span>
-                            <button type="button" id="btn-toggle-sort" class="btn-sort-toggle"><i class="fa-solid fa-arrow-down-9-1"></i> 최신순 보기</button>
-                        </div>
-                        <div id="math-saved-list" class="memo-cards-grid"></div>
                     </div>
                 </section>
             </div>
