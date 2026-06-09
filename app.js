@@ -16,7 +16,7 @@ const db = firebase.database();
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 🧭 사이드바 탭 제어 엔진 ---
+    // --- 🧭 사이드바 제어 및 시계 시스템 ---
     const menuItems = document.querySelectorAll('.menu-item');
     const contentViews = document.querySelectorAll('.content-view');
     const sidebarSubFolders = document.getElementById('sidebar-sub-folders');
@@ -25,45 +25,31 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', () => {
             menuItems.forEach(btn => btn.classList.remove('active'));
             item.classList.add('active');
-
             const targetId = item.getAttribute('data-target');
             contentViews.forEach(view => {
                 if (view.id === targetId) view.classList.remove('hidden');
                 else view.classList.add('hidden');
             });
-
-            if (item.id !== 'menu-btn-math') {
-                sidebarSubFolders.classList.add('hidden');
-            } else {
-                sidebarSubFolders.classList.remove('hidden');
-            }
+            if (item.id !== 'menu-btn-math') sidebarSubFolders.classList.add('hidden');
+            else sidebarSubFolders.classList.remove('hidden');
         });
     });
 
     const clockDisplay = document.getElementById('live-clock');
-    function updateClock() {
-        const now = new Date();
-        clockDisplay.textContent = now.toTimeString().split(' ')[0];
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
+    setInterval(() => { clockDisplay.textContent = new Date().toTimeString().split(' ')[0]; }, 1000);
     const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 
-    // --- 🗂️ 1. 일반 메모장 엔진 ---
+    // --- 🗂️ 1. 일반 메모장 엔진 (동기화 초기화 수정 완료) ---
     const folderExplorerZone = document.getElementById('folder-explorer-zone');
     const memoEditorZone = document.getElementById('memo-editor-zone');
     const folderGridContainer = document.getElementById('folder-grid-container');
     const createFolderBtn = document.getElementById('create-folder-btn');
-    
     const backToFoldersBtn = document.getElementById('back-to-folders-btn');
     const currentFolderTitle = document.getElementById('current-folder-title');
     const memoTitleInput = document.getElementById('memo-title-input');
     const memoTextarea = document.getElementById('memo-textarea');
     const saveMemoBtn = document.getElementById('save-memo-btn');
-    const clearMemoBtn = document.getElementById('clear-memo-btn');
-    const saveStatus = document.getElementById('save-status');
     const savedMemosContainer = document.getElementById('saved-memos-container');
 
     let activeFolderName = null; 
@@ -72,8 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
     db.ref('workspace/folders').on('value', (snapshot) => {
         const foldersData = snapshot.val() || {};
         renderFolderDashboard(foldersData);
-        if (activeFolderName && foldersData[activeFolderName]) {
-            renderFolderMemos(foldersData[activeFolderName].memos || {});
+        if (activeFolderName) {
+            if (!foldersData[activeFolderName]) { exitFolderScope(); } 
+            else { renderFolderMemos(foldersData[activeFolderName].memos || {}); }
         }
     });
 
@@ -86,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `
                 <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
                 <div class="folder-name">${folderName}</div>
-                <div class="folder-memo-count">${count}개 완료</div>
+                <div class="folder-memo-count">${count}개 보관됨</div>
                 <div class="folder-action-bar">
                     <button class="btn-folder-action del" onclick="deleteEntireFolder(event, '${folderName}')"><i class="fa-regular fa-trash-can"></i> 삭제</button>
                 </div>
@@ -97,17 +84,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     createFolderBtn.addEventListener('click', () => {
-        const name = prompt('새 일반 메모 분류 이름을 입력하세요:');
+        const name = prompt('새 메모 분류명을 입력하세요:');
         if (!name) return;
         const cleaned = name.trim().replace(/[.#$\[\]]/g, "");
-        if (cleaned) db.ref('workspace/folders/' + cleaned).update({ createdAt: Date.now() });
+        if (cleaned) db.ref('workspace/folders/' + cleaned).set({ createdAt: Date.now(), memos: {} });
     });
 
     window.deleteEntireFolder = (event, folderName) => {
         event.stopPropagation();
-        if (confirm(`[${folderName}] 분류 전체를 삭제할까요?`)) {
+        if (confirm(`[${folderName}] 분류를 삭제하면 내부 메모도 전부 영구 삭제됩니다. 진행할까요?`)) {
             db.ref('workspace/folders/' + folderName).remove();
-            if (activeFolderName === folderName) exitFolderScope();
         }
     };
 
@@ -117,33 +103,19 @@ document.addEventListener('DOMContentLoaded', () => {
         folderExplorerZone.classList.add('hidden');
         memoEditorZone.classList.remove('hidden');
         currentFolderTitle.innerHTML = `<i class="fa-regular fa-folder-open"></i> ${activeFolderName}`;
-        db.ref('workspace/folders/' + folderName + '/memos').once('value', (snapshot) => {
-            renderFolderMemos(snapshot.val() || {});
-        });
     }
-
     backToFoldersBtn.addEventListener('click', exitFolderScope);
-    function exitFolderScope() {
-        activeFolderName = null;
-        memoEditorZone.classList.add('hidden');
-        folderExplorerZone.classList.remove('hidden');
-    }
+    function exitFolderScope() { activeFolderName = null; memoEditorZone.classList.add('hidden'); folderExplorerZone.classList.remove('hidden'); }
 
     function renderFolderMemos(memosObj) {
         savedMemosContainer.innerHTML = '';
         const list = Object.keys(memosObj).map(id => ({ id, ...memosObj[id] }));
-        if (list.length === 0) {
-            savedMemosContainer.innerHTML = `<div style="font-size:0.8rem; color:#71717a; text-align:center; padding:15px;">기록이 없습니다.</div>`;
-            return;
-        }
+        if(list.length === 0){ savedMemosContainer.innerHTML = `<div style="color:#71717a; font-size:0.8rem; text-align:center;">기록이 없습니다.</div>`; return; }
         list.forEach(memo => {
             const card = document.createElement('div');
-            card.className = 'memo-item-card';
+            card.className = 'item-row';
             card.innerHTML = `
-                <div class="memo-card-main" onclick="loadMemoData('${memo.id}')">
-                    <span class="memo-card-title">${memo.title}</span>
-                    <span class="memo-card-snippet">${memo.content.substring(0,35)}...</span>
-                </div>
+                <span class="item-text" onclick="loadMemoData('${memo.id}')">📂 ${memo.title}</span>
                 <button class="compact-del-btn" onclick="deleteMemoData(event, '${memo.id}')"><i class="fa-regular fa-trash-can"></i></button>
             `;
             savedMemosContainer.appendChild(card);
@@ -153,102 +125,88 @@ document.addEventListener('DOMContentLoaded', () => {
     window.loadMemoData = (id) => {
         db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).once('value', (snapshot) => {
             const data = snapshot.val();
-            if (data) {
-                memoTitleInput.value = data.title;
-                memoTextarea.value = data.content;
-                editingMemoId = id;
-                saveStatus.textContent = "수정 중";
-            }
+            if (data) { memoTitleInput.value = data.title; memoTextarea.value = data.content; editingMemoId = id; document.getElementById('save-status').textContent = "수정 모드"; }
         });
     };
-
-    window.deleteMemoData = (event, id) => {
-        event.stopPropagation();
-        db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).remove();
-        if (editingMemoId === id) resetEditor();
-    };
-
-    function resetEditor() {
-        memoTitleInput.value = '';
-        memoTextarea.value = '';
-        editingMemoId = null;
-        saveStatus.textContent = "새 메모";
-    }
-
+    window.deleteMemoData = (event, id) => { event.stopPropagation(); db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).remove(); if(editingMemoId===id) resetEditor(); };
+    function resetEditor() { memoTitleInput.value = ''; memoTextarea.value = ''; editingMemoId = null; document.getElementById('save-status').textContent = "새 메모"; }
     saveMemoBtn.addEventListener('click', () => {
-        const textContent = memoTextarea.value.trim();
-        if (!textContent) return alert('내용을 입력하세요!');
-        const payload = {
-            title: memoTitleInput.value.trim() || textContent.split('\n')[0].substring(0, 12),
-            content: textContent,
-            date: getTodayDateString()
-        };
+        const text = memoTextarea.value.trim(); if (!text) return;
+        const payload = { title: memoTitleInput.value.trim() || text.substring(0,10), content: text, date: getTodayDateString() };
         if (editingMemoId) db.ref(`workspace/folders/${activeFolderName}/memos/${editingMemoId}`).update(payload);
         else db.ref(`workspace/folders/${activeFolderName}/memos`).push(payload);
         resetEditor();
     });
-    clearMemoBtn.addEventListener('click', resetEditor);
+    document.getElementById('clear-memo-btn').addEventListener('click', resetEditor);
 
 
-    // --- 📚 2. 과목별 오답노트 시스템 (불러오기 + 심플 폴더 UI 완비) ---
+    // --- 📚 2. 과목별 & 유형별 오답노트 보관 시스템 (완벽 버그 수정 및 2단 분할 개편) ---
     const mathExplorerZone = document.getElementById('math-explorer-zone');
     const mathEditorZone = document.getElementById('math-editor-zone');
     const mathFolderGrid = document.getElementById('math-folder-grid');
     const mathCreateFolderBtn = document.getElementById('math-create-folder-btn');
-    
     const mathBackBtn = document.getElementById('math-back-btn');
     const mathCurrentFolderTitle = document.getElementById('math-current-folder-title');
+    
+    // 입력 서식 컴포넌트들
     const mathProbTitle = document.getElementById('math-prob-title');
+    const mathProbType = document.getElementById('math-prob-type');
     const mathProbWrong = document.getElementById('math-prob-wrong');
     const mathProbApproach = document.getElementById('math-prob-approach');
     const mathProbSolution = document.getElementById('math-prob-solution');
+    
     const mathSaveBtn = document.getElementById('math-save-btn');
     const mathClearBtn = document.getElementById('math-clear-btn');
     const mathSaveStatus = document.getElementById('math-save-status');
     const mathSavedList = document.getElementById('math-saved-list');
+    
+    // 필터 변수들
+    const filterTypeSelect = document.getElementById('math-filter-type-select');
     const btnToggleSort = document.getElementById('btn-toggle-sort');
 
     let activeMathFolder = null;
     let editingMathId = null;
     let currentSortMode = 'latest'; 
 
+    // 데이터 감시 메인 엔진
     db.ref('workspace/mathNotebooks').on('value', (snapshot) => {
         const mathData = snapshot.val() || {};
         renderMathDashboard(mathData);
         renderSidebarSubFolders(mathData); 
 
-        if (activeMathFolder && mathData[activeMathFolder]) {
-            renderMathItems(mathData[activeMathFolder].problems || {});
+        if (activeMathFolder) {
+            // 💡 [치명적 버그 수정] 만약 현재 진입한 폴더 자체가 데이터 상에서 날아갔다면 즉시 목록으로 튕겨냅니다.
+            if (!mathData[activeMathFolder]) { 
+                exitMathFolder(); 
+            } else { 
+                renderMathItems(mathData[activeMathFolder].problems || {}); 
+            }
         }
     });
 
-    // 보기 편하게 최적화된 심플 폴더 그리드 출력 함수
     function renderMathDashboard(mathData) {
         mathFolderGrid.innerHTML = '';
-        
-        const sortedFolders = Object.keys(mathData).map(name => ({
-            name,
-            ...mathData[name],
-            order: mathData[name].order !== undefined ? mathData[name].order : 0
-        })).sort((a, b) => a.order - b.order);
+        const sorted = Object.keys(mathData).map(name => ({
+            name, ...mathData[name], order: mathData[name].order || 0
+        })).sort((a,b) => a.order - b.order);
 
-        if (sortedFolders.length === 0) {
-            mathFolderGrid.innerHTML = `<div style="grid-column:1/-1; font-size:0.85rem; color:#71717a; text-align:center; padding:20px;">생성된 폴더가 없습니다.</div>`;
+        if(sorted.length === 0) {
+            mathFolderGrid.innerHTML = `<div style="grid-column:1/-1; font-size:0.85rem; color:#71717a; text-align:center; padding:35px;">폴더가 비어있습니다. 과목을 추가해 주세요!</div>`;
             return;
         }
 
-        sortedFolders.forEach((folder) => {
+        sorted.forEach(folder => {
             const count = Object.keys(folder.problems || {}).length;
             const card = document.createElement('div');
             card.className = 'folder-card';
             card.innerHTML = `
                 <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
                 <div class="folder-name">${folder.name}</div>
-                <div class="folder-memo-count">${count}개 저장됨</div>
+                <div class="folder-memo-count">${count}문항 보관</div>
                 <div class="folder-action-bar">
-                    <button class="btn-folder-action" onclick="moveMathFolderOrder(event, '${folder.name}', -1)"><i class="fa-solid fa-chevron-up"></i></button>
-                    <button class="btn-folder-action" onclick="moveMathFolderOrder(event, '${folder.name}', 1)"><i class="fa-solid fa-chevron-down"></i></button>
-                    <button class="btn-folder-action del" onclick="deleteMathFolder(event, '${folder.name}')"><i class="fa-regular fa-trash-can"></i></button>
+                    <button class="btn-folder-action" onclick="moveMathOrder(event, '${folder.name}', -1)"><i class="fa-solid fa-chevron-up"></i></button>
+                    <button class="btn-folder-action" onclick="moveMathOrder(event, '${folder.name}', 1)"><i class="fa-solid fa-chevron-down"></i></button>
+                    <button class="btn-folder-action del" onclick="deleteMathFolder(event, '${folder.name}')"><i class="fa-regular fa-trash-can"></i> 삭제</button>
                 </div>
             `;
             card.addEventListener('click', () => enterMathFolder(folder.name));
@@ -258,80 +216,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderSidebarSubFolders(mathData) {
         sidebarSubFolders.innerHTML = '';
-        const sortedFolders = Object.keys(mathData).map(name => ({
-            name,
-            order: mathData[name].order !== undefined ? mathData[name].order : 0
-        })).sort((a, b) => a.order - b.order);
-
-        if (sortedFolders.length === 0) return;
-
-        sortedFolders.forEach(folder => {
-            const subBtn = document.createElement('button');
-            subBtn.type = 'button';
-            subBtn.className = 'sub-menu-item';
-            subBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i> ${folder.name}`;
-            subBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                menuItems.forEach(btn => btn.classList.remove('active'));
+        Object.keys(mathData).forEach(name => {
+            const btn = document.createElement('button');
+            btn.className = 'sub-menu-item';
+            btn.innerHTML = `<i class="fa-solid fa-square-root-variable"></i> ${name}`;
+            btn.addEventListener('click', () => {
+                menuItems.forEach(b => b.classList.remove('active'));
                 document.getElementById('menu-btn-math').classList.add('active');
-                contentViews.forEach(view => {
-                    if (view.id === 'view-math') view.classList.remove('hidden');
-                    else view.classList.add('hidden');
-                });
+                contentViews.forEach(v => v.id === 'view-math' ? v.classList.remove('hidden') : v.classList.add('hidden'));
                 sidebarSubFolders.classList.remove('hidden');
-                enterMathFolder(folder.name);
+                enterMathFolder(name);
             });
-            sidebarSubFolders.appendChild(subBtn);
+            sidebarSubFolders.appendChild(btn);
         });
     }
 
-    window.moveMathFolderOrder = (event, folderName, direction) => {
-        event.stopPropagation();
-        db.ref('workspace/mathNotebooks').once('value', (snapshot) => {
-            const mathData = snapshot.val() || {};
-            const list = Object.keys(mathData).map(name => ({
-                name,
-                order: mathData[name].order !== undefined ? mathData[name].order : 0
-            })).sort((a, b) => a.order - b.order);
-
-            const index = list.findIndex(f => f.name === folderName);
-            if (index === -1) return;
-
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= list.length) return;
-
-            const temp = list[index];
-            list[index] = list[newIndex];
-            list[newIndex] = temp;
-
-            const updates = {};
-            list.forEach((f, idx) => { updates[`workspace/mathNotebooks/${f.name}/order`] = idx; });
-            db.ref().update(updates);
-        });
-    };
-
     mathCreateFolderBtn.addEventListener('click', () => {
-        const name = prompt('새 오답노트 과목 폴더 이름을 입력하세요:');
+        const name = prompt('새 과목 오답노트 폴더 이름을 기입하세요:');
         if (!name) return;
         const cleaned = name.trim().replace(/[.#$\[\]]/g, "");
         if (!cleaned) return;
-
-        db.ref('workspace/mathNotebooks').once('value', (snapshot) => {
-            const mathData = snapshot.val() || {};
-            const nextOrder = Object.keys(mathData).length;
-            db.ref('workspace/mathNotebooks/' + cleaned).update({ 
-                createdAt: Date.now(),
-                order: nextOrder
-            });
-        });
+        db.ref('workspace/mathNotebooks/' + cleaned).set({ createdAt: Date.now(), order: 99, problems: {} });
     });
 
+    // 💡 [치명적 버그 수정] 이제 하부 문항 데이터 노드까지 원천 통삭제 처리하여 찌꺼기가 남지 않습니다.
     window.deleteMathFolder = (event, folderName) => {
         event.stopPropagation();
-        if (confirm(`[${folderName}] 폴더와 내부의 모든 문제 기록을 삭제할까요?`)) {
+        if (confirm(`[${folderName}] 폴더와 내부의 수많은 문제 기록이 통째로 원격 서버에서 삭제됩니다. 진행할까요?`)) {
             db.ref('workspace/mathNotebooks/' + folderName).remove();
-            if (activeMathFolder === folderName) exitMathFolder();
         }
+    };
+
+    window.moveMathOrder = (event, folderName, dir) => {
+        event.stopPropagation();
+        db.ref('workspace/mathNotebooks').once('value', (snapshot) => {
+            const data = snapshot.val() || {};
+            const list = Object.keys(data).map(n => ({ name: n, order: data[n].order || 0 })).sort((a,b)=>a.order-b.order);
+            const idx = list.findIndex(f => f.name === folderName);
+            if (idx === -1) return;
+            const targetIdx = idx + dir;
+            if (targetIdx < 0 || targetIdx >= list.length) return;
+            const temp = list[idx]; list[idx] = list[targetIdx]; list[targetIdx] = temp;
+            const updates = {};
+            list.forEach((f, i) => { updates[`workspace/mathNotebooks/${f.name}/order`] = i; });
+            db.ref().update(updates);
+        });
     };
 
     function enterMathFolder(folderName) {
@@ -340,53 +269,53 @@ document.addEventListener('DOMContentLoaded', () => {
         mathExplorerZone.classList.add('hidden');
         mathEditorZone.classList.remove('hidden');
         mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-folder-open"></i> ${activeMathFolder}`;
-        db.ref('workspace/mathNotebooks/' + folderName + '/problems').once('value', (snapshot) => {
+        filterTypeSelect.value = "ALL"; // 진입 시 필터링 초기화
+        db.ref(`workspace/mathNotebooks/${folderName}/problems`).once('value', (snapshot) => {
             renderMathItems(snapshot.val() || {});
         });
     }
-
     mathBackBtn.addEventListener('click', exitMathFolder);
-    function exitMathFolder() {
-        activeMathFolder = null;
-        mathEditorZone.classList.add('hidden');
-        mathExplorerZone.classList.remove('hidden');
-    }
+    function exitMathFolder() { activeMathFolder = null; mathEditorZone.classList.add('hidden'); mathExplorerZone.classList.remove('hidden'); }
 
+    // 필터 조건 변경 및 정렬 클릭 시 실시간 리렌더링 트리거 반영
+    filterTypeSelect.addEventListener('change', () => {
+        db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).once('value', (snapshot) => { renderMathItems(snapshot.val() || {}); });
+    });
     btnToggleSort.addEventListener('click', () => {
-        if (currentSortMode === 'latest') {
-            currentSortMode = 'alpha';
-            btnToggleSort.innerHTML = `<i class="fa-solid fa-arrow-down-a-z"></i> 이름순 보기`;
-        } else {
-            currentSortMode = 'latest';
-            btnToggleSort.innerHTML = `<i class="fa-solid fa-arrow-down-9-1"></i> 최신순 보기`;
-        }
-        if (activeMathFolder) {
-            db.ref('workspace/mathNotebooks/' + activeMathFolder + '/problems').once('value', (snapshot) => {
-                renderMathItems(snapshot.val() || {});
-            });
-        }
+        currentSortMode = (currentSortMode === 'latest') ? 'alpha' : 'latest';
+        btnToggleSort.innerHTML = currentSortMode === 'latest' ? `<i class="fa-solid fa-arrow-down-9-1"></i> 최신순` : `<i class="fa-solid fa-arrow-down-a-z"></i> 이름순`;
+        db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).once('value', (snapshot) => { renderMathItems(snapshot.val() || {}); });
     });
 
-    // 💡 문항 리스트 렌더링 함수
+    // 💡 [유형별 정리 핵심] 문항 목록 렌더링 함수
     function renderMathItems(probsObj) {
         mathSavedList.innerHTML = '';
         let list = Object.keys(probsObj).map(id => ({ id, ...probsObj[id] }));
         
-        if(list.length === 0) {
-            mathSavedList.innerHTML = `<div style="font-size:0.8rem; color:#71717a; text-align:center; padding:15px;">저장된 문제 기록이 없습니다.</div>`;
+        // 1. 유형 필터링 처리
+        const selectedFilter = filterTypeSelect.value;
+        if (selectedFilter !== "ALL") {
+            list = list.filter(p => p.type === selectedFilter);
+        }
+
+        if (list.length === 0) {
+            mathSavedList.innerHTML = `<div style="font-size:0.78rem; color:#71717a; text-align:center; padding:20px 0;">해당되는 문제가 없습니다.</div>`;
             return;
         }
 
+        // 2. 시간/이름 정렬 처리
         if (currentSortMode === 'latest') list.sort((a, b) => b.timestamp - a.timestamp);
-        else if (currentSortMode === 'alpha') list.sort((a, b) => a.title.localeCompare(b.title));
+        else list.sort((a, b) => a.title.localeCompare(b.title));
 
+        // 3. 카드 출력
         list.forEach(p => {
             const card = document.createElement('div');
-            card.className = 'memo-item-card';
+            // 현재 에디터에 로드되어 수정 중인 아이템이면 테두리 강조 클래스 부여
+            card.className = `notebook-item-card ${editingMathId === p.id ? 'active-item' : ''}`;
             card.innerHTML = `
-                <div class="memo-card-main" onclick="loadMathData('${p.id}')">
-                    <span class="memo-card-title">${p.title}</span>
-                    <span class="memo-card-snippet" style="color:#f87171;">오답분석: ${p.wrong.substring(0, 32)}...</span>
+                <div class="notebook-card-main" onclick="loadMathData('${p.id}')">
+                    <span class="notebook-card-badge">${p.type || '기타'}</span>
+                    <span class="notebook-card-title">${p.title}</span>
                 </div>
                 <button class="compact-del-btn" onclick="deleteMathData(event, '${p.id}')"><i class="fa-regular fa-trash-can"></i></button>
             `;
@@ -394,64 +323,71 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 💡 [새 기능] 메모장처럼 과거 기록을 터치하면 서식 창으로 원격 로드하는 함수
+    // 💡 꺼내 쓰기 기능: 기록 카드 터치 시 입력창에 통째로 로드(Load)
     window.loadMathData = (id) => {
         db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).once('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // 입력창들에 과거 데이터를 주입
+                editingMathId = id;
                 mathProbTitle.value = data.title;
-                mathProbWrong.value = data.wrong;
-                mathProbApproach.value = data.approach;
-                mathProbSolution.value = data.solution;
+                mathProbType.value = data.type || '기타';
+                mathProbWrong.value = data.wrong || '';
+                mathProbApproach.value = data.approach || '';
+                mathProbSolution.value = data.solution || '';
                 
-                editingMathId = id; // 현재 수정 중인 키값 기억
-                mathSaveStatus.textContent = "문항 수정 중";
-                mathSaveStatus.style.color = "#60a5fa";
-                
-                // 터치 후 편집 편의를 위해 스크롤을 부드럽게 상단 편집 영역으로 올려줍니다.
-                document.getElementById('view-math').scrollIntoView({ behavior: 'smooth' });
+                mathSaveStatus.textContent = "📝 기존 기록 수정/조회 모드";
+                mathSaveStatus.style.color = "#34d399";
+
+                // 리스트에 실시간 포커스 동기화를 위해 재출력
+                db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).once('value', (snap) => { renderMathItems(snap.val() || {}); });
             }
         });
     };
 
     window.deleteMathData = (event, id) => {
         event.stopPropagation();
-        if(confirm("이 오답 문항 기록을 영구 삭제할까요?")) {
+        if(confirm("이 문항 기록을 지울까요?")) {
             db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).remove();
             if (editingMathId === id) resetMathEditor();
         }
     };
 
     function resetMathEditor() {
+        editingMathId = null;
         mathProbTitle.value = '';
+        mathProbType.value = '기타';
         mathProbWrong.value = '';
         mathProbApproach.value = '';
         mathProbSolution.value = '';
-        editingMathId = null;
-        mathSaveStatus.textContent = "새 문항 등록";
+        mathSaveStatus.textContent = "✨ 새 문항 등록 모드";
         mathSaveStatus.style.color = "#71717a";
+        if(activeMathFolder) {
+            db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).once('value', (snap) => { renderMathItems(snap.val() || {}); });
+        }
     }
 
-    // 저장 버튼 클릭 핸들러 (추가 및 수정을 동시에 분기 처리)
+    // 저장 및 수정 마스터 핸들러
     mathSaveBtn.addEventListener('click', () => {
         const title = mathProbTitle.value.trim();
-        const wrong = mathProbWrong.value.trim();
-        const approach = mathProbApproach.value.trim();
         const solution = mathProbSolution.value.trim();
+        if (!title) return alert('문제 제목을 적어주세요.');
 
-        if (!title || !solution) return alert('문제 제목과 풀이과정은 필수 기입 사항입니다.');
-
-        const payload = { title, wrong, approach, solution, timestamp: Date.now() };
+        const payload = {
+            title: title,
+            type: mathProbType.value,
+            wrong: mathProbWrong.value.trim(),
+            approach: mathProbApproach.value.trim(),
+            solution: solution,
+            timestamp: Date.now()
+        };
 
         if (editingMathId) {
-            // 💡 수정 상태일 때는 기존 경로에 덮어쓰기(Update) 수행
+            // 기존 문서에 정확히 덮어쓰기 업데이트
             db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${editingMathId}`).update(payload);
         } else {
-            // 💡 신규 상태일 때는 새로운 유니크 노드로 Push 수행
+            // 신규 자동 고유키 문서 생성
             db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).push(payload);
         }
-        
         resetMathEditor();
     });
 
@@ -465,17 +401,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const todoList = document.getElementById('todo-list');
     const todoStats = document.getElementById('todo-stats');
 
-    db.ref('workspace/todos').on('value', (snapshot) => {
-        renderTodoList(snapshot.val() || {});
-    });
+    db.ref('workspace/todos').on('value', (snapshot) => { renderTodoList(snapshot.val() || {}); });
 
     function renderTodoList(todosObj) {
         todoList.innerHTML = '';
         const todayStr = getTodayDateString();
         const list = Object.keys(todosObj).map(id => ({ id, ...todosObj[id] })).filter(t => t.date === todayStr);
-
-        const completed = list.filter(t => t.completed).length;
-        todoStats.textContent = `${completed} / ${list.length} 완료`;
+        todoStats.textContent = `${list.filter(t => t.completed).length} / ${list.length} 완료`;
 
         list.forEach(todo => {
             const li = document.createElement('li');
@@ -493,16 +425,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     todoForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        db.ref('workspace/todos').push({
-            date: getTodayDateString(),
-            time: todoTimeInput.value.trim(),
-            text: todoInput.value.trim(),
-            completed: false
-        });
+        db.ref('workspace/todos').push({ date: getTodayDateString(), time: todoTimeInput.value.trim(), text: todoInput.value.trim(), completed: false });
         todoInput.value = ''; todoTimeInput.value = '';
     });
-
-    window.toggleTodoCloud = (id, currentStatus) => db.ref(`workspace/todos/${id}`).update({ completed: !currentStatus });
+    window.toggleTodoCloud = (id, cur) => db.ref(`workspace/todos/${id}`).update({ completed: !cur });
     window.deleteTodoCloud = (id) => db.ref(`workspace/todos/${id}`).remove();
 
 
@@ -512,32 +438,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const ddayDate = document.getElementById('dday-date');
     const ddayContainer = document.getElementById('dday-container');
 
-    db.ref('workspace/ddays').on('value', (snapshot) => {
-        renderDDayList(snapshot.val() || {});
-    });
+    db.ref('workspace/ddays').on('value', (snapshot) => { renderDDayList(snapshot.val() || {}); });
 
     function renderDDayList(ddaysObj) {
         ddayContainer.innerHTML = '';
         const today = new Date(); today.setHours(0,0,0,0);
-
         Object.keys(ddaysObj).forEach(id => {
             const item = ddaysObj[id];
             const target = new Date(item.date); target.setHours(0,0,0,0);
-            const diff = target.getTime() - today.getTime();
-            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            const days = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
             let displayD = days === 0 ? 'D-Day' : (days > 0 ? `D-${days}` : `D+${Math.abs(days)}`);
 
             const div = document.createElement('div');
             div.className = 'dday-card';
             div.innerHTML = `
-                <div class="dday-info">
-                    <span class="dday-name">${item.title}</span>
-                    <span class="dday-date-text">목표일: ${item.date}</span>
-                </div>
-                <div class="dday-right-zone">
-                    <span class="dday-number">${displayD}</span>
-                    <button class="compact-del-btn" onclick="deleteDDayCloud('${id}')"><i class="fa-regular fa-trash-can"></i></button>
-                </div>
+                <div class="dday-info"><span class="dday-name">${item.title}</span><span class="dday-date-text">목표일: ${item.date}</span></div>
+                <div class="dday-right-zone"><span class="dday-number">${displayD}</span><button class="compact-del-btn" onclick="deleteDDayCloud('${id}')"><i class="fa-regular fa-trash-can"></i></button></div>
             `;
             ddayContainer.appendChild(div);
         });
@@ -545,11 +461,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ddayForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        if(!ddayTitle.value.trim() || !ddayDate.value) return;
         db.ref('workspace/ddays').push({ title: ddayTitle.value.trim(), date: ddayDate.value });
         ddayForm.reset();
     });
-
     window.deleteDDayCloud = (id) => db.ref(`workspace/ddays/${id}`).remove();
 
 });
