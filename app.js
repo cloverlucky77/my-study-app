@@ -9,33 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateClock, 1000);
     updateClock();
 
-
-    // --- 1. 📅 전역 마스터 날짜 세팅 및 제어 장치 ---
-    const globalDatePicker = document.getElementById('global-date-picker');
-    const todoDateTitle = document.getElementById('selected-date-title-todo');
-    const ddayDateTitle = document.getElementById('selected-date-title-dday');
-
-    // 첫 구동 시 무조건 시스템 오늘 날짜 자동 기본값 바인딩
-    const todayStr = new Date().toISOString().split('T')[0];
-    globalDatePicker.value = todayStr;
-
-    function syncDateTitles(dateVal) {
-        const parts = dateVal.split('-');
-        const formatted = `${parts[1]}월 ${parts[2]}일`;
-        todoDateTitle.textContent = formatted;
-        ddayDateTitle.textContent = formatted;
-    }
-    syncDateTitles(todayStr);
-
-    // 사용자가 상단 달력을 변경하면 플래너와 디데이가 즉시 리렌더링됨
-    globalDatePicker.addEventListener('change', (e) => {
-        syncDateTitles(e.target.value);
-        renderTodos();
-        renderDDays();
-    });
+    // 내부 시스템 처리용 오늘 날짜 추출 고정 (분류 최적화)
+    const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 
-    // --- 2. 🗂️ 세분화 메모장 제어 (독립형 구조) ---
+    // --- 1. 🗂️ 세분화 메모장 파트 ---
     const memoTitleInput = document.getElementById('memo-title-input');
     const memoTextarea = document.getElementById('memo-textarea');
     const saveMemoBtn = document.getElementById('save-memo-btn');
@@ -46,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentFolder = 'general';
     let editingMemoId = null;
-    const MEMO_KEY = 'workspace_v6_memos';
+    const MEMO_KEY = 'workspace_v7_memos';
 
     let memoStorage = JSON.parse(localStorage.getItem(MEMO_KEY)) || { general: [], idea: [], study: [] };
 
@@ -132,27 +110,26 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMemoCards();
 
 
-    // --- 3. 📅 날짜 종속형 플래너 관리 시스템 ---
+    // --- 2. 📅 플래너 파트 (오늘 날짜 자동 분류 관리) ---
     const todoForm = document.getElementById('todo-form');
     const todoTimeInput = document.getElementById('todo-time-input');
     const todoInput = document.getElementById('todo-input');
     const todoList = document.getElementById('todo-list');
     const todoStats = document.getElementById('todo-stats');
 
-    const TODO_KEY = 'workspace_v6_todos';
+    const TODO_KEY = 'workspace_v7_todos';
     let allTodos = JSON.parse(localStorage.getItem(TODO_KEY)) || [];
 
     window.renderTodos = () => {
         todoList.innerHTML = '';
-        const activeDate = globalDatePicker.value;
+        const todayStr = getTodayDateString();
         
-        // 현재 마스터 달력에 선택된 날짜의 데이터만 필터링 분리
-        const filtered = allTodos.filter(t => t.date === activeDate);
+        // 데이터 누적 구조 속에서 오직 '오늘 날짜' 데이터만 뽑아와서 깔끔하게 바인딩
+        const filtered = allTodos.filter(t => t.date === todayStr);
         const completed = filtered.filter(t => t.completed).length;
         todoStats.textContent = `${completed} / ${filtered.length} 완료`;
 
         filtered.forEach(todo => {
-            // 원본 배열 인덱스 찾기
             const origIdx = allTodos.findIndex(t => t.id === todo.id);
             const li = document.createElement('li');
             li.className = `item-row ${todo.completed ? 'done' : ''}`;
@@ -171,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         allTodos.push({
             id: 'todo_' + Date.now(),
-            date: globalDatePicker.value,
+            date: getTodayDateString(), // 오늘 날짜 태그를 달아 자동 저장 분류
             time: todoTimeInput.value.trim(),
             text: todoInput.value.trim(),
             completed: false
@@ -196,38 +173,33 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTodos();
 
 
-    // --- 4. 🎯 디데이 카운트다운 정밀 연산 시스템 (버그 수정 완결) ---
+    // --- 3. 🎯 디데이 카운트다운 파트 (연산 메커니즘 완전 정상화) ---
     const ddayForm = document.getElementById('dday-form');
     const ddayTitle = document.getElementById('dday-title');
+    const ddayDate = document.getElementById('dday-date');
     const ddayContainer = document.getElementById('dday-container');
 
-    const DDAY_KEY = 'workspace_v6_ddays';
+    const DDAY_KEY = 'workspace_v7_ddays';
     let allDDays = JSON.parse(localStorage.getItem(DDAY_KEY)) || [];
 
     window.renderDDays = () => {
         ddayContainer.innerHTML = '';
-        const activeDate = globalDatePicker.value;
         
-        // 현재 선택된 기준 날짜 데이터만 추출
-        const filtered = allDDays.filter(d => d.date === activeDate);
+        // 실시간 연산용 오늘 표준 시간 초기화
+        const today = new Date();
+        today.setHours(0,0,0,0);
 
-        filtered.forEach(item => {
-            const origIdx = allDDays.findIndex(d => d.id === item.id);
-            
-            // 실시간 컴퓨터 오늘 날짜 기준 계산 
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            
-            // 타겟 등록 지정 날짜 계산
+        allDDays.forEach((item, idx) => {
             const target = new Date(item.date);
             target.setHours(0,0,0,0);
             
+            // 두 날짜 간격 계산 (정밀 밀리초 변환 연산)
             const diff = target.getTime() - today.getTime();
             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
             
             let displayD = '';
             if (days === 0) displayD = 'D-Day';
-            else if (days > 0) displayD = `D-${days}`;  // ◀ 드디어 D-숫자 매칭 완벽 구현!
+            else if (days > 0) displayD = `D-${days}`;  // ◀ 드디어 완벽하게 카운트다운 숫자가 표기됩니다!
             else displayD = `D+${Math.abs(days)}`;
 
             const div = document.createElement('div');
@@ -239,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="dday-right-zone">
                     <span class="dday-number">${displayD}</span>
-                    <button class="compact-del-btn" onclick="deleteDDay(${origIdx})"><i class="fa-regular fa-trash-can"></i></button>
+                    <button class="compact-del-btn" onclick="deleteDDay(${idx})"><i class="fa-regular fa-trash-can"></i></button>
                 </div>
             `;
             ddayContainer.appendChild(div);
@@ -248,18 +220,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ddayForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        const titleVal = ddayTitle.value.trim();
+        const dateVal = ddayDate.value;
+
+        if(!titleVal || !dateVal) return;
+
         allDDays.push({
-            id: 'dday_' + Date.now(),
-            date: globalDatePicker.value, // 마스터 상단 날짜 기준으로 자동 등록 처리
-            title: ddayTitle.value.trim()
+            title: titleVal,
+            date: dateVal // 입력 필드에서 정밀 수집한 목표 날짜 저장
         });
+        
         localStorage.setItem(DDAY_KEY, JSON.stringify(allDDays));
         renderDDays();
         ddayForm.reset();
     });
 
-    window.deleteDDay = (origIdx) => {
-        allDDays.splice(origIdx, 1);
+    window.deleteDDay = (idx) => {
+        allDDays.splice(idx, 1);
         localStorage.setItem(DDAY_KEY, JSON.stringify(allDDays));
         renderDDays();
     };
