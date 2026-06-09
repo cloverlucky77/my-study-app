@@ -45,33 +45,6 @@ body {
 .top-bar .brand { font-weight: 600; font-size: 0.95rem; letter-spacing: 2px; }
 .top-bar .clock { font-size: 0.95rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-/* 📅 메인 상단 전역 날짜 마스터 선택기 디자인 */
-.master-date-selector {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background-color: var(--panel-bg);
-    border: 1px solid #3f3f46;
-    padding: 6px 16px;
-    border-radius: 30px;
-}
-.master-date-selector label {
-    font-size: 0.85rem;
-    color: #d4d4d8;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.master-date-selector input[type="date"] {
-    background: transparent;
-    border: none;
-    color: #ffffff;
-    font-size: 0.9rem;
-    font-weight: 600;
-    outline: none;
-    cursor: pointer;
-}
-
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1.1fr;
@@ -96,7 +69,6 @@ body {
 
 .panel-header { display: flex; justify-content: space-between; align-items: center; }
 .panel-title { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-.panel-title span { color: #a1a1aa; font-weight: 600; border-bottom: 1px dotted #52525b; padding-bottom: 1px; }
 .badge { font-size: 0.75rem; background-color: #27272a; padding: 4px 10px; border-radius: 20px; color: #d4d4d8; }
 
 .inline-form {
@@ -114,12 +86,27 @@ body {
 }
 .inline-form input[type="text"] { flex: 1; }
 
+/* 디데이용 캘린더 입력 필드 감싸기 */
+.date-input-wrapper {
+    border-left: 1px solid var(--panel-border);
+    padding-left: 8px;
+    display: flex;
+    align-items: center;
+}
+.inline-form input[type="date"] {
+    color: #ffffff !important;
+    font-size: 0.8rem;
+    cursor: pointer;
+    background: transparent;
+}
+
 .icon-btn-add {
     background-color: var(--accent); color: #000; border: none; width: 32px; height: 32px;
     border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-.item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; }
+/* 목록 디자인 */
+.item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; }
 .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; }
 .item-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
 .time-tag { font-size: 0.75rem; background-color: #27272a; padding: 3px 8px; border-radius: 4px; color: #e4e4e7; font-weight: 500; white-space: nowrap; }
@@ -133,6 +120,7 @@ body {
 }
 .compact-del-btn:hover { color: var(--danger); }
 
+/* 디데이 카드 디자인 정교화 */
 .dday-vertical-list { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; }
 .dday-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .dday-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
@@ -141,6 +129,7 @@ body {
 .dday-right-zone { display: flex; align-items: center; gap: 16px; }
 .dday-number { font-size: 0.9rem; font-weight: 600; color: #ffffff; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 75px; text-align: center; letter-spacing: 0.5px; }
 
+/* 메모장 내부 탭 스타일 */
 .folder-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
 .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
 .tab-btn:hover { color: var(--text-main); background-color: #27272a; }
