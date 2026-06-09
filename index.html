@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Workspace v4</title>
+    <title>Premium Workspace Final</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -25,14 +25,7 @@
                         <span class="badge" id="todo-stats">0 / 0 완료</span>
                     </div>
                     <form id="todo-form" class="inline-form">
-                        <select id="todo-time">
-                            <option value="일과">일과</option>
-                            <option value="09:00">09:00</option>
-                            <option value="12:00">12:00</option>
-                            <option value="15:00">15:00</option>
-                            <option value="18:00">18:00</option>
-                            <option value="21:00">21:00</option>
-                        </select>
+                        <input type="text" id="todo-time-input" placeholder="시간 (예: 1교시, 14:00)" style="max-width: 140px; border-right: 1px solid var(--panel-border);" required>
                         <input type="text" id="todo-input" placeholder="새로운 계획을 입력하세요..." required>
                         <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
                     </form>
