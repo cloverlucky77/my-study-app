@@ -7,7 +7,7 @@
     --text-muted: #71717a;
     --accent: #ffffff;
     --accent-hover: #e4e4e7;
-    --danger: #ef4444;
+    --danger: #f87171;
 }
 
 * {
@@ -81,10 +81,9 @@ body {
     align-items: center;
 }
 
-.inline-form select, .inline-form input {
+.inline-form input {
     background: transparent; border: none; color: var(--text-main); font-size: 0.85rem; outline: none; padding: 6px 8px;
 }
-.inline-form select { color: #a1a1aa; cursor: pointer; }
 .inline-form input[type="text"] { flex: 1; }
 
 .date-input-wrapper { border: 1px solid #3f3f46; border-radius: 6px; background-color: #27272a; padding: 2px 4px; }
@@ -97,14 +96,29 @@ body {
 
 /* 플래너 리스트 디자인 */
 .item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; }
-.item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; }
-.item-left { display: flex; align-items: center; gap: 10px; }
-.time-tag { font-size: 0.75rem; background-color: #27272a; padding: 2px 6px; border-radius: 4px; color: #d4d4d8; }
-.item-text { font-size: 0.85rem; cursor: pointer; }
+.item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; }
+.item-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+.time-tag { font-size: 0.75rem; background-color: #27272a; padding: 3px 8px; border-radius: 4px; color: #e4e4e7; font-weight: 500; }
+.item-text { font-size: 0.85rem; cursor: pointer; color: var(--text-main); }
 .item-row.done { opacity: 0.35; }
 .item-row.done .item-text { text-decoration: line-through; }
 
-/* 📌 디데이 레이아웃 대폭 개선 (가로폭 확장형 롱 카드) */
+/* 🗑️ 완벽하게 일치화된 미니멀한 슬림 삭제 버튼 */
+.compact-del-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease;
+}
+.compact-del-btn:hover { color: var(--danger); }
+
+/* 디데이 레이아웃 고도화 */
 .dday-vertical-list {
     display: flex;
     flex-direction: column;
@@ -121,21 +135,32 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%; /* 카드 가로폭 꽉 채우기 */
+    width: 100%;
+}
+
+.dday-info { display: flex; flex-direction: column; gap: 4px; }
+.dday-name { font-size: 0.88rem; font-weight: 500; color: var(--text-main); }
+.dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
+
+.dday-right-zone {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .dday-number {
-    font-size: 1.05rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: #ffffff;
     background-color: #27272a;
-    padding: 4px 12px;
+    padding: 5px 12px;
     border-radius: 6px;
-    min-width: 70px;
+    min-width: 75px;
     text-align: center;
+    letter-spacing: 0.5px;
 }
 
-/* 🗂️ 고도화된 메모장 폼 엘리먼트 */
+/* 세분화 메모장 구조 */
 .folder-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
 .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
 .tab-btn:hover { color: var(--text-main); background-color: #27272a; }
@@ -162,7 +187,7 @@ body {
 
 #memo-textarea {
     width: 100%;
-    height: 180px; /* 입력 필드는 줄이고 리스트 영역 확보 */
+    height: 160px;
     background-color: #18181b;
     border: 1px solid var(--panel-border);
     border-radius: 8px;
@@ -175,11 +200,7 @@ body {
 }
 #memo-textarea:focus { border-color: #52525b; }
 
-.memo-buttons-group {
-    display: flex;
-    gap: 10px;
-}
-
+.memo-buttons-group { display: flex; gap: 10px; }
 .btn-save {
     flex: 2; background-color: #ffffff; color: #09090b; border: none; padding: 12px;
     border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
@@ -192,66 +213,21 @@ body {
 .btn-save:hover { background-color: var(--accent-hover); }
 .btn-secondary:hover { background-color: #3f3f46; }
 
-/* 🗂️ 누적 메모 목록 보드 레이아웃 */
 .memo-list-header {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    font-weight: 500;
-    margin-top: 16px;
-    border-top: 1px solid var(--panel-border);
-    padding-top: 16px;
+    font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-top: 16px;
+    border-top: 1px solid var(--panel-border); padding-top: 16px;
 }
 
-.memo-cards-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-height: 220px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-
+.memo-cards-grid { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
 .memo-item-card {
-    background-color: #18181b;
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
 }
-
-.memo-item-card:hover {
-    border-color: #52525b;
-    background-color: #202024;
-}
-
-.memo-card-main {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    flex: 1;
-}
-
-.memo-card-title {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-main);
-}
-
-.memo-card-snippet {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-transform: lowercase;
-    text-overflow: ellipsis;
-    max-width: 320px;
-}
+.memo-item-card:hover { border-color: #52525b; background-color: #202024; }
+.memo-card-main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.memo-card-title { font-size: 0.85rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.memo-card-snippet { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .save-status { font-size: 0.75rem; color: #a1a1aa; }
-
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
