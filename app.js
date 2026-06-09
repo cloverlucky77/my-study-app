@@ -1,249 +1,233 @@
-document.addEventListener('DOMContentLoaded', () => {
+:root {
+    --bg: #09090b;
+    --panel-bg: #141417;
+    --panel-border: #27272a;
+    --input-bg: #1c1c1f;
+    --text-main: #f4f4f5;
+    --text-muted: #71717a;
+    --accent: #ffffff;
+    --accent-hover: #e4e4e7;
+    --danger: #f87171;
+}
 
-    // --- 0. 상단 시계 구동 ---
-    const clockDisplay = document.getElementById('live-clock');
-    function updateClock() {
-        const now = new Date();
-        clockDisplay.textContent = now.toTimeString().split(' ')[0];
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
 
+body {
+    background-color: var(--bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
 
-    // --- 1. 디데이처럼 누적 축적되는 다중 폴더 메모리 제어부 ---
-    const memoTitleInput = document.getElementById('memo-title-input');
-    const memoTextarea = document.getElementById('memo-textarea');
-    const saveMemoBtn = document.getElementById('save-memo-btn');
-    const clearMemoBtn = document.getElementById('clear-memo-btn');
-    const saveStatus = document.getElementById('save-status');
-    const folderButtons = document.querySelectorAll('.tab-btn');
-    const savedMemosContainer = document.getElementById('saved-memos-container');
-    
-    let currentFolder = 'general';
-    let editingMemoId = null; // 수정 모드 추적 컴포넌트
+.dashboard-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
 
-    // 폴더별 내부 메모 배열 데이터 구조 생성
-    let memoStorage = JSON.parse(localStorage.getItem('workspace_memo_v4_lists')) || {
-        general: [],
-        idea: [],
-        study: []
-    };
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--panel-border);
+}
 
-    // 현재 폴더에 들어있는 메모 카드 리스트 렌더링
-    function renderMemoCards() {
-        savedMemosContainer.innerHTML = '';
-        const currentList = memoStorage[currentFolder] || [];
+.top-bar .brand { font-weight: 600; font-size: 0.95rem; letter-spacing: 2px; }
+.top-bar .clock { font-size: 0.95rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-        if (currentList.length === 0) {
-            savedMemosContainer.innerHTML = `<div style="font-size:0.8rem; color:#71717a; text-align:center; padding:20px;">이 폴더에 저장된 메모가 없습니다.</div>`;
-            return;
-        }
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 24px;
+}
 
-        currentList.forEach(memo => {
-            const card = document.createElement('div');
-            card.className = 'memo-item-card';
-            card.innerHTML = `
-                <div class="memo-card-main" onclick="loadMemoToEditor('${memo.id}')">
-                    <span class="memo-card-title">📝 ${memo.title}</span>
-                    <span class="memo-card-snippet">${memo.content.substring(0, 45)}...</span>
-                </div>
-                <button class="delete-btn" onclick="deleteMemoCard('${memo.id}')"><i class="fa-regular fa-trash-can"></i></button>
-            `;
-            savedMemosContainer.appendChild(card);
-        });
-    }
+@media (max-width: 1024px) {
+    .dashboard-grid { grid-template-columns: 1fr; }
+}
 
-    // 카드를 클릭했을 때 상단 입력창으로 다시 복원 (수정 모드 진입)
-    window.loadMemoToEditor = (id) => {
-        const currentList = memoStorage[currentFolder];
-        const targetMemo = currentList.find(m => m.id === id);
-        if (targetMemo) {
-            memoTitleInput.value = targetMemo.title;
-            memoTextarea.value = targetMemo.content;
-            editingMemoId = id;
-            saveStatus.textContent = "모드: 메모 수정 중";
-            saveStatus.style.color = "#f59e0b";
-        }
-    };
+.col { display: flex; flex-direction: column; gap: 24px; }
 
-    // 메모 삭제 기능
-    window.deleteMemoCard = (id) => {
-        memoStorage[currentFolder] = memoStorage[currentFolder].filter(m => m.id !== id);
-        localStorage.setItem('workspace_memo_v4_lists', JSON.stringify(memoStorage));
-        if (editingMemoId === id) resetEditor();
-        renderMemoCards();
-    };
+.panel {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
 
-    // 입력 필드 초기화
-    function resetEditor() {
-        memoTitleInput.value = '';
-        memoTextarea.value = '';
-        editingMemoId = null;
-        saveStatus.textContent = "모드: 새 메모 작성";
-        saveStatus.style.color = "#71717a";
-    }
+.panel-header { display: flex; justify-content: space-between; align-items: center; }
+.panel-title { font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.badge { font-size: 0.75rem; background-color: #27272a; padding: 4px 10px; border-radius: 20px; color: #d4d4d8; }
 
-    // 💾 저장 버튼 처리 로직 (추가 및 수정을 동시에 분기 연산)
-    saveMemoBtn.addEventListener('click', () => {
-        const titleText = memoTitleInput.value.trim();
-        const contentText = memoTextarea.value.trim();
+.inline-form {
+    display: flex;
+    gap: 8px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--panel-border);
+    padding: 6px;
+    border-radius: 8px;
+    align-items: center;
+}
 
-        if (!contentText) {
-            alert('메모 내용을 입력해 주세요!');
-            return;
-        }
+.inline-form input {
+    background: transparent; border: none; color: var(--text-main); font-size: 0.85rem; outline: none; padding: 6px 8px;
+}
+.inline-form input[type="text"] { flex: 1; }
 
-        // 제목이 없으면 첫 줄 내용 슬라이싱
-        const finalTitle = titleText || contentText.split('\n')[0].substring(0, 15) || "제목 없는 메모";
+.date-input-wrapper { border: 1px solid #3f3f46; border-radius: 6px; background-color: #27272a; padding: 2px 4px; }
+.inline-form input[type="date"] { color: #ffffff !important; font-size: 0.8rem; cursor: pointer; }
 
-        if (editingMemoId) {
-            // 1. 기존 메모 수정 분기
-            const memoIndex = memoStorage[currentFolder].findIndex(m => m.id === editingMemoId);
-            if (memoIndex !== -1) {
-                memoStorage[currentFolder][memoIndex].title = finalTitle;
-                memoStorage[currentFolder][memoIndex].content = contentText;
-            }
-        } else {
-            // 2. 신규 메모 추가 분기
-            const newMemo = {
-                id: 'memo_' + Date.now(),
-                title: finalTitle,
-                content: contentText
-            };
-            memoStorage[currentFolder].unshift(newMemo);
-        }
+.icon-btn-add {
+    background-color: var(--accent); color: #000; border: none; width: 32px; height: 32px;
+    border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
 
-        localStorage.setItem('workspace_memo_v4_lists', JSON.stringify(memoStorage));
-        resetEditor();
-        renderMemoCards();
-    });
+/* 플래너 리스트 디자인 */
+.item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; }
+.item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; }
+.item-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+.time-tag { font-size: 0.75rem; background-color: #27272a; padding: 3px 8px; border-radius: 4px; color: #e4e4e7; font-weight: 500; }
+.item-text { font-size: 0.85rem; cursor: pointer; color: var(--text-main); }
+.item-row.done { opacity: 0.35; }
+.item-row.done .item-text { text-decoration: line-through; }
 
-    // 입력 필드 비우기 버튼
-    clearMemoBtn.addEventListener('click', resetEditor);
+/* 🗑️ 완벽하게 일치화된 미니멀한 슬림 삭제 버튼 */
+.compact-del-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease;
+}
+.compact-del-btn:hover { color: var(--danger); }
 
-    // 📁 폴더 전환 탭 이벤트
-    folderButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            document.querySelector('.tab-btn.active').classList.remove('active');
-            e.target.classList.add('active');
-            
-            currentFolder = e.target.getAttribute('data-folder');
-            resetEditor();
-            renderMemoCards();
-        });
-    });
+/* 디데이 레이아웃 고도화 */
+.dday-vertical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 240px;
+    overflow-y: auto;
+}
 
-    // 메모 초기 로딩 실행
-    renderMemoCards();
+.dday-card {
+    background-color: #18181b;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
 
+.dday-info { display: flex; flex-direction: column; gap: 4px; }
+.dday-name { font-size: 0.88rem; font-weight: 500; color: var(--text-main); }
+.dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
 
-    // --- 2. 플래너 기능 ---
-    const todoForm = document.getElementById('todo-form');
-    const todoTime = document.getElementById('todo-time');
-    const todoInput = document.getElementById('todo-input');
-    const todoList = document.getElementById('todo-list');
-    const todoStats = document.getElementById('todo-stats');
+.dday-right-zone {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
 
-    let todos = JSON.parse(localStorage.getItem('workspace_todos_v4')) || [];
+.dday-number {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: #27272a;
+    padding: 5px 12px;
+    border-radius: 6px;
+    min-width: 75px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
 
-    function updateTodoStats() {
-        const completed = todos.filter(t => t.completed).length;
-        todoStats.textContent = `${completed} / ${todos.length} 완료`;
-    }
+/* 세분화 메모장 구조 */
+.folder-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
+.tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
+.tab-btn:hover { color: var(--text-main); background-color: #27272a; }
+.tab-btn.active { color: #000; background-color: #ffffff; font-weight: 500; }
 
-    window.renderTodos = () => {
-        todoList.innerHTML = '';
-        todos.forEach((todo, idx) => {
-            const li = document.createElement('li');
-            li.className = `item-row ${todo.completed ? 'done' : ''}`;
-            li.innerHTML = `
-                <div class="item-left">
-                    <span class="time-tag">${todo.time}</span>
-                    <span class="item-text" onclick="toggleTodo(${idx})">${todo.text}</span>
-                </div>
-                <button class="delete-btn" onclick="deleteTodo(${idx})"><i class="fa-regular fa-trash-can"></i></button>
-            `;
-            todoList.appendChild(li);
-        });
-        updateTodoStats();
-    };
+.textarea-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+}
 
-    todoForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        todos.push({ time: todoTime.value, text: todoInput.value.trim(), completed: false });
-        localStorage.setItem('workspace_todos_v4', JSON.stringify(todos));
-        renderTodos();
-        todoInput.value = '';
-    });
+#memo-title-input {
+    width: 100%;
+    background-color: #18181b;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    outline: none;
+}
+#memo-title-input:focus { border-color: #52525b; }
 
-    window.toggleTodo = (idx) => {
-        todos[idx].completed = !todos[idx].completed;
-        localStorage.setItem('workspace_todos_v4', JSON.stringify(todos));
-        renderTodos();
-    };
+#memo-textarea {
+    width: 100%;
+    height: 160px;
+    background-color: #18181b;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 14px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+}
+#memo-textarea:focus { border-color: #52525b; }
 
-    window.deleteTodo = (idx) => {
-        todos.splice(idx, 1);
-        localStorage.setItem('workspace_todos_v4', JSON.stringify(todos));
-        renderTodos();
-    };
+.memo-buttons-group { display: flex; gap: 10px; }
+.btn-save {
+    flex: 2; background-color: #ffffff; color: #09090b; border: none; padding: 12px;
+    border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-secondary {
+    flex: 1; background-color: #27272a; color: var(--text-main); border: none;
+    padding: 12px; border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+}
+.btn-save:hover { background-color: var(--accent-hover); }
+.btn-secondary:hover { background-color: #3f3f46; }
 
-    renderTodos();
+.memo-list-header {
+    font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-top: 16px;
+    border-top: 1px solid var(--panel-border); padding-top: 16px;
+}
 
+.memo-cards-grid { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
+.memo-item-card {
+    background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px;
+    padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+}
+.memo-item-card:hover { border-color: #52525b; background-color: #202024; }
+.memo-card-main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.memo-card-title { font-size: 0.85rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.memo-card-snippet { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    // --- 3. 디데이 카운트다운 가로 정렬 고도화부 ---
-    const ddayForm = document.getElementById('dday-form');
-    const ddayTitle = document.getElementById('dday-title');
-    const ddayDate = document.getElementById('dday-date');
-    const ddayContainer = document.getElementById('dday-container');
-
-    let ddays = JSON.parse(localStorage.getItem('workspace_ddays_v4')) || [];
-
-    window.renderDDays = () => {
-        ddayContainer.innerHTML = '';
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        ddays.forEach((item, idx) => {
-            const target = new Date(item.date);
-            target.setHours(0, 0, 0, 0);
-            
-            const diff = target - today;
-            const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-            
-            let displayD = `D-${days}`;
-            if (days === 0) displayD = 'D-Day';
-            else if (days < 0) displayD = `D+${Math.abs(days)}`;
-
-            const div = document.createElement('div');
-            div.className = 'dday-card';
-            div.innerHTML = `
-                <div class="dday-info">
-                    <span class="dday-name">${item.title}</span>
-                    <span class="dday-date-text">${item.date}</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:16px;">
-                    <span class="dday-number">${displayD}</span>
-                    <button class="delete-btn" onclick="deleteDDay(${idx})"><i class="fa-regular fa-circle-xmark"></i></button>
-                </div>
-            `;
-            ddayContainer.appendChild(div);
-        });
-    };
-
-    ddayForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        ddays.push({ title: ddayTitle.value.trim(), date: ddayDate.value });
-        localStorage.setItem('workspace_ddays_v4', JSON.stringify(ddays));
-        renderDDays();
-        ddayForm.reset();
-    });
-
-    window.deleteDDay = (idx) => {
-        ddays.splice(idx, 1);
-        localStorage.setItem('workspace_ddays_v4', JSON.stringify(ddays));
-        renderDDays();
-    };
-
-    renderDDays();
-});
+.save-status { font-size: 0.75rem; color: #a1a1aa; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
