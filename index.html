@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Workspace Planner</title>
+    <title>Premium Workspace v4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -43,14 +43,14 @@
                     <div class="panel-header">
                         <span class="panel-title"><i class="fa-solid fa-fire"></i> 주요 디데이 일정</span>
                     </div>
-                    <form id="dday-form" class="inline-form dday-form-custom">
+                    <form id="dday-form" class="inline-form">
                         <input type="text" id="dday-title" placeholder="목표/시험 이름" required>
                         <div class="date-input-wrapper">
                             <input type="date" id="dday-date" required>
                         </div>
                         <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
                     </form>
-                    <div id="dday-container" class="dday-grid"></div>
+                    <div id="dday-container" class="dday-vertical-list"></div>
                 </section>
             </div>
 
@@ -58,7 +58,7 @@
                 <section class="panel memo-panel">
                     <div class="panel-header">
                         <span class="panel-title"><i class="fa-regular fa-folder-open"></i> 세분화 메모장</span>
-                        <span class="save-status" id="save-status">안전하게 저장됨</span>
+                        <span class="save-status" id="save-status">모드: 새 메모 작성</span>
                     </div>
                     
                     <div class="folder-tabs">
@@ -68,12 +68,17 @@
                     </div>
 
                     <div class="textarea-wrapper">
-                        <textarea id="memo-textarea" placeholder="이 폴더에 기록할 메모를 자유롭게 작성하세요..."></textarea>
+                        <input type="text" id="memo-title-input" placeholder="메모 제목을 입력하세요 (미입력 시 첫줄 자동 지정)">
+                        <textarea id="memo-textarea" placeholder="기록할 메모 내용을 자유롭게 작성하세요..."></textarea>
                     </div>
                     
-                    <div class="memo-footer">
+                    <div class="memo-buttons-group">
+                        <button id="clear-memo-btn" class="btn-secondary">새 메모창 비우기</button>
                         <button id="save-memo-btn" class="btn-save"><i class="fa-regular fa-floppy-disk"></i> 메모 저장하기</button>
                     </div>
+
+                    <div class="memo-list-header">저장된 메모 기록 목록</div>
+                    <div id="saved-memos-container" class="memo-cards-grid"></div>
                 </section>
             </div>
 
