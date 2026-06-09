@@ -1,148 +1,359 @@
-document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- 0. 상단 실시간 시계 기능 (추천 추가 기능) ---
-    const clockDisplay = document.getElementById('live-clock');
-    function updateClock() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        clockDisplay.textContent = `${hours}:${minutes}:${seconds}`;
+/* 극도의 깔끔함을 추구하는 스튜디오 무채색 감성 테마 */
+:root {
+    --bg: #0a0a0a;
+    --panel-bg: #121212;
+    --panel-border: #1f1f1f;
+    --input-bg: #181818;
+    --text-main: #eff1f5;
+    --text-muted: #6e6e73;
+    --accent: #ffffff;
+    --accent-dim: #3a3a3c;
+    --danger: #ff453a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Geist', 'Inter', -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 30px 20px;
+    -webkit-font-smoothing: antialiased;
+}
+
+.dashboard-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* 최상단 헤더 바 */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--panel-border);
+}
+
+.top-bar .brand {
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    color: var(--text-main);
+}
+
+.top-bar .clock {
+    font-size: 0.9rem;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+/* 대시보드 2열 균형 레이아웃 */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+}
 
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
 
-    // --- 1. 메모장 기능 (자동 저장) ---
-    const memoTextarea = document.getElementById('memo-textarea');
-    
-    // 기존에 저장된 메모 불러오기
-    const savedMemo = localStorage.getItem('daily-memo');
-    if (savedMemo) {
-        memoTextarea.value = savedMemo;
-    }
+/* 패널 모던 디자인 */
+.panel {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: border-color 0.2s ease;
+}
 
-    // 입력할 때마다 실시간 로컬스토리지 저장
-    memoTextarea.addEventListener('input', () => {
-        localStorage.setItem('daily-memo', memoTextarea.value);
-    });
+.panel:hover {
+    border-color: #2c2c2e;
+}
 
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-    // --- 2. 플래너 / 투두 기능 ---
-    const todoForm = document.getElementById('todo-form');
-    const todoTime = document.getElementById('todo-time');
-    const todoInput = document.getElementById('todo-input');
-    const todoList = document.getElementById('todo-list');
+.panel-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-    let plannerItems = JSON.parse(localStorage.getItem('planner-items')) || [];
+/* 미니멀 폼 필드 스타일 (투박함 완전 제거) */
+.inline-form {
+    display: flex;
+    gap: 8px;
+    background-color: var(--input-bg);
+    border: 1px solid var(--panel-border);
+    padding: 6px;
+    border-radius: 8px;
+}
 
-    function savePlanner() {
-        localStorage.setItem('planner-items', JSON.stringify(plannerItems));
-    }
+.inline-form select, 
+.inline-form input {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 0.85rem;
+    outline: none;
+    padding: 6px 10px;
+}
 
-    function renderPlanner() {
-        todoList.innerHTML = '';
-        
-        // 시간순 정렬 (일과를 가장 위로, 그 뒤는 시간순)
-        plannerItems.sort((a, b) => {
-            if (a.time === '일과') return -1;
-            if (b.time === '일과') return 1;
-            return a.time.localeCompare(b.time);
-        });
+.inline-form select {
+    color: var(--text-muted);
+    cursor: pointer;
+}
 
-        plannerItems.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.className = `item-row ${item.completed ? 'done' : ''}`;
-            
-            li.innerHTML = `
-                <div class="item-content">
-                    <span class="item-time">${item.time}</span>
-                    <span class="item-text" onclick="toggleItem(${index})">${item.text}</span>
-                </div>
-                <button class="action-btn" onclick="deleteItem(${index})">
-                    <i class="fa-regular fa-trash-can"></i>
-                </button>
-            `;
-            todoList.appendChild(li);
-        });
-    }
+.inline-form input {
+    flex: 1;
+}
 
-    todoForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const time = todoTime.value;
-        const text = todoInput.value.trim();
+.icon-btn-add {
+    background-color: var(--accent);
+    color: #000;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: opacity 0.15s;
+}
 
-        if (text) {
-            plannerItems.push({ time, text, completed: false });
-            savePlanner();
-            renderPlanner();
-            todoInput.value = '';
-        }
-    });
+.icon-btn-add:hover { opacity: 0.9; }
 
-    window.toggleItem = function(index) {
-        plannerItems[index].completed = !plannerItems[index].completed;
-        savePlanner();
-        renderPlanner();
-    };
+/* 리스트 아이템 디자인 */
+.item-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
 
-    window.deleteItem = function(index) {
-        plannerItems.splice(index, 1);
-        savePlanner();
-        renderPlanner();
-    };
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background-color: #161618;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+}
 
-    renderPlanner();
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
+.time-tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 2px 6px;
+    background-color: #2c2c2e;
+    border-radius: 4px;
+    color: #aeaeae;
+}
 
-    // --- 3. 포커스 타이머 기능 ---
-    let timerInterval;
-    let isRunning = false;
-    let timeLeft = 25 * 60;
+.item-text {
+    font-size: 0.85rem;
+    cursor: pointer;
+}
 
-    const timerDisplay = document.getElementById('timer');
-    const startBtn = document.getElementById('start-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-    const resetBtn = document.getElementById('reset-btn');
+.item-row.done {
+    opacity: 0.4;
+}
+.item-row.done .item-text {
+    text-decoration: line-through;
+}
 
-    function updateTimerDisplay() {
-        const mins = Math.floor(timeLeft / 60);
-        const secs = timeLeft % 60;
-        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
+.delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.delete-btn:hover { color: var(--danger); }
 
-    function startTimer() {
-        if (isRunning) return;
-        isRunning = true;
-        timerInterval = setInterval(() => {
-            if (timeLeft > 0) {
-                timeLeft--;
-                updateTimerDisplay();
-            } else {
-                clearInterval(timerInterval);
-                isRunning = false;
-                alert('포커스 시간이 종료되었습니다!');
-                timeLeft = 25 * 60;
-                updateTimerDisplay();
-            }
-        }, 1000);
-    }
+/* 세분화 폴더 메모 탭 */
+.folder-tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 10px;
+}
 
-    function pauseTimer() {
-        clearInterval(timerInterval);
-        isRunning = false;
-    }
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
 
-    function resetTimer() {
-        clearInterval(timerInterval);
-        isRunning = false;
-        timeLeft = 25 * 60;
-        updateTimerDisplay();
-    }
+.tab-btn:hover {
+    color: var(--text-main);
+    background-color: #1c1c1e;
+}
 
-    startBtn.addEventListener('click', startTimer);
-    pauseBtn.addEventListener('click', pauseTimer);
-    resetBtn.addEventListener('click', resetTimer);
+.tab-btn.active {
+    color: var(--text-main);
+    background-color: #2c2c2e;
+}
 
-    updateTimerDisplay();
-});
+.memo-panel {
+    flex: 1;
+}
+
+.textarea-wrapper {
+    flex: 1;
+    display: flex;
+}
+
+#memo-textarea {
+    width: 100%;
+    min-height: 240px;
+    background-color: #161618;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 16px;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+}
+
+#memo-textarea:focus {
+    border-color: #3a3a3c;
+}
+
+.save-status {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* 디데이 스케줄러 그리드 */
+.dday-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.dday-card {
+    background-color: #161618;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dday-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dday-name { font-size: 0.85rem; font-weight: 500; }
+.dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
+.dday-number {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+/* 포커스 타이머 (가로형 가로 밸런스 바) */
+.timer-bar-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timer-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.timer-digits {
+    font-size: 1.8rem;
+    font-weight: 300;
+    font-variant-numeric: tabular-nums;
+}
+
+.timer-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.ctrl-btn {
+    background-color: #2c2c2e;
+    color: var(--text-main);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.ctrl-btn.action {
+    background-color: var(--accent);
+    color: #000;
+}
+
+.ctrl-btn.text {
+    background: transparent;
+    color: var(--text-muted);
+}
+.ctrl-btn.text:hover { color: var(--text-main); }
+
+/* 스크롤바 커스텀 */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2c2c2e; border-radius: 10px; }
