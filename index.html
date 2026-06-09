@@ -20,9 +20,13 @@
                 <button type="button" class="menu-item active" data-target="view-planner">
                     <i class="fa-regular fa-calendar-check"></i> <span>플래너 & 일정</span>
                 </button>
-                <button type="button" class="menu-item" data-target="view-memo">
-                    <i class="fa-regular fa-file-lines"></i> <span>일반 메모장</span>
-                </button>
+                
+                <div class="menu-group-wrapper">
+                    <button type="button" class="menu-item" id="menu-btn-memo" data-target="view-memo">
+                        <i class="fa-regular fa-file-lines"></i> <span>일반 메모장</span>
+                    </button>
+                    <div id="sidebar-memo-folders" class="sidebar-sub-list hidden"></div>
+                </div>
                 
                 <div class="menu-group-wrapper">
                     <button type="button" class="menu-item" id="menu-btn-math" data-target="view-math">
@@ -72,7 +76,7 @@
                 <section class="panel">
                     <div id="folder-explorer-zone">
                         <div class="panel-header">
-                            <span class="panel-title">일반 메모 분류 보관함</span>
+                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 메모 폴더를 마우스나 손으로 끌어서 순서를 바꿀 수 있습니다.</span>
                             <button type="button" id="create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 분류 추가</button>
                         </div>
                         <div id="folder-grid-container" class="folder-grid"></div>
@@ -104,7 +108,7 @@
                 <section class="panel">
                     <div id="math-explorer-zone">
                         <div class="panel-header">
-                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 폴더를 마우스나 손으로 끌어서 순서를 변경할 수 있습니다.</span>
+                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 과목 폴더를 마우스나 손으로 끌어서 순서를 바꿀 수 있습니다.</span>
                             <button type="button" id="math-create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 과목 추가</button>
                         </div>
                         <div id="math-folder-grid" class="folder-grid"></div>
@@ -117,7 +121,7 @@
                                 <span class="current-folder-indicator" id="math-current-folder-title">과목명</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <button type="button" id="btn-manage-types" class="btn-secondary-sm"><i class="fa-solid fa-gear"></i> 유형 편집</button>
+                                <button type="button" id="btn-manage-types" class="btn-secondary-sm" style="background-color:#27272a; color:#fff; border:1px solid var(--panel-border); padding:6px 12px; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-gear"></i> 유형 편집</button>
                                 <span class="save-status" id="math-save-status">새 문항 등록 모드</span>
                             </div>
                         </div>
@@ -137,8 +141,8 @@
                                 <div class="math-notebook-form">
                                     <div class="input-inline-group">
                                         <input type="text" id="math-prob-title" placeholder="문제 출처나 문항 제목을 적으세요 (예: 6월 모평 22번)" style="flex: 1;">
-                                        <select id="math-prob-type" style="width: 160px;">
-                                            </select>
+                                        <select id="math-prob-type" style="width: 160px; background-color:#18181b; color:#fff; border:1px solid var(--panel-border); padding:8px; border-radius:6px;">
+                                        </select>
                                     </div>
                                     
                                     <div class="input-block">
@@ -176,9 +180,9 @@
             </div>
             <div class="modal-body">
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">이 과목에서 사용할 문제 유형(예: 지수함수, 로그함수)을 자유롭게 추가하세요.</p>
-                <div class="inline-form" style="margin-bottom: 15px;">
-                    <input type="text" id="new-type-input" placeholder="새로운 유형 이름 입력...">
-                    <button type="button" id="btn-add-type" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                <div class="inline-form" style="margin-bottom: 15px; display:flex; gap:8px;">
+                    <input type="text" id="new-type-input" placeholder="새로운 유형 이름 입력..." style="flex:1; background:transparent; border:none; color:#fff; padding:8px;">
+                    <button type="button" id="btn-add-type" class="icon-btn-add" style="width:36px; height:36px; background:#fff; color:#000; border:none; border-radius:6px; cursor:pointer;"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div id="custom-type-list" class="custom-type-manage-list"></div>
             </div>
