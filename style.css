@@ -1,14 +1,14 @@
+/* 프리미엄 인디 스튜디오 감성의 무채색 테마 */
 :root {
-    --bg: #0a0a0a;
-    --panel-bg: #121212;
-    --panel-border: #222222;
-    --input-bg: #181818;
-    --text-main: #eff1f5;
-    --text-muted: #707075;
+    --bg: #09090b;
+    --panel-bg: #141417;
+    --panel-border: #27272a;
+    --input-bg: #1c1c1f;
+    --text-main: #f4f4f5;
+    --text-muted: #71717a;
     --accent: #ffffff;
-    --accent-hover: #e5e5e5;
-    --danger: #ff453a;
-    --border-active: #444446;
+    --accent-hover: #e4e4e7;
+    --danger: #ef4444;
 }
 
 * {
@@ -24,38 +24,39 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 50px 20px;
 }
 
 .dashboard-wrapper {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1140px;
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
-/* 상단 헤더 */
+/* 탑 헤더 */
 .top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 12px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--panel-border);
 }
 
 .top-bar .brand {
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     letter-spacing: 2px;
 }
 
 .top-bar .clock {
     font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
     color: var(--text-muted);
 }
 
-/* 2분할 대시보드 구조 */
+/* 대시보드 완벽 균형 2열 구조 */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -74,7 +75,7 @@ body {
     gap: 24px;
 }
 
-/* 공통 패널 */
+/* 패널 공통 */
 .panel {
     background-color: var(--panel-bg);
     border: 1px solid var(--panel-border);
@@ -101,13 +102,13 @@ body {
 
 .badge {
     font-size: 0.75rem;
-    background-color: #1c1c1e;
-    padding: 4px 8px;
+    background-color: #27272a;
+    padding: 4px 10px;
     border-radius: 20px;
-    color: var(--text-muted);
+    color: #d4d4d8;
 }
 
-/* 인풋 폼 양식 (가시성 대폭 보완) */
+/* 인풋 입력창 디자인 */
 .inline-form {
     display: flex;
     gap: 8px;
@@ -115,6 +116,7 @@ body {
     border: 1px solid var(--panel-border);
     padding: 6px;
     border-radius: 8px;
+    align-items: center;
 }
 
 .inline-form select,
@@ -124,11 +126,11 @@ body {
     color: var(--text-main);
     font-size: 0.85rem;
     outline: none;
-    padding: 6px 10px;
+    padding: 6px 8px;
 }
 
 .inline-form select {
-    color: #aeaeae;
+    color: #a1a1aa;
     cursor: pointer;
 }
 
@@ -136,19 +138,25 @@ body {
     flex: 1;
 }
 
-/* 📅 연도/날짜 선택기 UI 시인성 강화 보완 */
-.inline-form input[type="date"] {
-    border: 1px solid var(--border-active);
+/* 📅 디데이 날짜 선택기 선명도 극대화 */
+.date-input-wrapper {
+    border: 1px solid #3f3f46;
     border-radius: 6px;
-    background-color: #1c1c1e;
-    color: #ffffff;
-    padding: 4px 8px;
+    background-color: #27272a;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+}
+
+.inline-form input[type="date"] {
+    color: #ffffff !important;
+    font-size: 0.8rem;
     cursor: pointer;
 }
 
 .icon-btn-add {
     background-color: var(--accent);
-    color: #000;
+    color: #000000;
     border: none;
     width: 32px;
     height: 32px;
@@ -157,17 +165,18 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.2s;
+    font-size: 0.85rem;
+    transition: background 0.15s;
 }
 .icon-btn-add:hover { background-color: var(--accent-hover); }
 
-/* 스케줄 리스트 */
+/* 리스트 아이템 연출 */
 .item-list {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    max-height: 220px;
+    max-height: 200px;
     overflow-y: auto;
 }
 
@@ -175,8 +184,8 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    background-color: #171719;
+    padding: 12px 14px;
+    background-color: #18181b;
     border: 1px solid var(--panel-border);
     border-radius: 8px;
 }
@@ -189,10 +198,10 @@ body {
 
 .time-tag {
     font-size: 0.75rem;
-    background-color: #2c2c2e;
+    background-color: #27272a;
     padding: 2px 6px;
     border-radius: 4px;
-    color: #aeaeae;
+    color: #d4d4d8;
 }
 
 .item-text {
@@ -201,7 +210,7 @@ body {
 }
 
 .item-row.done {
-    opacity: 0.4;
+    opacity: 0.35;
 }
 .item-row.done .item-text {
     text-decoration: line-through;
@@ -212,20 +221,21 @@ body {
     border: none;
     color: var(--text-muted);
     cursor: pointer;
+    transition: color 0.15s;
 }
 .delete-btn:hover { color: var(--danger); }
 
-/* 디데이 레이아웃 디테일 */
+/* 디데이 스케줄 카드 레이아웃 */
 .dday-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    max-height: 180px;
+    max-height: 200px;
     overflow-y: auto;
 }
 
 .dday-card {
-    background-color: #171719;
+    background-color: #18181b;
     border: 1px solid var(--panel-border);
     border-radius: 8px;
     padding: 12px;
@@ -242,9 +252,9 @@ body {
 
 .dday-name { font-size: 0.85rem; font-weight: 500; }
 .dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
-.dday-number { font-size: 1rem; font-weight: 600; }
+.dday-number { font-size: 0.95rem; font-weight: 600; color: #ffffff; }
 
-/* 메모장 탭 인터페이스 */
+/* 세분화 메모장 고도화 탭 인터페이스 */
 .folder-tabs {
     display: flex;
     gap: 6px;
@@ -257,29 +267,30 @@ body {
     border: none;
     color: var(--text-muted);
     font-size: 0.8rem;
-    padding: 6px 14px;
+    padding: 8px 14px;
     cursor: pointer;
     border-radius: 6px;
     transition: all 0.2s;
 }
 
-.tab-btn:hover { color: var(--text-main); background-color: #1c1c1e; }
-.tab-btn.active { color: var(--text-main); background-color: #2c2c2e; font-weight: 500; }
+.tab-btn:hover { color: var(--text-main); background-color: #27272a; }
+.tab-btn.active { color: #000000; background-color: #ffffff; font-weight: 500; }
 
 .memo-panel {
-    height: 100%;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .textarea-wrapper {
     flex: 1;
+    margin-top: 12px;
 }
 
 #memo-textarea {
     width: 100%;
-    height: 320px;
-    background-color: #171719;
+    height: 380px;
+    background-color: #18181b;
     border: 1px solid var(--panel-border);
     border-radius: 8px;
     padding: 16px;
@@ -289,24 +300,21 @@ body {
     resize: none;
     outline: none;
 }
-#memo-textarea:focus { border-color: var(--border-active); }
+#memo-textarea:focus { border-color: #52525b; }
 
 .save-status {
     font-size: 0.75rem;
     color: var(--text-muted);
-    transition: color 0.2s;
 }
 
-/* 💾 명시적 메모 저장 하단 영역 */
 .memo-footer {
-    display: flex;
-    justify-content: flex-end;
+    margin-top: 12px;
 }
 
 .btn-save {
     width: 100%;
-    background-color: #ffffff;
-    color: #000000;
+    background-color: #f4f4f5;
+    color: #09090b;
     border: none;
     padding: 12px;
     border-radius: 8px;
@@ -317,10 +325,10 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: background 0.2s;
+    transition: background 0.15s;
 }
-.btn-save:hover { background-color: var(--accent-hover); }
+.btn-save:hover { background-color: #e4e4e7; }
 
-/* 스크롤바 정돈 */
+/* 스크롤바 디자인 최적화 */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: #2c2c2e; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
