@@ -26,14 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarSubFolders = document.getElementById('sidebar-sub-folders');
     const sidebarMemoFolders = document.getElementById('sidebar-memo-folders');
 
+        // --- app.js 내 사이드바 제어 함수 수정 ---
     function hideSidebar() {
         mainSidebar.classList.add('collapsed');
         outsideToggleButtons.forEach(btn => btn.classList.remove('hidden'));
+        
+        // 🧼 기존에 스크롤을 강제로 막던 모바일 패치 코드를 과감히 지워줍니다.
     }
+    
     function showSidebar() {
         mainSidebar.classList.remove('collapsed');
         outsideToggleButtons.forEach(btn => btn.classList.add('hidden'));
+        
+        // 🧼 기존에 스크롤을 강제로 막던 모바일 패치 코드를 과감히 지워줍니다.
     }
+    
     if(btnCloseSidebar) btnCloseSidebar.addEventListener('click', hideSidebar);
     if(btnOpenSidebar) btnOpenSidebar.addEventListener('click', showSidebar);
     document.querySelectorAll('.aria-toggle-sidebar').forEach(btn => {
