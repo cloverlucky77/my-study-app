@@ -12,11 +12,9 @@
 
     <div class="app-container">
         
-        <!-- 🧭 좌측 고정/접이식 사이드바 -->
         <aside class="sidebar" id="main-sidebar">
             <div class="sidebar-brand">
                 <div><i class="fa-solid fa-cloud"></i> <span>WORKSPACE</span></div>
-                <!-- 사이드바 접기 버튼 -->
                 <button type="button" id="btn-close-sidebar" class="sidebar-toggle-inside"><i class="fa-solid fa-angles-left"></i></button>
             </div>
             <nav class="sidebar-menu">
@@ -41,10 +39,8 @@
             <div class="sidebar-footer" id="live-clock">00:00:00</div>
         </aside>
 
-        <!-- 💻 우측 메인 콘텐츠 공간 -->
         <main class="main-content">
             
-            <!-- [1번 화면] 플래너 & 일정 뷰 -->
             <div id="view-planner" class="content-view">
                 <div class="view-header">
                     <div class="header-left-zone">
@@ -65,6 +61,7 @@
                         </form>
                         <ul id="todo-list" class="item-list"></ul>
                     </section>
+                    
                     <section class="panel">
                         <div class="panel-header"><span class="panel-title">주요 디데이 카운트다운</span></div>
                         <form id="dday-form" class="inline-form">
@@ -77,7 +74,6 @@
                 </div>
             </div>
 
-            <!-- [2번 화면] 일반 메모장 뷰 -->
             <div id="view-memo" class="content-view hidden">
                 <div class="view-header">
                     <div class="header-left-zone">
@@ -113,7 +109,6 @@
                 </section>
             </div>
 
-            <!-- [3번 화면] 과목별 및 유형별 오답노트 뷰 -->
             <div id="view-math" class="content-view hidden">
                 <div class="view-header">
                     <div class="header-left-zone">
@@ -188,7 +183,6 @@
         </main>
     </div>
 
-    <!-- 팝업 모달창 (터치 드래그 인식을 위해 touch-action 차단 제어) -->
     <div id="type-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -197,7 +191,7 @@
             </div>
             <div class="modal-body">
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-                    <i class="fa-solid fa-hand-pointer"></i> 목록을 마우스로 끌거나 손가락으로 밀어서 배치 순서를 변경해 보세요.
+                    <i class="fa-solid fa-hand-pointer"></i> 왼쪽의 핸들(☰)을 잡고 끌면 순서가 바뀝니다. 빈 곳을 밀면 정상 스크롤됩니다.
                 </p>
                 <div class="inline-form" style="margin-bottom: 15px; display:flex; gap:8px;">
                     <input type="text" id="new-type-input" placeholder="새로운 유형 이름 입력..." style="flex:1; background:transparent; border:none; color:#fff; padding:8px;">
