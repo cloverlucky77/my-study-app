@@ -486,13 +486,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if(mathEditorZone) mathEditorZone.classList.remove('hidden');
         if(mathCurrentFolderTitle) mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-book-open"></i> ${activeMathFolder}`;
         
-        // 🔍 [동기화 패치 보완] 해당 과목 단원에 들어가자마자 디비의 유형 목록을 긁어와 다이렉트로 채워 넣습니다.
-        db.ref(`workspace/mathNotebooks/${activeMathFolder}`).once('value', (snapshot) => {
+        // ✨ [수정 완료] 과목에 진입하자마자 기존 유형과 저장된 오답 리스트를 파이어베이스에서 실시간으로 가져와 바로 뿌려줍니다.
+        db.ref(`workspace/mathNotebooks/${activeMathFolder}`).on('value', (snapshot) => {
             const data = snapshot.val() || {};
             renderTypeSelectOptions(data.customTypes || {});
             renderTypeManageItems(data.customTypes || {});
+            renderMathProblemsList(data.problems || {}); // 👈 처음 들어왔을 때 오답 리스트를 즉시 그려주는 핵심 코드 추가
         });
     }
+    
     if(mathBackBtn) mathBackBtn.addEventListener('click', exitMathFolderScope);
     function exitMathFolderScope() { activeMathFolder = null; if(mathEditorZone) mathEditorZone.classList.add('hidden'); if(mathExplorerZone) mathExplorerZone.classList.remove('hidden'); }
 
