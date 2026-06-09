@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 else view.classList.add('hidden');
             });
             
-            // 아코디언 메뉴 노출 제어
             if (item.id === 'menu-btn-math') {
                 sidebarSubFolders.classList.remove('hidden');
                 sidebarMemoFolders.classList.add('hidden');
@@ -49,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 
-    // --- 🗂️ 1. 일반 메모장 분류 보관함 (사이드바 폴더 트리 연동 완료) ---
+    // --- 🗂️ 1. 일반 메모장 분류 보관함 ---
     const folderExplorerZone = document.getElementById('folder-explorer-zone');
     const memoEditorZone = document.getElementById('memo-editor-zone');
     const folderGridContainer = document.getElementById('folder-grid-container');
@@ -67,14 +66,13 @@ document.addEventListener('DOMContentLoaded', () => {
     db.ref('workspace/folders').on('value', (snapshot) => {
         const foldersData = snapshot.val() || {};
         renderFolderDashboard(foldersData);
-        renderSidebarMemoFolders(foldersData); // 💡 사이드바 폴더 트리 업데이트
+        renderSidebarMemoFolders(foldersData);
         if (activeFolderName) {
             if (!foldersData[activeFolderName]) { exitFolderScope(); } 
             else { renderFolderMemos(foldersData[activeFolderName].memos || {}); }
         }
     });
 
-    // 일반 메모장 폴더 드래그 앤 드롭 및 렌더링
     function renderFolderDashboard(foldersData) {
         folderGridContainer.innerHTML = '';
         const sorted = Object.keys(foldersData).map(name => ({
@@ -106,10 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 일반 메모장 드래그 배치 트래커
     folderGridContainer.addEventListener('dragover', e => {
         e.preventDefault();
-        const afterElement = getDragAfterElement(folderGridContainer, e.clientX, e.clientY);
+        const afterElement = getDragAfterElement(folderGridContainer, '.folder-card', e.clientX, e.clientY);
         const draggingCard = document.querySelector('#folder-grid-container .folder-card.dragging');
         if(!draggingCard) return;
         if (afterElement == null) folderGridContainer.appendChild(draggingCard);
@@ -123,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
         db.ref().update(updates);
     }
 
-    // 💡 일반 메모장용 사이드바 하단 리스트 자동 랜더링 함수
     function renderSidebarMemoFolders(foldersData) {
         sidebarMemoFolders.innerHTML = '';
         const sorted = Object.keys(foldersData).map(name => ({
@@ -154,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.deleteEntireFolder = (event, folderName) => {
         event.stopPropagation();
-        if (confirm(`[${folderName}] 폴더를 원격 서버에서 완전히 지울까요?`)) {
+        if (confirm(`[${folderName}] 폴더를 서버에서 삭제하시겠습니까?`)) {
             db.ref('workspace/folders/' + folderName).remove();
         }
     };
@@ -200,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('clear-memo-btn').addEventListener('click', resetEditor);
 
 
-    // --- 📚 2. 과목별 & 자율 단원유형 오답노트 및 드래그 앤 드롭 엔진 ---
+    // --- 📚 2. 과목별 및 문제 유형별 오답노트 (유형 단원 드래그 정렬 엔진 탑재) ---
     const mathExplorerZone = document.getElementById('math-explorer-zone');
     const mathEditorZone = document.getElementById('math-editor-zone');
     const mathFolderGrid = document.getElementById('math-folder-grid');
@@ -233,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let editingMathId = null;
     let currentSortMode = 'latest'; 
 
-    // 파이어베이스 오답노트 파트 실시간 통합 구독 리스너
     db.ref('workspace/mathNotebooks').on('value', (snapshot) => {
         const mathData = snapshot.val() || {};
         renderMathDashboard(mathData);
@@ -243,14 +238,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!mathData[activeMathFolder]) { 
                 exitMathFolder(); 
             } else { 
-                renderTypeDropdowns(mathData[activeMathFolder].customTypes || {});
+                const typesObj = mathData[activeMathFolder].customTypes || {};
+                renderTypeDropdowns(typesObj);
                 renderMathItems(mathData[activeMathFolder].problems || {}); 
-                renderModalTypeList(mathData[activeMathFolder].customTypes || {});
+                renderModalTypeList(typesObj);
             }
         }
     });
 
-    // 오답노트 폴더 대시보드 렌더링 및 드래그 바인딩
     function renderMathDashboard(mathData) {
         mathFolderGrid.innerHTML = '';
         const sorted = Object.keys(mathData).map(name => ({
@@ -288,19 +283,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 오답노트 드래그 트래커
     mathFolderGrid.addEventListener('dragover', e => {
         e.preventDefault();
-        const afterElement = getDragAfterElement(mathFolderGrid, e.clientX, e.clientY);
+        const afterElement = getDragAfterElement(mathFolderGrid, '.folder-card', e.clientX, e.clientY);
         const draggingCard = document.querySelector('#math-folder-grid .folder-card.dragging');
         if(!draggingCard) return;
         if (afterElement == null) mathFolderGrid.appendChild(draggingCard);
         else mathFolderGrid.insertBefore(draggingCard, afterElement);
     });
 
-    // 드래그 좌표 계산 헬퍼 함수 (공통 사용)
-    function getDragAfterElement(container, x, y) {
-        const draggableElements = [...container.querySelectorAll('.folder-card:not(.dragging)')];
+    // 💡 공통 드래그 요소 연산 트래커 함수
+    function getDragAfterElement(container, selector, x, y) {
+        const draggableElements = [...container.querySelectorAll(`${selector}:not(.dragging)`)];
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
             const offsetX = x - box.left - box.width / 2;
@@ -340,18 +334,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     mathCreateFolderBtn.addEventListener('click', () => {
-        const name = prompt('새 과목 오답노트 폴더 이름을 입력하세요 (예: 수학I):');
+        const name = prompt('새 과목 오답노트 폴더 이름을 입력하세요:');
         if (!name) return;
         const cleaned = name.trim().replace(/[.#$\[\]]/g, "");
         if (!cleaned) return;
         db.ref('workspace/mathNotebooks/' + cleaned).set({ 
-            createdAt: Date.now(), order: 999, problems: {}, customTypes: { "지수함수": true, "로그함수": true }
+            createdAt: Date.now(), order: 999, problems: {}, 
+            customTypes: { 
+                "지수함수": { order: 0 }, 
+                "로그함수": { order: 1 } 
+            }
         });
     });
 
     window.deleteMathFolder = (event, folderName) => {
         event.stopPropagation();
-        if (confirm(`[${folderName}] 과목 폴더와 내부 모든 문항 데이터가 영구 삭제됩니다.`)) {
+        if (confirm(`[${folderName}] 과목 내부 모든 문항 데이터가 영구 삭제됩니다.`)) {
             db.ref('workspace/mathNotebooks/' + folderName).remove();
         }
     };
@@ -361,16 +359,11 @@ document.addEventListener('DOMContentLoaded', () => {
         mathExplorerZone.classList.add('hidden'); mathEditorZone.classList.remove('hidden');
         mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-folder-open"></i> ${activeMathFolder}`;
         filterTypeSelect.value = "ALL";
-        db.ref(`workspace/mathNotebooks/${folderName}`).once('value', (snapshot) => {
-            const val = snapshot.val() || {};
-            renderTypeDropdowns(val.customTypes || {});
-            renderMathItems(val.problems || {});
-        });
     }
     mathBackBtn.addEventListener('click', exitMathFolder);
     function exitMathFolder() { activeMathFolder = null; mathEditorZone.classList.add('hidden'); mathExplorerZone.classList.remove('hidden'); }
 
-    // 🏷️ 사용자가 생성한 맞춤 단원 드롭다운 반영 처리
+    // 🏷️ 순서값(order)이 정렬된 커스텀 단원배치 반영 함수
     function renderTypeDropdowns(typesObj) {
         const prevFilter = filterTypeSelect.value;
         const prevFormType = mathProbType.value;
@@ -378,12 +371,16 @@ document.addEventListener('DOMContentLoaded', () => {
         filterTypeSelect.innerHTML = '<option value="ALL">전체 유형 보기</option>';
         mathProbType.innerHTML = '';
 
-        const keys = Object.keys(typesObj);
-        if(keys.length === 0) keys.push("미분류");
+        const sortedTypes = Object.keys(typesObj).map(key => {
+            const val = typesObj[key];
+            return { name: key, order: (val && val.order !== undefined) ? val.order : 999 };
+        }).sort((a, b) => a.order - b.order);
 
-        keys.forEach(type => {
-            filterTypeSelect.innerHTML += `<option value="${type}">${type}</option>`;
-            mathProbType.innerHTML += `<option value="${type}">${type}</option>`;
+        if(sortedTypes.length === 0) sortedTypes.push({ name: "미분류", order: 0 });
+
+        sortedTypes.forEach(t => {
+            filterTypeSelect.innerHTML += `<option value="${t.name}">${t.name}</option>`;
+            mathProbType.innerHTML += `<option value="${t.name}">${t.name}</option>`;
         });
 
         if ([...filterTypeSelect.options].some(o => o.value === prevFilter)) filterTypeSelect.value = prevFilter;
@@ -471,30 +468,71 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     mathClearBtn.addEventListener('click', resetMathEditor);
 
-    // 🌟 [유형 단원 편집창 모달 완벽 연동 메커니즘]
+    // 🌟 [유형 단원 드래그 정렬 제어 엔진 구현부]
     btnManageTypes.addEventListener('click', () => {
         typeModal.classList.remove('hidden');
-        db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes`).once('value', (snap) => { renderModalTypeList(snap.val() || {}); });
     });
     closeTypeModal.addEventListener('click', () => typeModal.classList.add('hidden'));
 
     btnAddType.addEventListener('click', () => {
         const typeName = newTypeInput.value.trim().replace(/[.#$\[\]]/g, "");
         if(!typeName) return alert('유형 단원명을 입력해 주세요.');
-        db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes/${typeName}`).set(true);
-        newTypeInput.value = '';
+        
+        // 새로운 유형 추가 시 맨 마지막 순서로 저장
+        db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes`).once('value', snap => {
+            const data = snap.val() || {};
+            const nextOrder = Object.keys(data).length;
+            db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes/${typeName}`).set({ order: nextOrder });
+            newTypeInput.value = '';
+        });
     });
 
     function renderModalTypeList(typesObj) {
         customTypeList.innerHTML = '';
-        const keys = Object.keys(typesObj);
-        if(keys.length === 0) { customTypeList.innerHTML = `<div style="font-size:0.75rem; color:#71717a; text-align:center; padding:10px;">등록된 단원이 없습니다.</div>`; return; }
-        keys.forEach(type => {
+        const sortedTypes = Object.keys(typesObj).map(key => {
+            const val = typesObj[key];
+            return { name: key, order: (val && val.order !== undefined) ? val.order : 999 };
+        }).sort((a, b) => a.order - b.order);
+
+        if(sortedTypes.length === 0) { 
+            customTypeList.innerHTML = `<div style="font-size:0.75rem; color:#71717a; text-align:center; padding:10px;">등록된 단원이 없습니다.</div>`; 
+            return; 
+        }
+
+        sortedTypes.forEach(t => {
             const div = document.createElement('div');
             div.className = 'type-manage-item';
-            div.innerHTML = `<span>🏷️ ${type}</span><button class="compact-del-btn" onclick="deleteCustomType('${type}')"><i class="fa-regular fa-trash-can"></i></button>`;
+            div.setAttribute('draggable', 'true');
+            div.dataset.id = t.name;
+            div.innerHTML = `<span>☰ 🏷️ ${t.name}</span><button class="compact-del-btn" onclick="deleteCustomType('${t.name}')"><i class="fa-regular fa-trash-can"></i></button>`;
+            
+            div.addEventListener('dragstart', () => div.classList.add('dragging'));
+            div.addEventListener('dragend', () => {
+                div.classList.remove('dragging');
+                saveNewTypeOrder();
+            });
             customTypeList.appendChild(div);
         });
+    }
+
+    // 🖐️ 유형 편집기 내 순서 정렬 트래커 리스너
+    customTypeList.addEventListener('dragover', e => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', e.clientX, e.clientY);
+        const draggingItem = document.querySelector('.type-manage-item.dragging');
+        if(!draggingItem) return;
+        if (afterElement == null) customTypeList.appendChild(draggingItem);
+        else customTypeList.insertBefore(draggingItem, afterElement);
+    });
+
+    // 정렬된 유형 순서(order)를 파이어베이스에 업데이트
+    function saveNewTypeOrder() {
+        const items = [...customTypeList.querySelectorAll('.type-manage-item')];
+        const updates = {};
+        items.forEach((item, index) => {
+            updates[`workspace/mathNotebooks/${activeMathFolder}/customTypes/${item.dataset.id}/order`] = index;
+        });
+        db.ref().update(updates);
     }
 
     window.deleteCustomType = (type) => {
