@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimal Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Premium Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,7 +12,7 @@
 
     <div class="dashboard-wrapper">
         <header class="top-bar">
-            <div class="brand">WORKSPACE</div>
+            <div class="brand"><i class="fa-solid fa-layer-group"></i> WORKSPACE</div>
             <div id="live-clock" class="clock">00:00:00</div>
         </header>
 
@@ -21,18 +21,19 @@
             <div class="col">
                 <section class="panel">
                     <div class="panel-header">
-                        <span class="panel-title"><i class="fa-regular fa-calendar"></i> 오늘의 플래너</span>
+                        <span class="panel-title"><i class="fa-regular fa-calendar-check"></i> 오늘의 플래너</span>
+                        <span class="badge" id="todo-stats">0 / 0 완료</span>
                     </div>
                     <form id="todo-form" class="inline-form">
                         <select id="todo-time">
-                            <option value="ALL">일과</option>
+                            <option value="일과">일과</option>
                             <option value="09:00">09:00</option>
                             <option value="12:00">12:00</option>
                             <option value="15:00">15:00</option>
                             <option value="18:00">18:00</option>
                             <option value="21:00">21:00</option>
                         </select>
-                        <input type="text" id="todo-input" placeholder="새로운 계획을 적어보세요..." required>
+                        <input type="text" id="todo-input" placeholder="새로운 계획을 입력하세요..." required>
                         <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
                     </form>
                     <ul id="todo-list" class="item-list"></ul>
@@ -40,9 +41,9 @@
 
                 <section class="panel">
                     <div class="panel-header">
-                        <span class="panel-title"><i class="fa-solid fa-flag"></i> 주요 디데이 일정</span>
+                        <span class="panel-title"><i class="fa-solid fa-fire"></i> 주요 디데이 일정</span>
                     </div>
-                    <form id="dday-form" class="inline-form">
+                    <form id="dday-form" class="inline-form dday-form-fix">
                         <input type="text" id="dday-title" placeholder="목표/시험 이름" required>
                         <input type="date" id="dday-date" required>
                         <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
@@ -55,29 +56,21 @@
                 <section class="panel memo-panel">
                     <div class="panel-header">
                         <span class="panel-title"><i class="fa-regular fa-folder-open"></i> 세분화 메모장</span>
+                        <span class="save-status" id="save-status">수정 중...</span>
                     </div>
-                    <div class="folder-tabs">
+                    
+                    <div class="folder-tabs" id="folder-tabs-container">
                         <button class="tab-btn active" data-folder="general">📁 일반</button>
                         <button class="tab-btn" data-folder="idea">💡 아이디어</button>
                         <button class="tab-btn" data-folder="study">📝 학습</button>
                     </div>
-                    <div class="textarea-wrapper">
-                        <textarea id="memo-textarea" placeholder="이 폴더에 남길 메모를 자유롭게 입력하세요..."></textarea>
-                    </div>
-                    <div class="save-status" id="save-status">변경사항 자동 저장됨</div>
-                </section>
 
-                <section class="panel">
-                    <div class="timer-bar-layout">
-                        <div class="timer-meta">
-                            <span class="panel-title"><i class="fa-regular fa-hourglass"></i> 포커스</span>
-                            <div class="timer-digits" id="timer">25:00</div>
-                        </div>
-                        <div class="timer-controls">
-                            <button id="start-btn" class="ctrl-btn action">시작</button>
-                            <button id="pause-btn" class="ctrl-btn">정지</button>
-                            <button id="reset-btn" class="ctrl-btn text">리셋</button>
-                        </div>
+                    <div class="textarea-wrapper">
+                        <textarea id="memo-textarea" placeholder="선택한 폴더에 남길 메모를 작성하세요..."></textarea>
+                    </div>
+                    
+                    <div class="memo-footer">
+                        <button id="save-memo-btn" class="btn-save"><i class="fa-regular fa-floppy-disk"></i> 메모 저장하기</button>
                     </div>
                 </section>
             </div>
