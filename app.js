@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
         mainSidebar.classList.add('collapsed');
         outsideToggleButtons.forEach(btn => btn.classList.remove('hidden'));
     }
-
     function showSidebar() {
         mainSidebar.classList.remove('collapsed');
         outsideToggleButtons.forEach(btn => btn.classList.add('hidden'));
@@ -32,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(btnCloseSidebar) btnCloseSidebar.addEventListener('click', hideSidebar);
     if(btnOpenSidebar) btnOpenSidebar.addEventListener('click', showSidebar);
     
-    // 타 뷰에 분산 생성된 햄버거 메뉴에도 연동 적용
     document.querySelectorAll('.aria-toggle-sidebar').forEach(btn => {
         btn.addEventListener('click', showSidebar);
     });
@@ -220,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('clear-memo-btn').addEventListener('click', resetEditor);
 
 
-    // --- 📚 2. 과목별 및 문제 유형별 오답노트 (터치 제어 드래그 엔진 탑재) ---
+    // --- 📚 2. 과목별 및 문제 유형별 오답노트 ---
     const mathExplorerZone = document.getElementById('math-explorer-zone');
     const mathEditorZone = document.getElementById('math-editor-zone');
     const mathFolderGrid = document.getElementById('math-folder-grid');
@@ -363,10 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!cleaned) return;
         db.ref('workspace/mathNotebooks/' + cleaned).set({ 
             createdAt: Date.now(), order: 999, problems: {}, 
-            customTypes: { 
-                "지수함수": { order: 0 }, 
-                "로그함수": { order: 1 } 
-            }
+            customTypes: { "지수함수": { order: 0 }, "로그함수": { order: 1 } }
         });
     });
 
@@ -491,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
     mathClearBtn.addEventListener('click', resetMathEditor);
 
 
-    // 🌟 [유형 모달 전용: PC 드래그 + 모바일 터치 하이브리드 엔진]
+    // 🌟 [유형 모달: 스크롤 잠김 해결 드래그 엔진 업그레이드]
     btnManageTypes.addEventListener('click', () => { typeModal.classList.remove('hidden'); });
     closeTypeModal.addEventListener('click', () => typeModal.classList.add('hidden'));
 
@@ -505,6 +500,9 @@ document.addEventListener('DOMContentLoaded', () => {
             newTypeInput.value = '';
         });
     });
+
+    // 전역 변수로 어떤 요소가 터치 드래그 중인지 추적
+    let activeTouchDraggingItem = null;
 
     function renderModalTypeList(typesObj) {
         customTypeList.innerHTML = '';
@@ -521,45 +519,61 @@ document.addEventListener('DOMContentLoaded', () => {
         sortedTypes.forEach(t => {
             const div = document.createElement('div');
             div.className = 'type-manage-item';
-            div.setAttribute('draggable', 'true');
             div.dataset.id = t.name;
-            div.innerHTML = `<span>☰ 🏷️ ${t.name}</span><button class="compact-del-btn" onclick="deleteCustomType('${t.name}')"><i class="fa-regular fa-trash-can"></i></button>`;
             
-            // 1) 데스크탑 마우스 드래그 바인딩
+            // 💡 ☰ 부분만 핸들 영역으로 설정하여 스크롤 분리
+            div.innerHTML = `
+                <div>
+                    <span class="drag-handle" draggable="true">☰</span>
+                    <span>🏷️ ${t.name}</span>
+                </div>
+                <button class="compact-del-btn" onclick="deleteCustomType('${t.name}')"><i class="fa-regular fa-trash-can"></i></button>
+            `;
+            
+            const handle = div.querySelector('.drag-handle');
+
+            // 1) PC 웹 마우스 드래그 대응
+            div.setAttribute('draggable', 'true');
             div.addEventListener('dragstart', () => div.classList.add('dragging'));
             div.addEventListener('dragend', () => {
                 div.classList.remove('dragging');
                 saveNewTypeOrder();
             });
 
-            // 2) 모바일 전용 터치 트래커 주입
-            div.addEventListener('touchstart', (e) => {
+            // 2) 🌟 모바일 터치 드래그 & 스크롤 분리 알고리즘
+            handle.addEventListener('touchstart', (e) => {
+                activeTouchDraggingItem = div;
                 div.classList.add('dragging');
             }, { passive: true });
-
-            div.addEventListener('touchmove', (e) => {
-                const touch = e.touches[0];
-                // 손가락 위치 기반으로 아래에 깔린 타겟 엘리먼트 추적 연산
-                const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', touch.clientX, touch.clientY);
-                const draggingItem = document.querySelector('.type-manage-item.dragging');
-                if(!draggingItem) return;
-                
-                if (afterElement == null) customTypeList.appendChild(draggingItem);
-                else customTypeList.insertBefore(draggingItem, afterElement);
-            }, { passive: true });
-
-            div.addEventListener('touchend', () => {
-                if(div.classList.contains('dragging')) {
-                    div.classList.remove('dragging');
-                    saveNewTypeOrder();
-                }
-            });
 
             customTypeList.appendChild(div);
         });
     }
 
-    // 마우스 드래그 오버 보정
+    // 모바일 터치이동 및 종료 이벤트를 컨테이너 차원에서 정밀 감시 (성능 최적화 및 튕김 방지)
+    customTypeList.addEventListener('touchmove', (e) => {
+        if (!activeTouchDraggingItem) return;
+        const touch = e.touches[0];
+        
+        // 사용자가 핸들을 터치해 순서를 변경하는 순간에만 브라우저 고유 스크롤을 방지
+        e.preventDefault(); 
+        
+        const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', touch.clientX, touch.clientY);
+        if (afterElement == null) {
+            customTypeList.appendChild(activeTouchDraggingItem);
+        } else {
+            customTypeList.insertBefore(activeTouchDraggingItem, afterElement);
+        }
+    }, { passive: false });
+
+    customTypeList.addEventListener('touchend', () => {
+        if (activeTouchDraggingItem) {
+            activeTouchDraggingItem.classList.remove('dragging');
+            activeTouchDraggingItem = null;
+            saveNewTypeOrder();
+        }
+    });
+
     customTypeList.addEventListener('dragover', e => {
         e.preventDefault();
         const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', e.clientX, e.clientY);
@@ -623,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteTodoCloud = (id) => db.ref(`workspace/todos/${id}`).remove();
 
 
-    // --- 🎯 4. 디데이 카운트다운 클라우드 엔진 ---
+    // --- 🎯 4. 디데이 카운트다운 클라우드 엔진 (시차 버그 및 역산 완전 해결) ---
     const ddayForm = document.getElementById('dday-form');
     const ddayTitle = document.getElementById('dday-title');
     const ddayDate = document.getElementById('dday-date');
@@ -633,18 +647,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderDDayList(ddaysObj) {
         ddayContainer.innerHTML = '';
-        const today = new Date(); today.setHours(0,0,0,0);
+        
+        // 로컬 정오/자정 기준 오차를 타파하기 위한 시각 동기화 작업
+        const now = new Date();
+        const todayTimestamp = Date.parse(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`);
+
         Object.keys(ddaysObj).forEach(id => {
             const item = ddaysObj[id];
-            const target = new Date(item.date); target.setHours(0,0,0,0);
-            const days = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-            let displayD = days === 0 ? 'D-Day' : (days > 0 ? `D-${days}` : `D+${Math.abs(days)}`);
+            const targetTimestamp = Date.parse(item.date);
+            
+            if (isNaN(targetTimestamp)) return; // 잘못된 데이터 무시
+
+            // 날짜 간격 역산 연산
+            const diffMs = targetTimestamp - todayTimestamp;
+            const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            
+            let displayD = '';
+            let isUrgent = false;
+
+            if (days === 0) {
+                displayD = 'D-DAY';
+                isUrgent = true;
+            } else if (days > 0) {
+                displayD = `D-${days}`;
+                if(days <= 3) isUrgent = true; // 3일 이내로 다가오면 강조 효과 활성화
+            } else {
+                displayD = `D+${Math.abs(days)}`;
+            }
 
             const div = document.createElement('div');
-            div.className = 'dday-card';
+            // 당일 혹은 임박 시 클래스 추가 적용
+            div.className = `dday-card ${isUrgent ? 'urgent' : ''}`;
             div.innerHTML = `
-                <div class="dday-info"><span class="dday-name">${item.title}</span><span class="dday-date-text">목표일: ${item.date}</span></div>
-                <div class="dday-right-zone"><span class="dday-number">${displayD}</span><button class="compact-del-btn" onclick="deleteDDayCloud('${id}')"><i class="fa-regular fa-trash-can"></i></button></div>
+                <div class="dday-info">
+                    <span class="dday-name">${item.title}</span>
+                    <span class="dday-date-text">목표일: ${item.date}</span>
+                </div>
+                <div class="dday-right-zone">
+                    <span class="dday-number">${displayD}</span>
+                    <button class="compact-del-btn" onclick="deleteDDayCloud('${id}')"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
             `;
             ddayContainer.appendChild(div);
         });
@@ -652,6 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ddayForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        if(!ddayDate.value) return alert('날짜를 정확히 지정해 주세요.');
         db.ref('workspace/ddays').push({ title: ddayTitle.value.trim(), date: ddayDate.value });
         ddayForm.reset();
     });
