@@ -86,7 +86,6 @@ body {
 }
 .inline-form input[type="text"] { flex: 1; }
 
-/* 디데이용 캘린더 입력 필드 감싸기 */
 .date-input-wrapper {
     border-left: 1px solid var(--panel-border);
     padding-left: 8px;
@@ -105,7 +104,6 @@ body {
     border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-/* 목록 디자인 */
 .item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; }
 .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; }
 .item-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
@@ -120,24 +118,42 @@ body {
 }
 .compact-del-btn:hover { color: var(--danger); }
 
-/* 디데이 카드 디자인 정교화 */
 .dday-vertical-list { display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; }
 .dday-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .dday-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
 .dday-name { font-size: 0.88rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
 .dday-right-zone { display: flex; align-items: center; gap: 16px; }
-.dday-number { font-size: 0.9rem; font-weight: 600; color: #ffffff; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 75px; text-align: center; letter-spacing: 0.5px; }
 
-/* 메모장 내부 탭 스타일 */
+/* 🎯 정밀 카운트다운 숫자가 들어가는 배지 스타일 보완 */
+.dday-number { font-size: 0.88rem; font-weight: 600; color: #ffffff; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 80px; text-align: center; letter-spacing: 0.5px; border: 1px solid #3f3f46; }
+
 .folder-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px; }
 .tab-btn { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; padding: 8px 14px; cursor: pointer; border-radius: 6px; }
 .tab-btn:hover { color: var(--text-main); background-color: #27272a; }
 .tab-btn.active { color: #000; background-color: #ffffff; font-weight: 500; }
 
 .textarea-wrapper { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-#memo-title-input { width: 100%; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
+
+/* 메모 윗줄 메타 영역 레이아웃 세분화 */
+.memo-meta-inline { display: flex; gap: 8px; width: 100%; align-items: stretch; }
+#memo-title-input { flex: 1; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
 #memo-title-input:focus { border-color: #52525b; }
+
+.category-dropdown {
+    max-width: 130px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px;
+    padding: 0 10px; color: var(--text-main); font-size: 0.85rem; outline: none; cursor: pointer;
+}
+.category-dropdown:focus { border-color: #52525b; }
+
+/* ➕ 분류 추가용 디자인 확장 버튼 */
+.btn-add-tag {
+    background-color: #27272a; color: var(--text-main); border: 1px solid var(--panel-border);
+    border-radius: 6px; padding: 0 12px; font-size: 0.8rem; cursor: pointer; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px; transition: all 0.15s ease;
+}
+.btn-add-tag:hover { background-color: #3f3f46; color: #fff; }
+
 #memo-textarea { width: 100%; height: 160px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; line-height: 1.6; resize: none; outline: none; }
 #memo-textarea:focus { border-color: #52525b; }
 
@@ -148,13 +164,22 @@ body {
 .btn-secondary:hover { background-color: #3f3f46; }
 
 .memo-list-header { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; margin-top: 16px; border-top: 1px solid var(--panel-border); padding-top: 16px; }
-.memo-cards-grid { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 4px; }
+.memo-cards-grid { display: flex; flex-direction: column; gap: 12px; max-height: 260px; overflow-y: auto; padding-right: 4px; }
+
+/* 📅 날짜 그룹화 헤더 배지 */
+.memo-date-group-header {
+    font-size: 0.75rem; color: #a1a1aa; font-weight: 600; background-color: #1c1c1f;
+    padding: 4px 10px; border-radius: 4px; margin-top: 6px; display: inline-block; align-self: flex-start;
+}
+
 .memo-item-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 .memo-item-card:hover { border-color: #52525b; background-color: #202024; }
 .memo-card-main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
-.memo-card-title { font-size: 0.85rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.memo-card-snippet { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.save-status { font-size: 0.75rem; color: #a1a1aa; }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+.memo-title-row { display: flex; align-items: center; gap: 8px; }
+.memo-card-title { font-size: 0.85rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 🏷️ 자유 동적 생성 파일 태그 미니 디자인 */
+.file-tag { font-size: 0.7rem; background-color: #27272a; border: 1px solid #3f3f46; padding: 2px 6px; border-radius: 4px; color: #e4e4e7; font-weight: 500; }
+
+.memo-card-snippet { font-size: 0.7
