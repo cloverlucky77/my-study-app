@@ -16,7 +16,6 @@ body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
 
 .app-container { display: flex; width: 100%; min-height: 100vh; position: relative; }
 
-/* 🧭 접이식 변형이 추가된 사이드바 스타일 */
 .sidebar { 
     width: 260px; 
     background-color: var(--sidebar-bg); 
@@ -29,17 +28,10 @@ body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease, opacity 0.2s ease;
     overflow: hidden;
 }
-.sidebar.collapsed {
-    width: 0px;
-    padding: 32px 0px;
-    border-right: none;
-    opacity: 0;
-    pointer-events: none;
-}
+.sidebar.collapsed { width: 0px; padding: 32px 0px; border-right: none; opacity: 0; pointer-events: none; }
 
 .main-content { flex: 1; padding: 40px; overflow-y: auto; background-color: var(--bg); transition: padding 0.3s ease; }
 
-/* 토글 버튼 디자인 */
 .sidebar-brand { font-weight: 600; font-size: 1rem; letter-spacing: 2px; padding-left: 12px; margin-bottom: 40px; display: flex; align-items: center; justify-content: space-between; width: 100%; white-space: nowrap; }
 .sidebar-brand i { color: #60a5fa; }
 .sidebar-toggle-inside { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.95rem; transition: color 0.2s; padding: 4px; }
@@ -91,25 +83,27 @@ body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
 .compact-del-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; }
 .compact-del-btn:hover { color: var(--danger); }
 
-.dday-vertical-list { display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; }
-.dday-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+/* 🎯 완벽하게 보완된 디데이 리스트 UI */
+.dday-vertical-list { display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 2px; }
+.dday-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .dday-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
-.dday-name { font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dday-name { font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
 .dday-date-text { font-size: 0.75rem; color: var(--text-muted); }
-.dday-right-zone { display: flex; align-items: center; gap: 16px; }
-.dday-number { font-size: 0.88rem; font-weight: 600; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 80px; text-align: center; border: 1px solid #3f3f46; }
+.dday-right-zone { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.dday-number { font-size: 0.85rem; font-weight: 600; background-color: #27272a; padding: 5px 12px; border-radius: 6px; min-width: 75px; text-align: center; border: 1px solid #3f3f46; color: #fff; }
+/* 디데이가 오늘이거나 임박했을 때의 강조 스타일 */
+.dday-card.urgent .dday-number { background-color: #ef4444; border-color: #f87171; color: #fff; font-weight: 700; }
 
 .folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; padding-top: 8px; }
 .folder-card { background-color: #161619; border: 1px solid var(--panel-border); border-radius: 10px; padding: 22px 14px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; cursor: grab; position: relative; transition: transform 0.15s, border-color 0.15s, opacity 0.15s; user-select: none; }
 .folder-card:active { cursor: grabbing; }
-.folder-card:hover { border-color: #52525b; background-color: #1b1b1f; }
-.folder-card.dragging { opacity: 0.4; transform: scale(0.97); border-color: #34d399; background-color: #111814; }
+.folder-card.dragging { opacity: 0.4; transform: scale(0.97); border-color: #34d399; }
 
 .folder-icon { font-size: 1.8rem; color: #f59e0b; }
 #math-folder-grid .folder-icon { color: #34d399; }
 .folder-name { font-size: 0.88rem; font-weight: 500; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f4f4f5; }
 .folder-memo-count { font-size: 0.72rem; color: var(--text-muted); background-color: #202024; padding: 2px 8px; border-radius: 4px; }
-.btn-folder-delete-absolute { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #3f3f46; cursor: pointer; font-size: 0.78rem; transition: color 0.15s; }
+.btn-folder-delete-absolute { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #3f3f46; cursor: pointer; font-size: 0.78rem; }
 .btn-folder-delete-absolute:hover { color: var(--danger); }
 
 .btn-primary-sm { background-color: #fff; color: #000; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; }
@@ -121,12 +115,11 @@ body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
 .math-left-list-panel { display: flex; flex-direction: column; gap: 10px; border-right: 1px solid var(--panel-border); padding-right: 15px; overflow-y: auto; }
 .math-right-editor-panel { overflow-y: auto; padding-left: 5px; display: flex; flex-direction: column; gap: 15px; }
 .filter-wrapper { display: flex; gap: 6px; }
-.filter-wrapper select { background-color: #18181b; color: #fff; border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px; font-size: 0.8rem; outline: none; cursor: pointer; flex: 1; }
-.btn-sort-toggle { background-color: #27272a; border: 1px solid #3f3f46; color: #e4e4e7; font-size: 0.75rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.filter-wrapper select { background-color: #18181b; color: #fff; border: 1px solid var(--panel-border); border-radius: 6px; padding: 6px; font-size: 0.8rem; outline: none; }
+.btn-sort-toggle { background-color: #27272a; border: 1px solid #3f3f46; color: #e4e4e7; font-size: 0.75rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
 
 .notebook-vertical-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; }
 .notebook-item-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; }
-.notebook-item-card:hover { background-color: #202024; border-color: #444449; }
 .notebook-item-card.active-item { border-color: #34d399; background-color: #14221c; }
 .notebook-card-main { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; padding-right: 8px; }
 .notebook-card-title { font-size: 0.85rem; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -149,14 +142,13 @@ body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
 .memo-cards-grid { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; margin-top: 10px; }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.75); display: flex; align-items: center; justify-content: center; z-index: 9999; }
-.modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; width: 420px; max-width: 95%; padding: 24px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+.modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; width: 420px; max-width: 95%; padding: 24px; display: flex; flex-direction: column; gap: 15px; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; }
 .modal-header h3 { font-size: 1.05rem; font-weight: 600; color: #fff; }
-.btn-close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.6rem; cursor: pointer; line-height: 1; }
-.btn-close-modal:hover { color: #fff; }
+.btn-close-modal { background: none; border: none; color: var(--text-muted); font-size: 1.6rem; cursor: pointer; }
 
-/* 🌟 터치 시 스크롤 버벅임과 터치 이벤트를 강제 제어하기 위한 스타일 */
-.custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; margin-top: 5px; }
+/* 🌟 스크롤 잠김 해결을 위한 유형 단원 아이템 UI 코어 설정 */
+.custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; margin-top: 5px; padding-right: 2px; }
 .type-manage-item { 
     display: flex; 
     justify-content: space-between; 
@@ -167,11 +159,19 @@ body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; 
     border-radius: 6px; 
     font-size: 0.85rem; 
     color:#fff; 
-    cursor: grab; 
     user-select: none; 
     transition: background-color 0.1s;
-    touch-action: none; /* 브라우저의 기본 스크롤 동작을 임시 제한하여 터치 무브 추적을 보장 */
+    touch-action: pan-y; /* 💡 핵심: 상하 스크롤 차단을 해제하여 목록 내부 탐색을 정상화 */
 }
-.type-manage-item:active { cursor: grabbing; }
 .type-manage-item.dragging { opacity: 0.4; border-color: #34d399; background-color: #111814; }
-.type-manage-item:hover { background-color: #222226; }
+
+/* 💡 정밀 제어를 위한 드래그 핸들 전용 클래스 */
+.drag-handle {
+    cursor: grab;
+    padding: 4px 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-right: 6px;
+    display: inline-block;
+}
+.drag-handle:active { cursor: grabbing; color: #fff; }
