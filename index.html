@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Workspace</title>
+    <title>Premium Workspace Planner</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -43,9 +43,11 @@
                     <div class="panel-header">
                         <span class="panel-title"><i class="fa-solid fa-fire"></i> 주요 디데이 일정</span>
                     </div>
-                    <form id="dday-form" class="inline-form dday-form-fix">
+                    <form id="dday-form" class="inline-form dday-form-custom">
                         <input type="text" id="dday-title" placeholder="목표/시험 이름" required>
-                        <input type="date" id="dday-date" required>
+                        <div class="date-input-wrapper">
+                            <input type="date" id="dday-date" required>
+                        </div>
                         <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
                     </form>
                     <div id="dday-container" class="dday-grid"></div>
@@ -56,17 +58,17 @@
                 <section class="panel memo-panel">
                     <div class="panel-header">
                         <span class="panel-title"><i class="fa-regular fa-folder-open"></i> 세분화 메모장</span>
-                        <span class="save-status" id="save-status">수정 중...</span>
+                        <span class="save-status" id="save-status">안전하게 저장됨</span>
                     </div>
                     
-                    <div class="folder-tabs" id="folder-tabs-container">
+                    <div class="folder-tabs">
                         <button class="tab-btn active" data-folder="general">📁 일반</button>
                         <button class="tab-btn" data-folder="idea">💡 아이디어</button>
                         <button class="tab-btn" data-folder="study">📝 학습</button>
                     </div>
 
                     <div class="textarea-wrapper">
-                        <textarea id="memo-textarea" placeholder="선택한 폴더에 남길 메모를 작성하세요..."></textarea>
+                        <textarea id="memo-textarea" placeholder="이 폴더에 기록할 메모를 자유롭게 작성하세요..."></textarea>
                     </div>
                     
                     <div class="memo-footer">
