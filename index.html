@@ -12,9 +12,12 @@
 
     <div class="app-container">
         
-        <aside class="sidebar">
+        <!-- 🧭 좌측 고정/접이식 사이드바 -->
+        <aside class="sidebar" id="main-sidebar">
             <div class="sidebar-brand">
-                <i class="fa-solid fa-cloud"></i> <span>WORKSPACE</span>
+                <div><i class="fa-solid fa-cloud"></i> <span>WORKSPACE</span></div>
+                <!-- 사이드바 접기 버튼 -->
+                <button type="button" id="btn-close-sidebar" class="sidebar-toggle-inside"><i class="fa-solid fa-angles-left"></i></button>
             </div>
             <nav class="sidebar-menu">
                 <button type="button" class="menu-item active" data-target="view-planner">
@@ -30,7 +33,7 @@
                 
                 <div class="menu-group-wrapper">
                     <button type="button" class="menu-item" id="menu-btn-math" data-target="view-math">
-                        <i class="fa-solid fa-book-open"></i> <span>📚 과목별 오답노트</span>
+                        <i class="fa-solid fa-book-open"></i> <span>과목별 오답노트</span>
                     </button>
                     <div id="sidebar-sub-folders" class="sidebar-sub-list hidden"></div>
                 </div>
@@ -38,11 +41,16 @@
             <div class="sidebar-footer" id="live-clock">00:00:00</div>
         </aside>
 
+        <!-- 💻 우측 메인 콘텐츠 공간 -->
         <main class="main-content">
             
+            <!-- [1번 화면] 플래너 & 일정 뷰 -->
             <div id="view-planner" class="content-view">
                 <div class="view-header">
-                    <h2><i class="fa-regular fa-calendar-check"></i> 오늘의 플래너 & 주요 일정</h2>
+                    <div class="header-left-zone">
+                        <button type="button" id="btn-open-sidebar" class="sidebar-toggle-outside hidden"><i class="fa-solid fa-bars"></i></button>
+                        <h2><i class="fa-regular fa-calendar-check"></i> 오늘의 플래너 & 주요 일정</h2>
+                    </div>
                 </div>
                 <div class="two-col-grid">
                     <section class="panel">
@@ -69,14 +77,18 @@
                 </div>
             </div>
 
+            <!-- [2번 화면] 일반 메모장 뷰 -->
             <div id="view-memo" class="content-view hidden">
                 <div class="view-header">
-                    <h2><i class="fa-regular fa-file-lines"></i> 파일 분류별 일반 메모장</h2>
+                    <div class="header-left-zone">
+                        <button type="button" class="sidebar-toggle-outside hidden aria-toggle-sidebar"><i class="fa-solid fa-bars"></i></button>
+                        <h2><i class="fa-regular fa-file-lines"></i> 파일 분류별 일반 메모장</h2>
+                    </div>
                 </div>
                 <section class="panel">
                     <div id="folder-explorer-zone">
                         <div class="panel-header">
-                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 메모 폴더를 마우스나 손으로 끌어서 순서를 바꿀 수 있습니다.</span>
+                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 메모 폴더를 마우스나 터치로 끌어서 순서를 바꿀 수 있습니다.</span>
                             <button type="button" id="create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 분류 추가</button>
                         </div>
                         <div id="folder-grid-container" class="folder-grid"></div>
@@ -101,14 +113,18 @@
                 </section>
             </div>
 
+            <!-- [3번 화면] 과목별 및 유형별 오답노트 뷰 -->
             <div id="view-math" class="content-view hidden">
                 <div class="view-header">
-                    <h2><i class="fa-solid fa-book-open"></i> 과목별 및 문제 유형별 오답노트 관리</h2>
+                    <div class="header-left-zone">
+                        <button type="button" class="sidebar-toggle-outside hidden aria-toggle-sidebar"><i class="fa-solid fa-bars"></i></button>
+                        <h2><i class="fa-solid fa-book-open"></i> 과목별 및 문제 유형별 오답노트 관리</h2>
+                    </div>
                 </div>
                 <section class="panel">
                     <div id="math-explorer-zone">
                         <div class="panel-header">
-                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 과목 폴더를 마우스나 손으로 끌어서 순서를 바꿀 수 있습니다.</span>
+                            <span class="panel-title" style="color: #a1a1aa;"><i class="fa-solid fa-hand-pointer"></i> 과목 폴더를 마우스나 터치로 끌어서 순서를 바꿀 수 있습니다.</span>
                             <button type="button" id="math-create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 과목 추가</button>
                         </div>
                         <div id="math-folder-grid" class="folder-grid"></div>
@@ -172,6 +188,7 @@
         </main>
     </div>
 
+    <!-- 팝업 모달창 (터치 드래그 인식을 위해 touch-action 차단 제어) -->
     <div id="type-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
@@ -180,7 +197,7 @@
             </div>
             <div class="modal-body">
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-                    <i class="fa-solid fa-hand-pointer"></i> 아래 유형 리스트를 마우스로 끌어서 배치 순서를 바꿀 수 있습니다.
+                    <i class="fa-solid fa-hand-pointer"></i> 목록을 마우스로 끌거나 손가락으로 밀어서 배치 순서를 변경해 보세요.
                 </p>
                 <div class="inline-form" style="margin-bottom: 15px; display:flex; gap:8px;">
                     <input type="text" id="new-type-input" placeholder="새로운 유형 이름 입력..." style="flex:1; background:transparent; border:none; color:#fff; padding:8px;">
