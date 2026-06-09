@@ -1,422 +1,192 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WORKSPACE - 통합 플래너 & 달력</title>
-  <style>
-    /* 전체 레이아웃 초기화 및 테마 설정 */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background-color: #0d0e12;
-      color: #ffffff;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* 왼쪽 사이드바 (WORKSPACE) */
-    .sidebar-left {
-      width: 260px;
-      background-color: #13151a;
-      padding: 30px 24px;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #1f232b;
-    }
-
-    .logo {
-      font-size: 18px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      margin-bottom: 40px;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .menu-item {
-      padding: 16px 20px;
-      border-radius: 10px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      color: #8a8f98;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s ease;
-    }
-
-    .menu-item.active {
-      background-color: #ffffff;
-      color: #000000;
-    }
-
-    /* 메인 콘텐츠 영역 */
-    .main-content {
-      flex: 1;
-      padding: 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .main-header {
-      font-size: 26px;
-      font-weight: bold;
-    }
-
-    /* 대시보드 내부 양쪽 분할 레이아웃 */
-    .content-body {
-      display: flex;
-      gap: 24px;
-      flex: 1;
-      height: calc(100% - 60px);
-    }
-
-    /* [왼쪽] 달력 섹션 */
-    .calendar-section {
-      flex: 1.2;
-      background-color: #13151a;
-      border-radius: 16px;
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-
-    .calendar-header h2 {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .calendar-header button {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 5px 10px;
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 12px;
-      flex: 1;
-    }
-
-    .day-label {
-      text-align: center;
-      color: #565d68;
-      font-weight: 600;
-      font-size: 13px;
-      padding-bottom: 8px;
-    }
-
-    .day-cell {
-      background-color: #1a1d24;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      aspect-ratio: 1;
-    }
-
-    .day-cell:hover {
-      background-color: #242933;
-    }
-
-    /* 선택된 오늘 날짜 강조 (스크린샷 스타일) */
-    .day-cell.active {
-      background-color: #ffffff;
-      color: #000000;
-      font-weight: bold;
-    }
-
-    /* [오른쪽] 플래너 섹션 - 디데이를 없애고 꽉 차게 변경한 핵심 영역 */
-    .planner-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%; /* 우측 공간 전체 확보 */
-    }
-
-    /* 일정 관리 카드 */
-    .schedule-management-card {
-      background-color: #13151a;
-      border-radius: 16px;
-      padding: 30px;
-      display: flex;
-      flex-direction: column;
-      height: 100%; /* 💡 디데이가 사라진 아래 빈 공간까지 카드가 늘어납니다 */
-    }
-
-    .todo-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .todo-header h3 {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .todo-stats {
-      background-color: #1a1d24;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      color: #8a8f98;
-      font-weight: 600;
-    }
-
-    /* 일정 입력 레이아웃 */
-    .todo-input-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-    }
-
-    .time-input {
-      width: 80px;
-      background-color: #1a1d24;
-      border: 1px solid #242933;
-      border-radius: 10px;
-      color: #fff;
-      padding: 12px;
-      text-align: center;
-      font-size: 14px;
-    }
-
-    .text-input {
-      flex: 1;
-      background-color: #1a1d24;
-      border: 1px solid #242933;
-      border-radius: 10px;
-      color: #fff;
-      padding: 12px 16px;
-      font-size: 14px;
-    }
-
-    .text-input::placeholder {
-      color: #565d68;
-    }
-
-    .add-btn {
-      background-color: #ffffff;
-      color: #000000;
-      border: none;
-      border-radius: 10px;
-      width: 44px;
-      font-size: 22px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* 늘어난 일정 목록 출력 공간 */
-    .todo-list {
-      flex: 1;
-      overflow-y: auto; /* 일정이 많아지면 카드 내부에서 스크롤 작동 */
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding-right: 4px;
-    }
-
-    /* 내부 스크롤바 커스텀 */
-    .todo-list::-webkit-scrollbar {
-      width: 6px;
-    }
-    .todo-list::-webkit-scrollbar-thumb {
-      background-color: #242933;
-      border-radius: 4px;
-    }
-
-    .todo-item {
-      background-color: #1a1d24;
-      padding: 16px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .todo-content {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      font-size: 14px;
-    }
-
-    .todo-time {
-      color: #8a8f98;
-      font-weight: 500;
-    }
-
-    .delete-btn {
-      background: none;
-      border: none;
-      color: #565d68;
-      cursor: pointer;
-      font-size: 14px;
-      transition: color 0.2s;
-    }
-    
-    .delete-btn:hover {
-      color: #ff4d4d;
-    }
-
-    .empty-msg {
-      color: #565d68;
-      text-align: center;
-      margin: auto 0; /* 세로 중앙 정렬 */
-      font-size: 14px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Cloud Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="sidebar-left">
-    <div class="logo">☁️ WORKSPACE</div>
-    <div class="menu-item active">통합 플래너 & 달력</div>
-    <div class="menu-item">메모장 & 고정메모</div>
-    <div class="menu-item">과목별 오답노트</div>
-  </div>
-
-  <div class="main-content">
-    <div class="main-header">2024년 00월</div>
-    
-    <div class="content-body">
-      
-      <div class="calendar-section">
-        <div class="calendar-header">
-          <button>&lt;</button>
-          <h2>2026년 6월</h2>
-          <button>&gt;</button>
-        </div>
-        <div class="calendar-grid">
-          <div class="day-label">일</div><div class="day-label">월</div><div class="day-label">화</div><div class="day-label">수</div><div class="day-label">목</div><div class="day-label">금</div><div class="day-label">토</div>
-          
-          <div class="day-cell"></div><div class="day-cell">1</div><div class="day-cell">2</div><div class="day-cell">3</div><div class="day-cell">4</div><div class="day-cell">5</div><div class="day-cell">6</div>
-          <div class="day-cell">7</div><div class="day-cell">8</div><div class="day-cell">9</div><div class="day-cell active" onclick="updatePlannerDate('6월 10일')">10</div><div class="day-cell" onclick="updatePlannerDate('6월 11일')">11</div><div class="day-cell" onclick="updatePlannerDate('6월 12일')">12</div><div class="day-cell">13</div>
-          <div class="day-cell">14</div><div class="day-cell">15</div><div class="day-cell">16</div><div class="day-cell">17</div><div class="day-cell">18</div><div class="day-cell">19</div><div class="day-cell">20</div>
-          <div class="day-cell">21</div><div class="day-cell">22</div><div class="day-cell">23</div><div class="day-cell">24</div><div class="day-cell">25</div><div class="day-cell">26</div><div class="day-cell">27</div>
-          <div class="day-cell">28</div><div class="day-cell">29</div><div class="day-cell">30</div>
-        </div>
-      </div>
-
-      <div class="planner-section">
-        <div class="schedule-management-card">
-          <div class="todo-header">
-            <h3 id="planner-title">6월 10일 일정 관리</h3>
-            <div class="todo-stats" id="todo-counter">0 / 0 완료</div>
-          </div>
-
-          <div class="todo-input-group">
-            <input type="text" class="time-input" id="todo-time" placeholder="시간">
-            <input type="text" class="text-input" id="todo-text" placeholder="할 일을 입력하세요...">
-            <button class="add-btn" onclick="addTodoItem()">+</button>
-          </div>
-
-          <div class="todo-list" id="todo-container">
-            <div class="empty-msg" id="empty-message">등록된 일정이 없습니다.</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    let todoItems = [];
-
-    // 달력 클릭 시 일정 관리 제목 날짜 동적 변경
-    function updatePlannerDate(dateText) {
-      document.getElementById('planner-title').innerText = `${dateText} 일정 관리`;
-    }
-
-    // 새 일정 등록 기능
-    function addTodoItem() {
-      const timeInput = document.getElementById('todo-time');
-      const textInput = document.getElementById('todo-text');
-
-      if (!textInput.value.trim()) return;
-
-      const newItem = {
-        id: Date.now(),
-        time: timeInput.value.trim() ? timeInput.value.trim() : '시간 지정 없음',
-        text: textInput.value.trim(),
-        completed: false
-      };
-
-      todoItems.push(newItem);
-      
-      // 입력창 비우기
-      timeInput.value = '';
-      textInput.value = '';
-      
-      renderTodoList();
-    }
-
-    // 일정 삭제 기능
-    function deleteTodoItem(id) {
-      todoItems = todoItems.filter(item => item.id !== id);
-      renderTodoList();
-    }
-
-    // 투두 리스트 갱신 및 상태 바 카운트 업데이트
-    function renderTodoList() {
-      const container = document.getElementById('todo-container');
-      const counter = document.getElementById('todo-counter');
-      
-      if (todoItems.length === 0) {
-        container.innerHTML = `<div class="empty-msg" id="empty-message">등록된 일정이 없습니다.</div>`;
-        counter.innerText = '0 / 0 완료';
-        return;
-      }
-
-      container.innerHTML = '';
-      let completedCount = 0;
-
-      todoItems.forEach(item => {
-        if (item.completed) completedCount++;
+    <div class="app-container">
         
-        const row = document.createElement('div');
-        row.className = 'todo-item';
-        row.innerHTML = `
-          <div class="todo-content">
-            <span class="todo-time">${item.time}</span>
-            <span>${item.text}</span>
-          </div>
-          <button class="delete-btn" onclick="deleteTodoItem(${item.id})">✕</button>
-        `;
-        container.appendChild(row);
-      });
+        <aside class="sidebar" id="main-sidebar">
+            <div class="sidebar-brand">
+                <div><i class="fa-solid fa-cloud"></i> <span>WORKSPACE</span></div>
+                <button type="button" id="btn-close-sidebar" class="sidebar-toggle-inside"><i class="fa-solid fa-angles-left"></i></button>
+            </div>
+            <nav class="sidebar-menu">
+                <button type="button" class="menu-item active" data-target="view-planner">
+                    <i class="fa-regular fa-calendar-days"></i> <span>통합 플래너 & 달력</span>
+                </button>
+                
+                <div class="menu-group-wrapper">
+                    <button type="button" class="menu-item" id="menu-btn-memo" data-target="view-memo">
+                        <i class="fa-regular fa-file-lines"></i> <span>메모장 & 고정메모</span>
+                    </button>
+                    <div id="sidebar-memo-folders" class="sidebar-sub-list hidden"></div>
+                </div>
+                
+                <div class="menu-group-wrapper">
+                    <button type="button" class="menu-item" id="menu-btn-math" data-target="view-math">
+                        <i class="fa-solid fa-book-open"></i> <span>과목별 오답노트</span>
+                    </button>
+                    <div id="sidebar-sub-folders" class="sidebar-sub-list hidden"></div>
+                </div>
+            </nav>
+            <div class="sidebar-footer" id="live-clock">00:00:00</div>
+        </aside>
 
-      counter.innerText = `${completedCount} / ${todoItems.length} 완료`;
-    }
-  </script>
+        <main class="main-content">
+            
+            <div id="view-planner" class="content-view">
+                <div class="view-header">
+                    <div class="header-left-zone">
+                        <button type="button" id="btn-open-sidebar" class="sidebar-toggle-outside hidden"><i class="fa-solid fa-bars"></i></button>
+                        <h2 id="calendar-view-title">2024년 00월</h2>
+                    </div>
+                </div>
+
+                <div class="planner-integrated-grid">
+                    <div class="calendar-panel panel">
+                        <div class="calendar-controls">
+                            <button id="prev-month"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span id="calendar-month-year">May 2024</span>
+                            <button id="next-month"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-grid" id="calendar-days">
+                            </div>
+                    </div>
+
+                    <div class="daily-detail-stack">
+                        <section class="panel">
+                            <div class="panel-header">
+                                <span class="panel-title" id="selected-date-label">오늘의 할 일</span>
+                                <span class="badge" id="todo-stats">0/0</span>
+                            </div>
+                            <form id="todo-form" class="inline-form">
+                                <input type="text" id="todo-time-input" placeholder="시간" style="max-width: 70px;">
+                                <input type="text" id="todo-input" placeholder="할 일을 입력하세요..." required>
+                                <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                            </form>
+                            <ul id="todo-list" class="item-list"></ul>
+                        </section>
+
+                        <section class="panel">
+                            <div class="panel-header"><span class="panel-title">기한 임박 디데이</span></div>
+                            <form id="dday-form" class="inline-form">
+                                <input type="text" id="dday-title" placeholder="목표 이름" required>
+                                <input type="date" id="dday-date" required>
+                                <button type="submit" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                            </form>
+                            <div id="dday-container" class="dday-vertical-list"></div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-memo" class="content-view hidden">
+                <div class="view-header">
+                    <div class="header-left-zone">
+                        <button type="button" class="sidebar-toggle-outside hidden aria-toggle-sidebar"><i class="fa-solid fa-bars"></i></button>
+                        <h2><i class="fa-regular fa-file-lines"></i> 메모장 시스템</h2>
+                    </div>
+                </div>
+
+                <div class="memo-layout-split">
+                    <section class="panel pinned-memo-panel">
+                        <div class="panel-header">
+                            <span class="panel-title"><i class="fa-solid fa-thumbtack"></i> 실시간 고정 메모 (자동 저장)</span>
+                            <span class="save-status" id="pinned-save-status">저장됨</span>
+                        </div>
+                        <textarea id="pinned-memo-textarea" placeholder="여기에 적는 내용은 하나로 유지되며 자동으로 수정/저장됩니다. 중요한 공지나 루틴을 적어두세요..."></textarea>
+                    </section>
+
+                    <section class="panel">
+                        <div id="folder-explorer-zone">
+                            <div class="panel-header">
+                                <span class="panel-title">분류 보관함</span>
+                                <button type="button" id="create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 분류</button>
+                            </div>
+                            <div id="folder-grid-container" class="folder-grid"></div>
+                        </div>
+                        <div id="memo-editor-zone" class="hidden">
+                            <div class="panel-header">
+                                <button type="button" id="back-to-folders-btn" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 목록</button>
+                                <span class="current-folder-indicator" id="current-folder-title">폴더명</span>
+                            </div>
+                            <div class="textarea-wrapper">
+                                <input type="text" id="memo-title-input" placeholder="제목">
+                                <textarea id="memo-textarea" placeholder="내용을 적으세요..."></textarea>
+                            </div>
+                            <div class="memo-buttons-group">
+                                <button id="save-memo-btn" class="btn-save">기록 저장</button>
+                            </div>
+                            <div id="saved-memos-container" class="memo-cards-grid"></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="view-math" class="content-view hidden">
+                <div class="view-header">
+                    <div class="header-left-zone">
+                        <button type="button" class="sidebar-toggle-outside hidden aria-toggle-sidebar"><i class="fa-solid fa-bars"></i></button>
+                        <h2><i class="fa-solid fa-book-open"></i> 오답노트</h2>
+                    </div>
+                </div>
+                <section class="panel">
+                    <div id="math-explorer-zone">
+                        <div class="panel-header">
+                            <span class="panel-title">과목 폴더</span>
+                            <button type="button" id="math-create-folder-btn" class="btn-primary-sm"><i class="fa-solid fa-folder-plus"></i> 새 과목</button>
+                        </div>
+                        <div id="math-folder-grid" class="folder-grid"></div>
+                    </div>
+                    <div id="math-editor-zone" class="hidden">
+                        <div class="panel-header">
+                            <button type="button" id="math-back-btn" class="btn-back"><i class="fa-solid fa-arrow-left"></i> 목록</button>
+                            <span id="math-current-folder-title">과목명</span>
+                            <button type="button" id="btn-manage-types" class="btn-secondary-sm">유형 편집</button>
+                        </div>
+                        <div class="math-split-container">
+                            <div class="math-left-list-panel">
+                                <select id="math-filter-type-select"><option value="ALL">전체</option></select>
+                                <div id="math-saved-list" class="notebook-vertical-list"></div>
+                            </div>
+                            <div class="math-right-editor-panel">
+                                <input type="text" id="math-prob-title" placeholder="문제 제목">
+                                <select id="math-prob-type"></select>
+                                <textarea id="math-prob-wrong" placeholder="틀린 이유"></textarea>
+                                <textarea id="math-prob-approach" placeholder="접근법"></textarea>
+                                <textarea id="math-prob-solution" class="tall-textarea" placeholder="상세 풀이"></textarea>
+                                <button id="math-save-btn" class="btn-save">저장/수정</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="type-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header"><h3>유형 관리</h3><button id="close-type-modal">&times;</button></div>
+            <div class="modal-body">
+                <div class="inline-form">
+                    <input type="text" id="new-type-input" placeholder="새 유형">
+                    <button id="btn-add-type">+</button>
+                </div>
+                <div id="custom-type-list" class="custom-type-manage-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
