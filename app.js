@@ -26,19 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarSubFolders = document.getElementById('sidebar-sub-folders');
     const sidebarMemoFolders = document.getElementById('sidebar-memo-folders');
 
-        // --- app.js 내 사이드바 제어 함수 수정 ---
     function hideSidebar() {
         mainSidebar.classList.add('collapsed');
         outsideToggleButtons.forEach(btn => btn.classList.remove('hidden'));
-        
-        // 🧼 기존에 스크롤을 강제로 막던 모바일 패치 코드를 과감히 지워줍니다.
     }
     
     function showSidebar() {
         mainSidebar.classList.remove('collapsed');
         outsideToggleButtons.forEach(btn => btn.classList.add('hidden'));
-        
-        // 🧼 기존에 스크롤을 강제로 막던 모바일 패치 코드를 과감히 지워줍니다.
     }
     
     if(btnCloseSidebar) btnCloseSidebar.addEventListener('click', hideSidebar);
@@ -76,16 +71,19 @@ document.addEventListener('DOMContentLoaded', () => {
         setInterval(() => { clockDisplay.textContent = new Date().toTimeString().split(' ')[0]; }, 1000);
     }
 
-    // --- 📅 2. 달력 및 대제목 동기화 연동 모듈 ---
+    // --- 📅 2. 달력 및 대제목 동기화 연동 모듈 (월간 모아보기 그룹화 확장) ---
     const calendarDays = document.getElementById('calendar-days');
     const calendarMonthYear = document.getElementById('calendar-month-year');
-    const calendarViewTitle = document.getElementById('calendar-view-title'); // 🔍 왼쪽 위 대제목 엘리먼트
+    const calendarViewTitle = document.getElementById('calendar-view-title'); 
     const selectedDateLabel = document.getElementById('selected-date-label');
     const todoForm = document.getElementById('todo-form');
     const todoTimeInput = document.getElementById('todo-time-input');
     const todoInput = document.getElementById('todo-input');
     const todoList = document.getElementById('todo-list');
     const todoStats = document.getElementById('todo-stats');
+
+    const monthSummaryList = document.getElementById('month-summary-list');
+    const monthTodoCount = document.getElementById('month-todo-count');
 
     const planAmInput = document.getElementById('plan-am');
     const planPmInput = document.getElementById('plan-pm');
@@ -99,12 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const year = currentViewDate.getFullYear();
         const month = currentViewDate.getMonth();
         
-        // 달력 컨트롤 카드 내부 연월 동기화
         if(calendarMonthYear) {
             calendarMonthYear.textContent = `${year}년 ${month + 1}월`;
         }
         
-        // 🔍 [버그 해결] 왼쪽 위 고정되어 있던 대제목을 달력 연월 변화에 맞게 실시간 주입합니다.
         if(calendarViewTitle) {
             calendarViewTitle.textContent = `${year}년 ${String(month + 1).padStart(2, '0')}월`;
         }
@@ -129,13 +125,19 @@ document.addEventListener('DOMContentLoaded', () => {
             dateDiv.textContent = i;
             
             dateDiv.onclick = () => {
-                selectedFullDate = dateStr;
-                if(selectedDateLabel) selectedDateLabel.textContent = `${month+1}월 ${i}일 일정 관리`;
-                renderCalendar();
-                fetchDailyIntegratedData();
+                changeTargetDate(dateStr, month + 1, i);
             };
             calendarDays.appendChild(dateDiv);
         }
+
+        fetchMonthSummaryData();
+    }
+
+    function changeTargetDate(dateStr, monthNum, dayNum) {
+        selectedFullDate = dateStr;
+        if(selectedDateLabel) selectedDateLabel.textContent = `${monthNum}월 ${dayNum}일 일정 관리`;
+        renderCalendar();
+        fetchDailyIntegratedData();
     }
 
     const prevMonthBtn = document.getElementById('prev-month');
@@ -157,6 +159,90 @@ document.addEventListener('DOMContentLoaded', () => {
             if(planEveInput) planEveInput.value = data.eve || '';
             if(planReviewInput) planReviewInput.value = data.review || '';
             if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
+        });
+    }
+
+    // ✨ [신규 고도화 팩] 한 달 일정을 같은 날짜끼리 그룹화(묶음)하여 트리형 구조로 출력하는 엔진
+    function fetchMonthSummaryData() {
+        if(!monthSummaryList) return;
+
+        const targetYear = currentViewDate.getFullYear();
+        const targetMonthStr = String(currentViewDate.getMonth() + 1).padStart(2, '0');
+        const monthPrefix = `${targetYear}-${targetMonthStr}`;
+
+        db.ref('workspace/todos').once('value', (snapshot) => {
+            const todos = snapshot.val() || {};
+            
+            // 1. 이번 달에 해당되는 아이템 추출
+            const filtered = Object.keys(todos)
+                .map(id => ({ id, ...todos[id] }))
+                .filter(t => t.date && t.date.startsWith(monthPrefix));
+
+            if(monthTodoCount) monthTodoCount.textContent = `${filtered.length}개 등록됨`;
+
+            monthSummaryList.innerHTML = '';
+            if(filtered.length === 0) {
+                monthSummaryList.innerHTML = `<div class="month-empty-hint">이달에 예정되거나 등록된 일정이 없습니다.</div>`;
+                return;
+            }
+
+            // 2. 날짜별로 딕셔너리 그룹화 묶기 { "2026-06-15": [todo1, todo2], "2026-06-16": [...] }
+            const grouped = {};
+            filtered.forEach(todo => {
+                if(!grouped[todo.date]) grouped[todo.date] = [];
+                grouped[todo.date].push(todo);
+            });
+
+            // 3. 날짜 오름차순 정렬 후 렌더링 파이프라인 가동
+            const sortedDates = Object.keys(grouped).sort();
+
+            sortedDates.forEach(dateKey => {
+                const dayParts = dateKey.split('-');
+                const displayDay = `${parseInt(dayParts[1])}월 ${parseInt(dayParts[2])}일`;
+                
+                // 해당 날짜의 요일 구하기
+                const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+                const dayOfWeek = weekDays[new Date(dateKey).getDay()];
+
+                // 하루 단위 묶음 박스 (Group container) 생성
+                const groupBlock = document.createElement('div');
+                groupBlock.className = 'month-date-group';
+                if(dateKey === selectedFullDate) groupBlock.classList.add('active-day-focus');
+
+                // 상단 날짜 타이틀 바 추가 (클릭하면 이 날짜로 이동)
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'month-group-header';
+                groupHeader.innerHTML = `<span><i class="fa-regular fa-calendar-check" style="color:#60a5fa;"></i> ${displayDay} (${dayOfWeek}요일)</span>`;
+                groupHeader.onclick = () => {
+                    changeTargetDate(dateKey, parseInt(dayParts[1]), parseInt(dayParts[2]));
+                };
+                groupBlock.appendChild(groupHeader);
+
+                // 내부 할 일 목록 시간순 정렬 후 추가
+                const dayTodos = grouped[dateKey];
+                dayTodos.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
+                const listWrapper = document.createElement('div');
+                listWrapper.className = 'month-group-sublist';
+
+                dayTodos.forEach(todo => {
+                    const row = document.createElement('div');
+                    row.className = `month-summary-inner-item ${todo.completed ? 'done' : ''}`;
+                    row.innerHTML = `
+                        <span class="summary-time-tag">${todo.time || '종일'}</span>
+                        <span class="summary-text-content">${todo.text}</span>
+                    `;
+                    // 상세 아이템을 눌러도 해당 날짜로 워프 이동 연동
+                    row.onclick = (e) => {
+                        e.stopPropagation(); // 중복 버블링 방지
+                        changeTargetDate(dateKey, parseInt(dayParts[1]), parseInt(dayParts[2]));
+                    };
+                    listWrapper.appendChild(row);
+                });
+
+                groupBlock.appendChild(listWrapper);
+                monthSummaryList.appendChild(groupBlock);
+            });
         });
     }
 
@@ -206,12 +292,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             db.ref('workspace/todos').push({
                 date: selectedFullDate, time: todoTimeInput.value.trim() || '기한없음', text: todoInput.value.trim(), completed: false
+            }).then(() => {
+                fetchMonthSummaryData(); 
             });
             todoInput.value = ''; todoTimeInput.value = '';
         });
     }
-    window.toggleTodoState = (id, curStatus) => db.ref(`workspace/todos/${id}`).update({ completed: !curStatus });
-    window.deleteTodoState = (id) => db.ref(`workspace/todos/${id}`).remove();
+    window.toggleTodoState = (id, curStatus) => db.ref(`workspace/todos/${id}`).update({ completed: !curStatus }).then(() => fetchMonthSummaryData());
+    window.deleteTodoState = (id) => db.ref(`workspace/todos/${id}`).remove().then(() => fetchMonthSummaryData());
 
 
     // --- 📝 3. 고정 단일 메모 및 보관함 분류 모듈 ---
@@ -381,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- 📚 4. 과목별 오답노트 & 유형 엔진 (초기 로딩 버그 완벽 패치) ---
+    // --- 📚 4. 과목별 오답노트 & 유형 엔진 ---
     const mathExplorerZone = document.getElementById('math-explorer-zone');
     const mathEditorZone = document.getElementById('math-editor-zone');
     const mathFolderGrid = document.getElementById('math-folder-grid');
@@ -411,7 +499,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMathDashboard(mathData);
         renderSidebarMathFolders(mathData);
         
-        // 🔍 [버그 패치 핵심] 진입한 활성 과목이 있을 경우 유형데이터와 문제리스트를 즉각 강제 갱신시킵니다.
         if(activeMathFolder && mathData[activeMathFolder]) {
             renderTypeSelectOptions(mathData[activeMathFolder].customTypes || {});
             renderTypeManageItems(mathData[activeMathFolder].customTypes || {});
@@ -493,12 +580,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if(mathEditorZone) mathEditorZone.classList.remove('hidden');
         if(mathCurrentFolderTitle) mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-book-open"></i> ${activeMathFolder}`;
         
-        // ✨ [수정 완료] 과목에 진입하자마자 기존 유형과 저장된 오답 리스트를 파이어베이스에서 실시간으로 가져와 바로 뿌려줍니다.
         db.ref(`workspace/mathNotebooks/${activeMathFolder}`).on('value', (snapshot) => {
             const data = snapshot.val() || {};
             renderTypeSelectOptions(data.customTypes || {});
             renderTypeManageItems(data.customTypes || {});
-            renderMathProblemsList(data.problems || {}); // 👈 처음 들어왔을 때 오답 리스트를 즉시 그려주는 핵심 코드 추가
+            renderMathProblemsList(data.problems || {}); 
         });
     }
     
