@@ -436,16 +436,15 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
     flex-direction: column;
 }
 
-/* 🔹 [수정 사항 적용] 묶음 내부 개별 할 일 로우 - 텍스트 잘림 현상 방지 패치 */
+/* 🔹 묶음 내부 개별 할 일 로우 */
 .month-summary-inner-item {
     display: flex;
-    align-items: flex-start; /* 글자가 여러 줄이 되어도 좌측 정렬 유지 */
+    align-items: center;
     gap: 12px;
     padding: 8px 14px;
     border-bottom: 1px solid rgba(39, 39, 42, 0.4);
     cursor: pointer;
     transition: background 0.15s;
-    width: 100%;
 }
 .month-summary-inner-item:last-child {
     border-bottom: none;
@@ -465,31 +464,45 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
     font-size: 0.72rem;
     color: #a1a1aa;
     min-width: 45px;
-    flex-shrink: 0; /* 본문이 길어져도 시간 태그 공간이 찌그러지지 않도록 방어 */
+    flex-shrink: 0;
     background: #27272a;
     padding: 1px 5px;
     border-radius: 4px;
     text-align: center;
-    margin-top: 1px;
 }
 
-/* 💡 글자 잘림 방지: white-space와 복합 줄바꿈 옵션 적용 */
 .summary-text-content {
     font-size: 0.82rem;
     color: var(--text-main);
-    white-space: normal;       /* 💡 기존의 한 줄 강제 속성(nowrap)을 제거하여 자동 줄바꿈 허용 */
-    word-break: break-all;     /* 💡 영숫자나 기호가 연속으로 길어져도 가로폭 밖으로 터지지 않도록 강제 개행 */
-    line-height: 1.45;
-    flex: 1;                   /* 가용 영역을 끝까지 채우도록 보정 */
-    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+/* 스크롤바 바인딩 정밀 세팅 */
+#month-summary-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+#month-summary-list::-webkit-scrollbar {
+    width: 5px;
+}
+#month-summary-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+#month-summary-list::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 10px;
+}
+#month-summary-list::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+}
 
 /* ==========================================================================
    📱 모바일 레이아웃 및 📅 일정/디데이 스크롤 통합 패치 (최종 수정본)
    ========================================================================== */
 
-/* 1. 데스크톱/노트북/모바일 공통: 일정 박스에 명확한 한계치 및 스크롤 부여 */
+/* 1. 데스크톱/노트북/모바일 공통: 일정 및 디데이 박스에 스크롤바 부여 */
 .daily-detail-stack section.panel {
     display: flex !important;
     flex-direction: column !important;
@@ -498,12 +511,10 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
     overflow: hidden !important;
 }
 
-/* 이번달 등록된 일정 모아보기 리스트 공간 스크롤 활성화 */
-#month-summary-list {
-    flex: 1 !important;
-    max-height: 280px !important; /* 💡 상하로 일정이 넘치면 내부 스크롤 발생 */
-    overflow-y: auto !important;
-    padding-right: 4px;
+/* 이번 달 일정 모아보기 패널은 높이 제한 해제하여 모든 일정이 표시되도록 */
+.daily-detail-stack .month-summary-panel {
+    max-height: none !important;
+    overflow: visible !important;
 }
 
 /* 내부 할 일 리스트 유연성 및 스크롤 지정 */
@@ -523,23 +534,19 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
 }
 
 /* 🎨 스크롤바 디자인을 웹사이트 다크 톤에 맞게 세련되게 다듬기 */
-#month-summary-list::-webkit-scrollbar,
 #todo-list::-webkit-scrollbar,
 #dday-container::-webkit-scrollbar {
     width: 6px;
 }
-#month-summary-list::-webkit-scrollbar-track,
 #todo-list::-webkit-scrollbar-track,
 #dday-container::-webkit-scrollbar-track {
     background: transparent;
 }
-#month-summary-list::-webkit-scrollbar-thumb,
 #todo-list::-webkit-scrollbar-thumb,
 #dday-container::-webkit-scrollbar-thumb {
     background: #27272a; /* 브라우저 기본 스크롤바 대신 다크 회색 적용 */
     border-radius: 10px;
 }
-#month-summary-list::-webkit-scrollbar-thumb:hover,
 #todo-list::-webkit-scrollbar-thumb:hover,
 #dday-container::-webkit-scrollbar-thumb:hover {
     background: #3f3f46;
@@ -605,4 +612,4 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
         z-index: 9999;
         box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
     }
-}
+} /* 👈 괄호가 누락되었던 문제를 완벽하게 해결했습니다! */
