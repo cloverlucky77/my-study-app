@@ -495,58 +495,111 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
 }
 
 /* ==========================================================================
-   📅 일정/디데이 많아짐으로 인한 하단 잘림 및 삐져나옴 방지 패치
+   📱 모바일 레이아웃 및 📅 일정/디데이 스크롤 통합 패치 (최종 수정본)
    ========================================================================== */
 
-/* 1. 할 일과 디데이를 감싸는 우측 스택 영역 유연성 확보 */
-.daily-detail-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
+/* 1. 데스크톱/노트북/모바일 공통: 일정 및 디데이 박스에 스크롤바 부여 */
+.daily-detail-stack section.panel {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 360px !important; /* 💡 일정 박스의 최대 높이를 칼같이 제한 */
+    min-height: 200px !important;
+    overflow: hidden !important;
 }
 
-/* 2. 일정/디데이 박스 고도화 */
-.daily-detail-stack .panel {
-    display: flex;
-    flex-direction: column;
-    max-height: 380px; /* 💡 박스의 최대 높이를 적절히 제한 */
-    min-height: 200px; /* 최소 높이 보장 */
-    overflow: hidden;   /* 전체 박스 탈출 차단 */
-}
-
-/* 3. 할 일 리스트 영역에 내부 스크롤바 생성 */
+/* 내부 할 일 리스트 유연성 및 스크롤 지정 */
 #todo-list {
-    flex: 1;
-    overflow-y: auto;  /* 💡 일정이 많아지면 박스 안에서 스크롤이 생기도록 설정 */
-    padding-right: 4px;
+    flex: 1 !important;
+    overflow-y: auto !important; /* 💡 일정이 많아지면 내부 스크롤 발생 */
+    max-height: 240px !important;
+    padding-right: 5px !important;
 }
 
-/* 4. 디데이 리스트 영역에 내부 스크롤바 생성 */
+/* 내부 디데이 리스트 유연성 및 스크롤 지정 */
 #dday-container {
-    flex: 1;
-    overflow-y: auto;  /* 💡 디데이가 많아지면 박스 안에서 스크롤이 생기도록 설정 */
-    padding-right: 4px;
+    flex: 1 !important;
+    overflow-y: auto !important; /* 💡 디데이가 많아지면 내부 스크롤 발생 */
+    max-height: 240px !important;
+    padding-right: 5px !important;
 }
 
-/* ✨ 스크롤바 디자인을 웹사이트 톤앤매너에 맞게 깔끔하게 다듬기 */
+/* 🎨 스크롤바 디자인을 웹사이트 다크 톤에 맞게 세련되게 다듬기 */
 #todo-list::-webkit-scrollbar,
 #dday-container::-webkit-scrollbar {
-    width: 5px;
+    width: 6px;
 }
-
 #todo-list::-webkit-scrollbar-track,
 #dday-container::-webkit-scrollbar-track {
     background: transparent;
 }
-
 #todo-list::-webkit-scrollbar-thumb,
 #dday-container::-webkit-scrollbar-thumb {
-    background: #27272a; /* var(--panel-border) 색상과 매칭 */
+    background: #27272a; /* 브라우저 기본 스크롤바 대신 다크 회색 적용 */
     border-radius: 10px;
 }
-
 #todo-list::-webkit-scrollbar-thumb:hover,
 #dday-container::-webkit-scrollbar-thumb:hover {
     background: #3f3f46;
 }
+
+
+/* 2. 스마트폰/소형 기기(max-width: 768px) 전용 반응형 설정 */
+@media (max-width: 768px) {
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    .app-container {
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    .main-content {
+        width: 100%;
+        max-width: 100vw;
+        padding: 20px 16px !important;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow-x: hidden;
+    }
+
+    .planner-integrated-grid {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .calendar-panel.panel,
+    .daily-detail-stack section.panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .calendar-grid {
+        gap: 4px !important;
+    }
+
+    .cal-date {
+        aspect-ratio: auto !important;
+        padding: 10px 0 !important;
+        font-size: 0.8rem !important;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 9999;
+        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
+    }
+} /* 👈 괄호가 누락되었던 문제를 완벽하게 해결했습니다! */
