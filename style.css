@@ -291,195 +291,29 @@ body {
 .planner-textarea-input { width: 100%; height: 80px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
 .planner-textarea-input::placeholder { color: #52525b; }
 
-/* 📝 메모장 및 실시간 고정 메모 컴포넌트 */
-.memo-layout-split { display: flex; flex-direction: column; gap: 24px; }
-.pinned-memo-panel textarea { background: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; min-height: 100px; resize: vertical; outline: none; line-height: 1.5; }
-.memo-folders-container { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
-.explorer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border); }
-.explorer-header h3 { font-size: 1rem; font-weight: 600; }
-.action-btn-accent { background-color: var(--accent); color: #000; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.85rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-.action-btn-accent:hover { background-color: var(--accent-hover); }
-
-.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-.folder-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; position: relative; transition: all 0.2s ease; }
-.folder-card:hover { border-color: #3f3f46; background-color: #202024; }
-.btn-folder-delete-absolute { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; opacity: 0; transition: opacity 0.15s; }
-.folder-card:hover .btn-folder-delete-absolute { opacity: 1; }
-.folder-icon { font-size: 2rem; color: #f59e0b; }
-.folder-name { font-size: 0.9rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.folder-memo-count { font-size: 0.75rem; color: var(--text-muted); }
-
-.editor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border); }
-.btn-text-nav { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
-.btn-text-nav:hover { color: #fff; }
-.editor-header h3 { font-size: 1rem; font-weight: 600; color: #fff; }
-
-.memo-internal-workspace { display: grid; grid-template-columns: 240px 14.2fr; gap: 24px; min-height: 400px; }
-.memo-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
-.memo-sidebar-list h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-.memo-main-editor { display: flex; flex-direction: column; gap: 16px; }
-.memo-main-editor input { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; color: var(--text-main); font-size: 1rem; font-weight: 500; outline: none; }
-.memo-main-editor textarea { flex: 1; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; color: var(--text-main); font-size: 0.92rem; outline: none; resize: none; line-height: 1.6; min-height: 280px; }
-.btn-save { background-color: var(--accent); color: #000; border: none; border-radius: 8px; padding: 14px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
-.btn-save:hover { background-color: var(--accent-hover); }
-
-/* 📚 오답노트 전용 확장 레이아웃 */
-.math-layout-split { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
-.btn-manage-types { background-color: #1c1c1f; border: 1px solid var(--panel-border); color: #e4e4e7; border-radius: 6px; padding: 6px 14px; font-size: 0.8rem; font-weight: 500; cursor: pointer; margin-left: auto; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
-.btn-manage-types:hover { background-color: #27272a; color: #fff; border-color: #3f3f46; }
-.math-internal-workspace { display: grid; grid-template-columns: 260px 1fr; gap: 24px; min-height: 480px; }
-.math-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
-.sidebar-header-row { display: flex; justify-content: space-between; align-items: center; }
-.sidebar-header-row h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
-.btn-mini-add { background: #ffffff; color: #000; border: none; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; cursor: pointer; }
-.math-main-editor { display: flex; flex-direction: column; gap: 12px; }
-.math-main-editor input, .math-main-editor select { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
-.math-main-editor textarea { width: 100%; height: 75px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
-.math-main-editor textarea.tall-textarea { height: 130px; }
-
-/* 🪟 모달창 시스템 레이아웃 */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
-.modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; width: 440px; max-width: 95%; padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 14px; }
-.modal-header h3 { font-size: 1.05rem; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
-.modal-close-x { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; transition: color 0.2s; }
-.modal-close-x:hover { color: #fff; }
-
-.modal-input-group { background-color: #18181b !important; border-color: var(--panel-border) !important; padding: 5px 5px 5px 12px !important; }
-.modal-list-title { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
-.drag-hint { font-size: 0.7 r; font-weight: 400; color: #4b5563; }
-
-.custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; margin-top: 4px; padding-right: 4px; }
-.type-manage-item { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 11px 14px; 
-    background-color: #18181b; 
-    border: 1px solid var(--panel-border); 
-    border-radius: 8px; 
-    font-size: 0.85rem;
-    color: var(--text-main);
-    transition: background 0.15s;
-}
-.type-manage-item:hover { background-color: #1c1c1f; border-color: #3f3f46; }
-
-/* 📱 반응형 패치 모듈 */
-html, body { max-width: 100%; overflow-x: hidden; position: relative; }
-@media (max-width: 768px) {
-    .app-container { max-width: 100vw; overflow-x: hidden; }
-    .main-content { width: 100%; max-width: 100vw; padding: 20px 16px !important; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
-    .planner-integrated-grid { width: 100% !important; max-width: 100% !important; margin: 0 auto !important; display: flex; flex-direction: column; gap: 20px; }
-    .calendar-panel.panel, .daily-detail-stack .panel { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; box-sizing: border-box !important; }
-    .calendar-grid { gap: 4px !important; }
-    .cal-date { aspect-ratio: auto !important; padding: 10px 0 !important; font-size: 0.8rem !important; }
-    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 9999; box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5); }
-}
 
 /* ==========================================================================
-   ✨ [신규 개편] 월간 일정 요약 날짜별 그룹화(묶음) 시스템 디자인 테마
+   📅 [추가 및 고도화 완료] 한 달 일정 요약 모아보기 전용 컴포넌트 스타일셋
    ========================================================================== */
+
+/* 전체 모아보기 블록의 반응형 레이아웃 및 영역 배정 */
 .month-summary-panel {
-    border: 1px solid rgba(96, 165, 250, 0.2) !important;
-    background: linear-gradient(145deg, #131316, #1a1a1e) !important;
-}
-
-.month-empty-hint {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    text-align: center;
-    padding: 24px 10px;
-}
-
-/* 📦 하루 단위 날짜 그룹 묶음 박스 */
-.month-date-group {
-    background-color: rgba(24, 24, 27, 0.6);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    overflow: hidden;
-    transition: all 0.2s ease;
-}
-
-.month-date-group:hover {
-    border-color: #3f3f46;
-    background-color: #1c1c21;
-}
-
-/* 🎯 달력에서 현재 선택한 날짜에 해당하는 묶음 박스 하이라이팅 */
-.month-date-group.active-day-focus {
-    border: 1px solid rgba(96, 165, 250, 0.4) !important;
-    background-color: rgba(96, 165, 250, 0.03) !important;
-    box-shadow: 0 0 10px rgba(96, 165, 250, 0.05);
-}
-
-/* 🗓️ 묶음 상단 날짜 헤더 바 */
-.month-group-header {
-    background-color: #1c1c1f;
-    padding: 8px 12px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #e4e4e7;
-    border-bottom: 1px solid var(--panel-border);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.month-group-header:hover {
-    color: #60a5fa;
-}
-
-/* 📑 묶음 내부 실제 할 일 목록 구역 */
-.month-group-sublist {
     display: flex;
     flex-direction: column;
+    max-height: 480px; /* 창이 비정상적으로 터지는 것을 방지 */
 }
 
-/* 🔹 묶음 내부 개별 할 일 로우 */
-.month-summary-inner-item {
+/* 동적 일정들을 축적할 목록창 스크롤 고도화 */
+#month-summary-list {
+    max-height: 380px; /* 내부에 채워지는 한 달 간격 리스트 박스의 고유 한계 높이 */
+    overflow-y: auto;  /* 일정이 오버플로우되면 숨기지 않고 우측 스크롤 생성 */
+    padding-right: 6px;
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 14px;
-    border-bottom: 1px solid rgba(39, 39, 42, 0.4);
-    cursor: pointer;
-    transition: background 0.15s;
-}
-.month-summary-inner-item:last-child {
-    border-bottom: none;
-}
-.month-summary-inner-item:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+    flex-direction: column;
+    gap: 12px;         /* 동적 날짜 박스들 간 상하 여백 정렬 */
 }
 
-.month-summary-inner-item.done {
-    opacity: 0.35;
-}
-.month-summary-inner-item.done .summary-text-content {
-    text-decoration: line-through;
-}
-
-.summary-time-tag {
-    font-size: 0.72rem;
-    color: #a1a1aa;
-    min-width: 45px;
-    flex-shrink: 0;
-    background: #27272a;
-    padding: 1px 5px;
-    border-radius: 4px;
-    text-align: center;
-}
-
-.summary-text-content {
-    font-size: 0.82rem;
-    color: var(--text-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* 스크롤바 바인딩 정밀 세팅 */
+/* 다크 모드 맞춤형 미니 트랙 스크롤바 바인딩 */
 #month-summary-list::-webkit-scrollbar {
     width: 5px;
 }
@@ -487,119 +321,99 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
     background: transparent;
 }
 #month-summary-list::-webkit-scrollbar-thumb {
-    background: #27272a;
+    background: #3f3f46;
     border-radius: 10px;
 }
 #month-summary-list::-webkit-scrollbar-thumb:hover {
-    background: #3f3f46;
+    background: #52525b;
 }
 
-/* ==========================================================================
-   📱 모바일 레이아웃 및 📅 일정/디데이 스크롤 통합 패치 (최종 수정본)
-   ========================================================================== */
-
-/* 1. 데스크톱/노트북/모바일 공통: 일정 및 디데이 박스에 스크롤바 부여 */
-.daily-detail-stack section.panel {
-    display: flex !important;
-    flex-direction: column !important;
-    max-height: 360px !important; /* 💡 일정 박스의 최대 높이를 칼같이 제한 */
-    min-height: 200px !important;
-    overflow: hidden !important;
+/* 날짜별 일정 묶음 카드 레이아웃 */
+.month-date-group {
+    background-color: #18181b;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-/* 내부 할 일 리스트 유연성 및 스크롤 지정 */
-#todo-list {
-    flex: 1 !important;
-    overflow-y: auto !important; /* 💡 일정이 많아지면 내부 스크롤 발생 */
-    max-height: 240px !important;
-    padding-right: 5px !important;
+/* 활성화(오늘/선택일) 포커스 카드 보정 효과 */
+.month-date-group.active-day-focus {
+    border-color: #60a5fa;
+    background-color: rgba(96, 165, 250, 0.02);
 }
 
-/* 내부 디데이 리스트 유연성 및 스크롤 지정 */
-#dday-container {
-    flex: 1 !important;
-    overflow-y: auto !important; /* 💡 디데이가 많아지면 내부 스크롤 발생 */
-    max-height: 240px !important;
-    padding-right: 5px !important;
+/* 날짜 그룹 카드 안의 상단 헤더 영역 */
+.month-group-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #e4e4e7;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed var(--panel-border);
+    user-select: none;
+}
+.month-group-header:hover {
+    color: #60a5fa;
 }
 
-/* 🎨 스크롤바 디자인을 웹사이트 다크 톤에 맞게 세련되게 다듬기 */
-#todo-list::-webkit-scrollbar,
-#dday-container::-webkit-scrollbar {
-    width: 6px;
-}
-#todo-list::-webkit-scrollbar-track,
-#dday-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-#todo-list::-webkit-scrollbar-thumb,
-#dday-container::-webkit-scrollbar-thumb {
-    background: #27272a; /* 브라우저 기본 스크롤바 대신 다크 회색 적용 */
-    border-radius: 10px;
-}
-#todo-list::-webkit-scrollbar-thumb:hover,
-#dday-container::-webkit-scrollbar-thumb:hover {
-    background: #3f3f46;
+/* 서브 리스트 컨테이너 */
+.month-group-sublist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-left: 2px;
 }
 
+/* 🛠️ [중요] 개별 할 일 행 정렬 랩핑 패치 */
+.month-summary-inner-item {
+    display: flex;
+    align-items: flex-start; /* 글자가 여러 줄로 내려가도 타임태그 뱃지 축 정렬 상단 유지 */
+    gap: 10px;
+    padding: 4px 0;
+    cursor: pointer;
+    width: 100%;
+}
 
-/* 2. 스마트폰/소형 기기(max-width: 768px) 전용 반응형 설정 */
-@media (max-width: 768px) {
-    html, body {
-        max-width: 100%;
-        overflow-x: hidden;
-        position: relative;
-    }
+/* 🛠️ [중요] 일정이 많아지거나 한 글자 내용이 가로로 가득 찰 때 숨김처리를 해제하고 줄바꿈 적용 */
+.month-summary-inner-item .summary-text-content {
+    font-size: 0.82rem;
+    color: var(--text-main);
+    line-height: 1.45;
+    white-space: normal;       /* 💡 기존의 한 줄 강제 속성(nowrap)을 걷어내어 자동 개행 수락 */
+    word-break: break-all;     /* 💡 영숫자 및 괄호 기호 등이 무한대로 연속되어도 강제 가로줄바꿈 연동 */
+    flex: 1;                   /* 💡 우측 가용 영역 전체 너비를 본문이 동적으로 가져가도록 설정 */
+    min-width: 0;              /* 💡 FlexBox 하위 텍스트 끊김 및 너비 삐져나감 버그 방어 */
+}
 
-    .app-container {
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
+/* 텍스트 줄바꿈에 의해 좌측 시간 태그 공간이 찌그러지는 오작동 차단 */
+.month-summary-inner-item .summary-time-tag {
+    font-size: 0.7rem;
+    background-color: #27272a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d4d4d8;
+    font-weight: 500;
+    flex-shrink: 0;            /* 💡 본문 가로 길이가 증가해도 시간 뱃지 영역이 축소되지 않도록 완전 방어 */
+    margin-top: 1px;
+}
 
-    .main-content {
-        width: 100%;
-        max-width: 100vw;
-        padding: 20px 16px !important;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow-x: hidden;
-    }
+/* 체크 완료 처리된 아이템의 선 및 반투명 효과 */
+.month-summary-inner-item.done {
+    opacity: 0.4;
+}
+.month-summary-inner-item.done .summary-text-content {
+    text-decoration: line-through;
+}
 
-    .planner-integrated-grid {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 auto !important;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .calendar-panel.panel,
-    .daily-detail-stack section.panel {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        box-sizing: border-box !important;
-    }
-
-    .calendar-grid {
-        gap: 4px !important;
-    }
-
-    .cal-date {
-        aspect-ratio: auto !important;
-        padding: 10px 0 !important;
-        font-size: 0.8rem !important;
-    }
-
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-        z-index: 9999;
-        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
-    }
-} /* 👈 괄호가 누락되었던 문제를 완벽하게 해결했습니다! */
+/* 이달에 등록한 데이터가 완전히 부재할 시 안내용 가이드 */
+.month-empty-hint {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 24px 0;
+}
