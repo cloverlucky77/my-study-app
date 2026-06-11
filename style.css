@@ -291,305 +291,262 @@ body {
 .planner-textarea-input { width: 100%; height: 80px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
 .planner-textarea-input::placeholder { color: #52525b; }
 
+/* 📝 메모장 및 실시간 고정 메모 컴포넌트 */
+.memo-layout-split { display: flex; flex-direction: column; gap: 24px; }
+.pinned-memo-panel textarea { background: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px; color: var(--text-main); font-size: 0.9rem; min-height: 100px; resize: vertical; outline: none; line-height: 1.5; }
+.memo-folders-container { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
+.explorer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border); }
+.explorer-header h3 { font-size: 1rem; font-weight: 600; }
+.action-btn-accent { background-color: var(--accent); color: #000; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.85rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.action-btn-accent:hover { background-color: var(--accent-hover); }
+
+.folder-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+.folder-card { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; position: relative; transition: all 0.2s ease; }
+.folder-card:hover { border-color: #3f3f46; background-color: #202024; }
+.btn-folder-delete-absolute { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; opacity: 0; transition: opacity 0.15s; }
+.folder-card:hover .btn-folder-delete-absolute { opacity: 1; }
+.folder-icon { font-size: 2rem; color: #f59e0b; }
+.folder-name { font-size: 0.9rem; font-weight: 500; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folder-memo-count { font-size: 0.75rem; color: var(--text-muted); }
+
+.editor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--panel-border); }
+.btn-text-nav { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+.btn-text-nav:hover { color: #fff; }
+.editor-header h3 { font-size: 1rem; font-weight: 600; color: #fff; }
+
+.memo-internal-workspace { display: grid; grid-template-columns: 240px 14.2fr; gap: 24px; min-height: 400px; }
+.memo-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
+.memo-sidebar-list h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.memo-main-editor { display: flex; flex-direction: column; gap: 16px; }
+.memo-main-editor input { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 12px 16px; color: var(--text-main); font-size: 1rem; font-weight: 500; outline: none; }
+.memo-main-editor textarea { flex: 1; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; color: var(--text-main); font-size: 0.92rem; outline: none; resize: none; line-height: 1.6; min-height: 280px; }
+.btn-save { background-color: var(--accent); color: #000; border: none; border-radius: 8px; padding: 14px; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
+.btn-save:hover { background-color: var(--accent-hover); }
+
+/* 📚 오답노트 전용 확장 레이아웃 */
+.math-layout-split { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; padding: 24px; }
+.btn-manage-types { background-color: #1c1c1f; border: 1px solid var(--panel-border); color: #e4e4e7; border-radius: 6px; padding: 6px 14px; font-size: 0.8rem; font-weight: 500; cursor: pointer; margin-left: auto; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+.btn-manage-types:hover { background-color: #27272a; color: #fff; border-color: #3f3f46; }
+.math-internal-workspace { display: grid; grid-template-columns: 260px 1fr; gap: 24px; min-height: 480px; }
+.math-sidebar-list { border-right: 1px solid var(--panel-border); padding-right: 20px; display: flex; flex-direction: column; gap: 14px; }
+.sidebar-header-row { display: flex; justify-content: space-between; align-items: center; }
+.sidebar-header-row h4 { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+.btn-mini-add { background: #ffffff; color: #000; border: none; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; border-radius: 4px; cursor: pointer; }
+.math-main-editor { display: flex; flex-direction: column; gap: 12px; }
+.math-main-editor input, .math-main-editor select { background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 10px 14px; color: var(--text-main); font-size: 0.85rem; outline: none; }
+.math-main-editor textarea { width: 100%; height: 75px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; padding: 12px; color: var(--text-main); font-size: 0.85rem; outline: none; resize: none; line-height: 1.5; }
+.math-main-editor textarea.tall-textarea { height: 130px; }
+
+/* 🪟 모달창 시스템 레이아웃 */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }
+.modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 14px; width: 440px; max-width: 95%; padding: 24px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 14px; }
+.modal-header h3 { font-size: 1.05rem; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+.modal-close-x { background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; transition: color 0.2s; }
+.modal-close-x:hover { color: #fff; }
+
+.modal-input-group { background-color: #18181b !important; border-color: var(--panel-border) !important; padding: 5px 5px 5px 12px !important; }
+.modal-list-title { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-top: 6px; display: flex; justify-content: space-between; align-items: center; }
+.drag-hint { font-size: 0.7 r; font-weight: 400; color: #4b5563; }
+
+.custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; margin-top: 4px; padding-right: 4px; }
+.type-manage-item { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 11px 14px; 
+    background-color: #18181b; 
+    border: 1px solid var(--panel-border); 
+    border-radius: 8px; 
+    font-size: 0.85rem;
+    color: var(--text-main);
+    transition: background 0.15s;
+}
+.type-manage-item:hover { background-color: #1c1c1f; border-color: #3f3f46; }
+
+/* 📱 반응형 패치 모듈 */
+html, body { max-width: 100%; overflow-x: hidden; position: relative; }
+@media (max-width: 768px) {
+    .app-container { max-width: 100vw; overflow-x: hidden; }
+    .main-content { width: 100%; max-width: 100vw; padding: 20px 16px !important; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
+    .planner-integrated-grid { width: 100% !important; max-width: 100% !important; margin: 0 auto !important; display: flex; flex-direction: column; gap: 20px; }
+    .calendar-panel.panel, .daily-detail-stack .panel { width: 100% !important; max-width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; box-sizing: border-box !important; }
+    .calendar-grid { gap: 4px !important; }
+    .cal-date { aspect-ratio: auto !important; padding: 10px 0 !important; font-size: 0.8rem !important; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 9999; box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5); }
+}
 
 /* ==========================================================================
-   📅 이달의 일정 요약 모아보기 전용 컴포넌트 레이아웃 패치 (잘림/깨짐 수정 완료)
+   ✨ [신규 개편] 월간 일정 요약 날짜별 그룹화(묶음) 시스템 디자인 테마
    ========================================================================== */
-
-/* 전체 모아보기 블록의 반응형 레이아웃 및 영역 배정 */
 .month-summary-panel {
-    display: flex;
-    flex-direction: column;
-    max-height: 480px; /* 창이 비정상적으로 터지는 것을 방지 */
+    border: 1px solid rgba(96, 165, 250, 0.2) !important;
+    background: linear-gradient(145deg, #131316, #1a1a1e) !important;
 }
 
-/* 동적 일정들을 축적할 목록창 스크롤 고도화 */
-#month-summary-list {
-    max-height: 380px; /* 내부에 채워지는 한 달 간격 리스트 박스의 고유 한계 높이 */
-    overflow-y: auto;  /* 일정이 오버플로우되면 숨기지 않고 우측 스크롤 생성 */
-    padding-right: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;         /* 동적 날짜 박스들 간 상하 여백 정렬 */
+.month-empty-hint {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 24px 10px;
 }
 
-/* 다크 모드 맞춤형 미니 트랙 스크롤바 바인딩 */
-#month-summary-list::-webkit-scrollbar {
-    width: 5px;
-}
-#month-summary-list::-webkit-scrollbar-track {
-    background: transparent;
-}
-#month-summary-list::-webkit-scrollbar-thumb {
-    background: #3f3f46;
-    border-radius: 10px;
-}
-#month-summary-list::-webkit-scrollbar-thumb:hover {
-    background: #52525b;
-}
-
-/* 날짜별 일정 묶음 카드 레이아웃 */
+/* 📦 하루 단위 날짜 그룹 묶음 박스 */
 .month-date-group {
-    background-color: #18181b;
+    background-color: rgba(24, 24, 27, 0.6);
     border: 1px solid var(--panel-border);
     border-radius: 8px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.2s ease;
 }
 
-/* 활성화(오늘/선택일) 포커스 카드 보정 효과 */
+.month-date-group:hover {
+    border-color: #3f3f46;
+    background-color: #1c1c21;
+}
+
+/* 🎯 달력에서 현재 선택한 날짜에 해당하는 묶음 박스 하이라이팅 */
 .month-date-group.active-day-focus {
-    border-color: #60a5fa;
-    background-color: rgba(96, 165, 250, 0.02);
+    border: 1px solid rgba(96, 165, 250, 0.4) !important;
+    background-color: rgba(96, 165, 250, 0.03) !important;
+    box-shadow: 0 0 10px rgba(96, 165, 250, 0.05);
 }
 
-/* 날짜 그룹 카드 안의 상단 헤더 영역 */
+/* 🗓️ 묶음 상단 날짜 헤더 바 */
 .month-group-header {
-    font-size: 0.8rem;
+    background-color: #1c1c1f;
+    padding: 8px 12px;
+    font-size: 0.78rem;
     font-weight: 600;
     color: #e4e4e7;
+    border-bottom: 1px solid var(--panel-border);
     cursor: pointer;
     display: flex;
     align-items: center;
-    padding-bottom: 6px;
-    border-bottom: 1px dashed var(--panel-border);
-    user-select: none;
+    justify-content: space-between;
 }
 .month-group-header:hover {
     color: #60a5fa;
 }
 
-/* 서브 리스트 컨테이너 */
+/* 📑 묶음 내부 실제 할 일 목록 구역 */
 .month-group-sublist {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding-left: 2px;
 }
 
-/* 개별 할 일 행 정렬 랩핑 패치 */
+/* 🔹 [수정 사항 적용] 묶음 내부 개별 할 일 로우 - 텍스트 잘림 현상 방지 패치 */
 .month-summary-inner-item {
     display: flex;
-    align-items: flex-start; /* 글자가 여러 줄로 내려가도 타임태그 뱃지 축 정렬 상단 유지 */
-    gap: 10px;
-    padding: 4px 0;
+    align-items: flex-start; /* 글자가 여러 줄이 되어도 좌측 정렬 유지 */
+    gap: 12px;
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(39, 39, 42, 0.4);
     cursor: pointer;
+    transition: background 0.15s;
     width: 100%;
 }
-
-/* 일정이 많아지거나 한 글자 내용이 가로로 가득 찰 때 숨김처리를 해제하고 줄바꿈 적용 */
-.month-summary-inner-item .summary-text-content {
-    font-size: 0.82rem;
-    color: var(--text-main);
-    line-height: 1.45;
-    white-space: normal;       /* 💡 한 줄 강제 속성(nowrap)을 걷어내어 자동 개행 수락 */
-    word-break: break-all;     /* 💡 영숫자 및 괄호 기호 등이 무한대로 연속되어도 강제 가로줄바꿈 연동 */
-    flex: 1;                   /* 💡 우측 가용 영역 전체 너비를 본문이 동적으로 가져가도록 설정 */
-    min-width: 0;              /* 💡 FlexBox 하위 텍스트 끊김 및 너비 삐져나감 버그 방어 */
+.month-summary-inner-item:last-child {
+    border-bottom: none;
+}
+.month-summary-inner-item:hover {
+    background-color: rgba(255, 255, 255, 0.02);
 }
 
-/* 텍스트 줄바꿈에 의해 좌측 시간 태그 공간이 찌그러지는 오작동 차단 */
-.month-summary-inner-item .summary-time-tag {
-    font-size: 0.7rem;
-    background-color: #27272a;
-    padding: 2px 6px;
-    border-radius: 4px;
-    color: #d4d4d8;
-    font-weight: 500;
-    flex-shrink: 0;            /* 💡 본문 가로 길이가 증가해도 시간 뱃지 영역이 축소되지 않도록 완전 방어 */
-    margin-top: 1px;
-}
-
-/* 체크 완료 처리된 아이템의 선 및 반투명 효과 */
 .month-summary-inner-item.done {
-    opacity: 0.4;
+    opacity: 0.35;
 }
 .month-summary-inner-item.done .summary-text-content {
     text-decoration: line-through;
 }
 
-/* 이달에 등록한 데이터가 완전히 부재할 시 안내용 가이드 */
-.month-empty-hint {
-    color: var(--text-muted);
-    font-size: 0.8rem;
+.summary-time-tag {
+    font-size: 0.72rem;
+    color: #a1a1aa;
+    min-width: 45px;
+    flex-shrink: 0; /* 본문이 길어져도 시간 태그 공간이 찌그러지지 않도록 방어 */
+    background: #27272a;
+    padding: 1px 5px;
+    border-radius: 4px;
     text-align: center;
-    padding: 24px 0;
+    margin-top: 1px;
+}
+
+/* 💡 글자 잘림 방지: white-space와 복합 줄바꿈 옵션 적용 */
+.summary-text-content {
+    font-size: 0.82rem;
+    color: var(--text-main);
+    white-space: normal;       /* 💡 기존의 한 줄 강제 속성(nowrap)을 제거하여 자동 줄바꿈 허용 */
+    word-break: break-all;     /* 💡 영숫자나 기호가 연속으로 길어져도 가로폭 밖으로 터지지 않도록 강제 개행 */
+    line-height: 1.45;
+    flex: 1;                   /* 가용 영역을 끝까지 채우도록 보정 */
+    min-width: 0;
 }
 
 
 /* ==========================================================================
-   📝 메모장 전용 세부 컴포넌트 레이아웃 스타일 디자인
+   📱 모바일 레이아웃 및 📅 일정/디데이 스크롤 통합 패치 (최종 수정본)
    ========================================================================== */
-.memo-layout-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
-@media (max-width: 1024px) { .memo-layout-grid { grid-template-columns: 1fr; } }
 
-.memo-sidebar-panel { padding: 20px; max-height: 700px; }
-.memo-cards-stack { display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow-y: auto; padding-right: 4px; }
-
-/* 개별 좌측 메모 선택 카드 */
-.memo-list-card { 
-    background-color: #18181b; 
-    border: 1px solid var(--panel-border); 
-    border-radius: 8px; 
-    padding: 14px; 
-    cursor: pointer; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 6px; 
-    transition: all 0.2s ease; 
-    position: relative; 
+/* 1. 데스크톱/노트북/모바일 공통: 일정 박스에 명확한 한계치 및 스크롤 부여 */
+.daily-detail-stack section.panel {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 360px !important; /* 💡 일정 박스의 최대 높이를 칼같이 제한 */
+    min-height: 200px !important;
+    overflow: hidden !important;
 }
-.memo-list-card:hover { border-color: #52525b; background-color: #1c1c1f; }
-.memo-list-card.active { border-color: #ffffff; background-color: #27272a; }
 
-.memo-card-header { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; }
-.memo-card-title { font-size: 0.85rem; font-weight: 600; color: #f4f4f5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-.memo-card-body { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.memo-card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #52525b; margin-top: 2px; }
-
-.memo-main-stack { display: flex; flex-direction: column; gap: 24px; }
-
-/* 📌 고정 메모 영역 그리드 시스템 */
-.pinned-memos-section { padding: 20px; }
-.pinned-memos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
-.pinned-memo-board { 
-    background-color: #1e1b4b; 
-    border: 1px solid #312e81; 
-    border-radius: 8px; 
-    padding: 16px; 
-    position: relative; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 8px; 
-    cursor: pointer; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-    transition: transform 0.2s, border-color 0.2s; 
+/* 이번달 등록된 일정 모아보기 리스트 공간 스크롤 활성화 */
+#month-summary-list {
+    flex: 1 !important;
+    max-height: 280px !important; /* 💡 상하로 일정이 넘치면 내부 스크롤 발생 */
+    overflow-y: auto !important;
+    padding-right: 4px;
 }
-.pinned-memo-board:hover { transform: translateY(-2px); border-color: #4338ca; }
-.pinned-title { font-size: 0.85rem; font-weight: 600; color: #e0e7ff; padding-right: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pinned-desc { font-size: 0.8rem; color: #c7d2fe; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; text-overflow: ellipsis; }
-.pinned-time { font-size: 0.7rem; color: #4338ca; text-align: right; }
-.pin-icon-indicator { position: absolute; top: 14px; right: 14px; font-size: 0.75rem; color: #f59e0b; }
 
-.memo-editor-panel { padding: 24px; }
-.editor-title-field { background: transparent !important; width: 100%; border: none !important; border-bottom: 1px solid var(--panel-border) !important; padding-left: 0 !important; border-radius: 0 !important; }
-.editor-content-field { background-color: transparent !important; border: none !important; padding: 0 !important; width: 100%; line-height: 1.6 !important; }
-
-/* 📂 폴더 팝업창 공통 인프라 */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999; animation: fadeIn 0.15s ease-out; }
-.modal-content { background-color: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; width: 440px; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; }
-.modal-header h3 { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-.modal-close-x { background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; }
-.modal-close-x:hover { color: #fff; }
-.modal-input-group { background-color: var(--bg) !important; }
-.modal-list-title { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin-bottom: -10px; display: flex; justify-content: space-between; }
-.drag-hint { font-size: 0.7rem; color: #52525b; }
-
-/* 드래그 앤 드롭 폴더 정렬 큐 리스트 */
-.folder-manage-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; font-size: 0.85rem; cursor: grab; transition: background-color 0.1s; }
-.folder-manage-item:active { cursor: grabbing; background-color: #27272a; }
-.folder-manage-item.dragging { opacity: 0.4; border-style: dashed; }
-.folder-item-left { display: flex; align-items: center; gap: 10px; color: #e4e4e7; }
-.folder-item-left i.fa-bars { color: #3f3f46; font-size: 0.75rem; }
-
-
-/* ==========================================================================
-   📐 과목별 오답노트 컴포넌트 특화 아키텍처 스타일셋
-   ========================================================================== */
-.math-layout-grid { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
-@media (max-width: 1024px) { .math-layout-grid { grid-template-columns: 1fr; } }
-
-.math-sidebar-panel { padding: 20px; max-height: 780px; }
-
-/* 개별 오답카드 로우 */
-.math-question-card { 
-    background-color: #18181b; 
-    border: 1px solid var(--panel-border); 
-    border-radius: 8px; 
-    padding: 14px; 
-    cursor: pointer; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 8px; 
-    transition: all 0.2s ease; 
+/* 내부 할 일 리스트 유연성 및 스크롤 지정 */
+#todo-list {
+    flex: 1 !important;
+    overflow-y: auto !important; /* 💡 일정이 많아지면 내부 스크롤 발생 */
+    max-height: 240px !important;
+    padding-right: 5px !important;
 }
-.math-question-card:hover { border-color: #52525b; background-color: #1c1c1f; }
-.math-question-card.active { border-color: var(--success); background-color: rgba(52, 211, 153, 0.02); }
 
-.math-card-meta-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.badge-type { font-size: 0.7rem; background-color: #27272a; padding: 2px 6px; border-radius: 4px; color: #a1a1aa; max-width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.badge-diff { font-size: 0.7rem; color: var(--warning); letter-spacing: -1px; }
-.badge-status { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background-color: rgba(52, 211, 153, 0.15); color: #6ee7b7; font-weight: 500; margin-left: auto; }
-.badge-status.step2 { background-color: rgba(245, 158, 11, 0.15); color: #fcd34d; }
-.badge-status.step1 { background-color: rgba(248, 113, 113, 0.15); color: #fca5a5; }
+/* 내부 디데이 리스트 유연성 및 스크롤 지정 */
+#dday-container {
+    flex: 1 !important;
+    overflow-y: auto !important; /* 💡 디데이가 많아지면 내부 스크롤 발생 */
+    max-height: 240px !important;
+    padding-right: 5px !important;
+}
 
-.math-main-stack { display: flex; flex-direction: column; gap: 24px; }
-.math-editor-panel { padding: 26px; }
-.math-editor-fields-wrapper { display: flex; flex-direction: column; gap: 18px; }
-
-.math-row-two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
-.math-row-three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-@media (max-width: 640px) { .math-row-two-col, .math-row-three-col { grid-template-columns: 1fr; } }
-
-.input-cell { display: flex; flex-direction: column; gap: 6px; }
-.input-cell label, .math-textarea-cell label { font-size: 0.78rem; font-weight: 500; color: #a1a1aa; padding-left: 2px; }
-
-.custom-box-input { background-color: var(--input-bg) !important; border: 1px solid var(--panel-border) !important; padding: 10px 14px !important; border-radius: 8px !important; font-size: 0.85rem !important; width: 100%; }
-.custom-box-input:focus, .custom-select-box:focus, .custom-area:focus { border-color: var(--success) !important; }
-
-.custom-select-box { background-color: var(--input-bg); border: 1px solid var(--panel-border); padding: 10px 12px; border-radius: 8px; color: var(--text-main); font-size: 0.85rem; outline: none; width: 100%; cursor: pointer; height: 41px; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; }
-
-.math-textarea-cell { display: flex; flex-direction: column; gap: 6px; }
-.custom-area { background-color: var(--input-bg) !important; border: 1px solid var(--panel-border) !important; padding: 12px 14px !important; border-radius: 8px !important; font-size: 0.85rem !important; line-height: 1.55 !important; }
-
-.btn-save { background-color: var(--success); color: #000000; border: none; padding: 14px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s; text-align: center; margin-top: 5px; }
-.btn-save:hover { background-color: #6ee7b7; }
-
-/* 🎛️ 모달 내 내부 관리자용 리스트 */
-.custom-type-manage-list { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
-.type-manage-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background-color: #18181b; border: 1px solid var(--panel-border); border-radius: 6px; font-size: 0.85rem; cursor: grab; }
-.type-manage-item:active { cursor: grabbing; }
-.type-manage-item.dragging { opacity: 0.4; border-style: dashed; }
-
-
-/* ==========================================================================
-   ⚙️ 전역 스크롤바 디자인 및 공통 보정 유틸리티
-   ========================================================================== */
-.memo-cards-stack::-webkit-scrollbar,
-.custom-type-manage-list::-webkit-scrollbar,
-.item-list::-webkit-scrollbar,
-body::-webkit-scrollbar,
-main::-webkit-scrollbar {
+/* 🎨 스크롤바 디자인을 웹사이트 다크 톤에 맞게 세련되게 다듬기 */
+#month-summary-list::-webkit-scrollbar,
+#todo-list::-webkit-scrollbar,
+#dday-container::-webkit-scrollbar {
     width: 6px;
-    height: 6px;
 }
-.memo-cards-stack::-webkit-scrollbar-track,
-.custom-type-manage-list::-webkit-scrollbar-track,
-.item-list::-webkit-scrollbar-track,
-body::-webkit-scrollbar-track,
-main::-webkit-scrollbar-track {
+#month-summary-list::-webkit-scrollbar-track,
+#todo-list::-webkit-scrollbar-track,
+#dday-container::-webkit-scrollbar-track {
     background: transparent;
 }
-.memo-cards-stack::-webkit-scrollbar-thumb,
-.custom-type-manage-list::-webkit-scrollbar-thumb,
-.item-list::-webkit-scrollbar-thumb,
-body::-webkit-scrollbar-thumb,
-main::-webkit-scrollbar-thumb {
-    background: #27272a;
+#month-summary-list::-webkit-scrollbar-thumb,
+#todo-list::-webkit-scrollbar-thumb,
+#dday-container::-webkit-scrollbar-thumb {
+    background: #27272a; /* 브라우저 기본 스크롤바 대신 다크 회색 적용 */
     border-radius: 10px;
 }
-.memo-cards-stack::-webkit-scrollbar-thumb:hover,
-.custom-type-manage-list::-webkit-scrollbar-thumb:hover,
-.item-list::-webkit-scrollbar-thumb:hover,
-body::-webkit-scrollbar-thumb:hover,
-main::-webkit-scrollbar-thumb:hover {
+#month-summary-list::-webkit-scrollbar-thumb:hover,
+#todo-list::-webkit-scrollbar-thumb:hover,
+#dday-container::-webkit-scrollbar-thumb:hover {
     background: #3f3f46;
 }
 
-/* 스마트폰 및 소형 기기(max-width: 768px) 전용 반응형 레이아웃 대응셋 */
+
+/* 2. 스마트폰/소형 기기(max-width: 768px) 전용 반응형 설정 */
 @media (max-width: 768px) {
     html, body {
         max-width: 100%;
@@ -627,6 +584,25 @@ main::-webkit-scrollbar-thumb:hover {
         max-width: 100% !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
+    }
+
+    .calendar-grid {
+        gap: 4px !important;
+    }
+
+    .cal-date {
+        aspect-ratio: auto !important;
+        padding: 10px 0 !important;
+        font-size: 0.8rem !important;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 9999;
+        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
     }
 }
