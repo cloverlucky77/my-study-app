@@ -109,7 +109,177 @@
                     </div>
                 </div>
             </div>
+
+            <div id="view-memo" class="content-view hidden">
+                <div class="view-header">
+                    <div class="header-left-zone">
+                        <button type="button" class="sidebar-toggle-outside hidden"><i class="fa-solid fa-bars"></i></button>
+                        <h2 id="memo-view-title">메모장</h2>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-manage-folders" class="icon-btn-add" style="width: auto; padding: 0 14px; background: #1c1c1f; border: 1px solid var(--panel-border); color: #fff; font-size: 0.85rem;">
+                            <i class="fa-regular fa-folder" style="margin-right: 6px;"></i> 폴더 관리
+                        </button>
+                        <button id="btn-add-memo" class="icon-btn-add" style="width: auto; padding: 0 14px; font-size: 0.85rem; background: #fff; color: #000;">
+                            <i class="fa-solid fa-plus" style="margin-right: 6px;"></i> 새 메모
+                        </button>
+                    </div>
+                </div>
+
+                <div class="memo-layout-grid">
+                    <div class="panel memo-sidebar-panel">
+                        <div class="panel-header">
+                            <span class="panel-title"><i class="fa-solid fa-list"></i> 메모 목록</span>
+                        </div>
+                        <div id="memo-list-container" class="memo-cards-stack">
+                            </div>
+                    </div>
+
+                    <div class="memo-main-stack">
+                        <div class="panel pinned-memos-section">
+                            <div class="panel-header">
+                                <span class="panel-title" style="color: #f59e0b;"><i class="fa-solid fa-thumbtack"></i> 상단에 상시 고정된 메모</span>
+                            </div>
+                            <div id="pinned-memos-grid" class="pinned-memos-grid">
+                                </div>
+                        </div>
+
+                        <div class="panel memo-editor-panel">
+                            <div class="panel-header">
+                                <span class="panel-title"><i class="fa-regular fa-pen-to-square"></i> 메모 내용 편집</span>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <label class="pin-toggle-btn" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-muted);">
+                                        <input type="checkbox" id="memo-pin-checkbox"> <i class="fa-solid fa-thumbtack"></i> 이 메모 상단 고정
+                                    </label>
+                                    <span class="save-status" id="memo-save-status">대기 중</span>
+                                </div>
+                            </div>
+                            <div class="editor-body-wrapper">
+                                <input type="text" id="memo-title-input" class="planner-text-input editor-title-field" placeholder="제목을 입력하세요..." style="font-size: 1.1rem; font-weight: 600; border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; margin-bottom: 15px;">
+                                <textarea id="memo-content-input" class="planner-textarea-input editor-content-field" placeholder="내용을 채워보세요... 자유롭게 작성하면 자동 보관됩니다." style="height: 280px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-math" class="content-view hidden">
+                <div class="view-header">
+                    <div class="header-left-zone">
+                        <button type="button" class="sidebar-toggle-outside hidden"><i class="fa-solid fa-bars"></i></button>
+                        <h2 id="math-view-title">오답노트</h2>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-manage-math-folders" class="icon-btn-add" style="width: auto; padding: 0 14px; background: #1c1c1f; border: 1px solid var(--panel-border); color: #fff; font-size: 0.85rem;">
+                            <i class="fa-regular fa-folder" style="margin-right: 6px;"></i> 과목/폴더 관리
+                        </button>
+                        <button id="btn-open-type-mgr" class="icon-btn-add" style="width: auto; padding: 0 14px; background: #1c1c1f; border: 1px solid var(--panel-border); color: #fff; font-size: 0.85rem;">
+                            <i class="fa-solid fa-sliders" style="margin-right: 6px;"></i> 유형 관리
+                        </button>
+                        <button id="btn-add-math" class="icon-btn-add" style="width: auto; padding: 0 14px; font-size: 0.85rem; background: #fff; color: #000;">
+                            <i class="fa-solid fa-plus" style="margin-right: 6px;"></i> 새 오답 문항 등록
+                        </button>
+                    </div>
+                </div>
+
+                <div class="math-layout-grid">
+                    <div class="panel math-sidebar-panel">
+                        <div class="panel-header">
+                            <span class="panel-title"><i class="fa-solid fa-list-ol"></i> 오답 리스트</span>
+                        </div>
+                        <div id="math-list-container" class="memo-cards-stack">
+                            </div>
+                    </div>
+
+                    <div class="math-main-stack">
+                        <div class="panel math-editor-panel">
+                            <div class="panel-header">
+                                <span class="panel-title"><i class="fa-solid fa-spell-check"></i> 문항 명세 및 풀이 분석</span>
+                                <span class="save-status" id="math-save-status">선택된 문항이 없습니다.</span>
+                            </div>
+                            <div class="math-editor-fields-wrapper">
+                                <div class="math-row-two-col">
+                                    <div class="input-cell">
+                                        <label>문항 이름 / 출처</label>
+                                        <input type="text" id="math-title-input" class="planner-text-input custom-box-input" placeholder="예: 2026년 6월 모평 22번">
+                                    </div>
+                                    <div class="input-cell">
+                                        <label>소분류 문항 유형 선택</label>
+                                        <select id="math-type-select" class="custom-select-box">
+                                            <option value="">-- 유형 선택 --</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="math-row-three-col">
+                                    <div class="input-cell">
+                                        <label>난이도 점수</label>
+                                        <select id="math-difficulty-select" class="custom-select-box">
+                                            <option value="★">★ (하)</option>
+                                            <option value="★★">★★ (중하)</option>
+                                            <option value="★★★">★★★ (중)</option>
+                                            <option value="★★★★">★★★★ (중상)</option>
+                                            <option value="★★★★★">★★★★★ (상/킬러)</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-cell">
+                                        <label>중요도 수치</label>
+                                        <select id="math-importance-select" class="custom-select-box">
+                                            <option value="🔥">🔥 (낮음)</option>
+                                            <option value="🔥🔥">🔥🔥 (보통)</option>
+                                            <option value="🔥🔥🔥">🔥🔥🔥 (매우 중요)</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-cell">
+                                        <label>현재 복습 주기 / 상태</label>
+                                        <select id="math-status-select" class="custom-select-box">
+                                            <option value="1회독 필요">🔄 1회독 필요</option>
+                                            <option value="2회독 진행중">⏳ 2회독 진행중</option>
+                                            <option value="완벽 이해 완료">✅ 완벽 이해 완료</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="math-textarea-cell">
+                                    <label>틀린 원인 원천 규명 및 분석</label>
+                                    <textarea id="math-cause-input" class="planner-textarea-input custom-area" placeholder="개념 부족, 계산 실수, 조건 누락 등 구체적인 오답 사유를 기록하세요..."></textarea>
+                                </div>
+
+                                <div class="math-textarea-cell">
+                                    <label>핵심 코어 개념 및 아이디어 요약</label>
+                                    <textarea id="math-concept-input" class="planner-textarea-input custom-area" placeholder="이 문제를 풀 때 떠올려야 했던 실전 개념이나 발상을 정리하세요..."></textarea>
+                                </div>
+
+                                <div class="math-textarea-cell">
+                                    <label>상세 풀이 과정 & 피드백</label>
+                                    <textarea id="math-solution-input" class="planner-textarea-input custom-area" style="height: 140px;" placeholder="상세 풀이 과정을 기록하세요"></textarea>
+                                </div>
+
+                                <button id="math-save-btn" class="btn-save">오답노트 저장 / 수정</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </main>
+    </div>
+
+    <div id="type-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders"></i> 문항 유형 관리</h3>
+                <button id="close-type-modal" class="modal-close-x">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="type-add-form" class="inline-form modal-input-group" onsubmit="event.preventDefault();">
+                    <input type="text" id="new-type-input" placeholder="새로운 유형 이름을 입력하세요...">
+                    <button type="button" id="btn-add-type" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
+                </form>
+                <div class="modal-list-title">등록된 유형 리스트 <span class=\"drag-hint\">(드래그로 순서 변경 가능)</span></div>
+                <div id="custom-type-list" class="custom-type-manage-list"></div>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
