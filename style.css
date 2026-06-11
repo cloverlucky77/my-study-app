@@ -493,3 +493,60 @@ html, body { max-width: 100%; overflow-x: hidden; position: relative; }
 #month-summary-list::-webkit-scrollbar-thumb:hover {
     background: #3f3f46;
 }
+
+/* ==========================================================================
+   📅 일정/디데이 많아짐으로 인한 하단 잘림 및 삐져나옴 방지 패치
+   ========================================================================== */
+
+/* 1. 할 일과 디데이를 감싸는 우측 스택 영역 유연성 확보 */
+.daily-detail-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+/* 2. 일정/디데이 박스 고도화 */
+.daily-detail-stack .panel {
+    display: flex;
+    flex-direction: column;
+    max-height: 380px; /* 💡 박스의 최대 높이를 적절히 제한 */
+    min-height: 200px; /* 최소 높이 보장 */
+    overflow: hidden;   /* 전체 박스 탈출 차단 */
+}
+
+/* 3. 할 일 리스트 영역에 내부 스크롤바 생성 */
+#todo-list {
+    flex: 1;
+    overflow-y: auto;  /* 💡 일정이 많아지면 박스 안에서 스크롤이 생기도록 설정 */
+    padding-right: 4px;
+}
+
+/* 4. 디데이 리스트 영역에 내부 스크롤바 생성 */
+#dday-container {
+    flex: 1;
+    overflow-y: auto;  /* 💡 디데이가 많아지면 박스 안에서 스크롤이 생기도록 설정 */
+    padding-right: 4px;
+}
+
+/* ✨ 스크롤바 디자인을 웹사이트 톤앤매너에 맞게 깔끔하게 다듬기 */
+#todo-list::-webkit-scrollbar,
+#dday-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+#todo-list::-webkit-scrollbar-track,
+#dday-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#todo-list::-webkit-scrollbar-thumb,
+#dday-container::-webkit-scrollbar-thumb {
+    background: #27272a; /* var(--panel-border) 색상과 매칭 */
+    border-radius: 10px;
+}
+
+#todo-list::-webkit-scrollbar-thumb:hover,
+#dday-container::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+}
