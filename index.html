@@ -2,9 +2,9 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Cloud Workspace</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium Cloud Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,7 +14,7 @@
         
         <aside class="sidebar" id="main-sidebar">
             <div class="sidebar-brand">
-                <div><i class="fa-solid fa-cloud"></i> <span>WORKSPACE</span></div>
+                <div><i class="fa-solid fa-cloud-bolt text-accent-glow"></i> <span>WORKSPACE</span></div>
                 <button type="button" id="btn-close-sidebar" class="sidebar-toggle-inside"><i class="fa-solid fa-angles-left"></i></button>
             </div>
             <nav class="sidebar-menu">
@@ -43,7 +43,7 @@
         </aside>
 
         <button type="button" id="btn-open-sidebar" class="sidebar-toggle-outside hidden">
-            <i class="fa-solid fa-angles-right"></i>
+            <i class="fa-solid fa-bars"></i>
         </button>
 
         <main class="main-content">
@@ -57,7 +57,7 @@
                     
                     <section class="calendar-panel panel">
                         <div class="calendar-header-controls">
-                            <h2 class="calendar-month-year" id="calendar-month-year">2026년 03월</h2>
+                            <h2 class="calendar-month-year" id="calendar-month-year">2026년 06월</h2>
                             <div class="calendar-nav-buttons">
                                 <button type="button" id="btn-prev-month"><i class="fa-solid fa-chevron-left"></i></button>
                                 <button type="button" id="btn-next-month"><i class="fa-solid fa-chevron-right"></i></button>
@@ -77,8 +77,8 @@
 
                         <div class="month-summary-panel">
                             <div class="summary-header">
-                                <span class="summary-title"><i class="fa-solid fa-chart-pie"></i> 이번 달 총 등록 일정 요약 <span class="click-tip">(일정 클릭 시 해당 일자로 이동)</span></span>
-                                <span class="summary-badge" id="month-todo-count">0개 진행 중</span>
+                                <span class="summary-title"><i class="fa-solid fa-chart-pie-simple"></i> 이번 달 일정 요약 <span class="click-tip">(클릭 시 해당 일자로 즉시 이동)</span></span>
+                                <span class="summary-badge" id="month-todo-count">0개 대기 중</span>
                             </div>
                             <div class="item-list" id="month-summary-list">
                                 </div>
@@ -104,9 +104,16 @@
                         </section>
 
                         <section class="panel">
-                            <div class="panel-header">
-                                <span class="panel-title"><i class="fa-regular fa-clock"></i> 24H 정밀 타임라인 플래너 & 총평</span>
-                                <div class="planner-config-mini"><span id="planner-save-status">자동 저장됨</span> <i class="fa-solid fa-sliders text-muted-icon"></i></div>
+                            <div class="panel-header glass-header">
+                                <span class="panel-title"><i class="fa-regular fa-clock"></i> 정밀 타임라인 플래너</span>
+                                <div class="timeline-customizer">
+                                    <select id="select-start-hour" class="hours-selector"></select>
+                                    <span class="selector-dash">~</span>
+                                    <select id="select-end-hour" class="hours-selector"></select>
+                                    <div class="planner-config-mini">
+                                        <span id="planner-save-status">자동 저장됨</span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="timeline-planner-wrapper" id="timeline-hours-container">
@@ -114,7 +121,7 @@
 
                             <div class="timeline-review-zone">
                                 <span class="timeline-review-title">오늘 하루 총평 및 피드백</span>
-                                <textarea id="plan-review" class="planner-textarea-input" placeholder="오늘 하루 공부/업무 피드백이나 일기를 자유롭게 기록해 보세요..."></textarea>
+                                <textarea id="plan-review" class="planner-textarea-input" placeholder="오늘 하루 성찰 피드백이나 일기를 자유롭게 기록하세요..."></textarea>
                             </div>
                         </section>
 
