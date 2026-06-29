@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mainSidebar = document.getElementById('main-sidebar');
     const btnCloseSidebar = document.getElementById('btn-close-sidebar');
     const btnOpenSidebar = document.getElementById('btn-open-sidebar');
-    const outsideToggleButtons = document.querySelectorAll('.sidebar-toggle-outside');
     const menuItems = document.querySelectorAll('.menu-item');
     const contentViews = document.querySelectorAll('.content-view');
     const sidebarSubFolders = document.getElementById('sidebar-sub-folders');
@@ -74,14 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthSummaryList = document.getElementById('month-summary-list');
     const monthTodoCount = document.getElementById('month-todo-count');
 
-    // [수정] 하루 24H 단위 플래너 시간대 확장 스펙 정의 (05시~24시)
     const startHour = 5;
     const endHour = 24;
     const timelineContainer = document.getElementById('timeline-hours-container');
     const planReviewInput = document.getElementById('plan-review');
     const plannerSaveStatus = document.getElementById('planner-save-status');
 
-    // [수정] 24H 시간 레이아웃을 생성하여 HTML에 주입하는 모듈
     function createTimelineUI() {
         if (!timelineContainer) return;
         timelineContainer.innerHTML = '';
@@ -201,6 +198,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('div');
             row.className = 'summary-todo-item';
             row.innerHTML = updateMonthSummaryItemHtml(dateShort, item);
+            
+            // [개선] 요약 일정 클릭 시 해당 날짜로 즉시 내비게이션 연동 및 달력 갱신
+            row.addEventListener('click', () => {
+                selectedFullDate = item.date;
+                
+                // 해당 월 보기로 달력 기준점 동기화
+                const parsedDate = new Date(item.date);
+                currentViewDate.setFullYear(parsedDate.getFullYear());
+                currentViewDate.setMonth(parsedDate.getMonth());
+                
+                selectedDateLabel.textContent = selectedFullDate;
+                renderCalendarGrid();
+                fetchDailyIntegratedData();
+            });
+            
             monthSummaryList.appendChild(row);
         });
     }
@@ -222,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTodoListData(list);
         });
         
-        // [수정] 05시부터 24시까지 세분화된 플래너 데이터 로드 및 맵핑
         db.ref(`workspace/dayPlanners/${selectedFullDate}`).once('value', (snapshot) => {
             const data = snapshot.val() || {};
             
@@ -269,7 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.toggleTodoStatus = (id, currentStatus) => { db.ref(`workspace/todos/${id}`).update({ done: !currentStatus }).then(() => renderCalendarGrid()); };
     window.deleteTodoItem = (id) => { if(confirm("이 일정을 영구 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
 
-    // [수정] 24H 모든 인풋창들의 값 일괄 취합 후 저장 처리 로직 (Debounce)
     let plannerTimeout;
     function syncPlannerToCloud() {
         if(plannerSaveStatus) plannerSaveStatus.textContent = "저장 중...";
@@ -349,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteMemoItem = (id) => { if(confirm("이 메모 카드를 삭제할까요?")) db.ref(`workspace/memos/${id}`).remove(); };
 
 
-    // --- 🧮 4. 수학 오답노트 연동 모듈 패널 ---
+    // --- 🧮 4. 수학 오답노트 전용 컴포넌트 스펙 ---
     let activeMathFolder = '';
     let activeMathItemId = '';
     const customTypeList = document.getElementById('custom-type-list');
