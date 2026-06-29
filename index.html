@@ -18,7 +18,7 @@
                 <button type="button" id="btn-close-sidebar" class="sidebar-toggle-inside"><i class="fa-solid fa-angles-left"></i></button>
             </div>
             <nav class="sidebar-menu">
-                <button type="button" class="menu-item active" data-target=\"view-planner\">
+                <button type="button" class="menu-item active" data-target="view-planner">
                     <i class="fa-regular fa-calendar-days"></i> <span>통합 플래너 & 달력</span>
                 </button>
                 
@@ -229,19 +229,19 @@
         </main>
     </div>
 
-    <div id=\"type-modal\" class=\"modal-overlay hidden\">
-        <div class=\"modal-content\">
-            <div class=\"modal-header\">
-                <h3><i class=\"fa-solid fa-sliders\"></i> 문항 유형 관리</h3>
-                <button id=\"close-type-modal\" class=\"modal-close-x\">&times;</button>
+    <div id="type-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders"></i> 문항 유형 관리</h3>
+                <button id="close-type-modal" class="modal-close-x">&times;</button>
             </div>
-            <div class=\"modal-body\">
-                <form id=\"type-add-form\" class=\"inline-form modal-input-group\" onsubmit=\"event.preventDefault();\">
-                    <input type=\"text\" id=\"new-type-input\" placeholder=\"새로운 유형 이름을 입력하세요...\">
-                    <button type=\"button\" id=\"btn-add-type\" class=\"icon-btn-add\"><i class=\"fa-solid fa-plus\"></i></button>
+            <div class="modal-body">
+                <form id="type-add-form" class="inline-form modal-input-group" onsubmit="event.preventDefault();">
+                    <input type="text" id="new-type-input" placeholder="새로운 유형 이름을 입력하세요...">
+                    <button type="button" id="btn-add-type" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
                 </form>
-                <div class=\"modal-list-title\">등록된 유형 리스트 <span class=\"drag-hint\">(드래그로 순서 변경 가능)</span></div>
-                <div id=\"custom-type-list\" class=\"custom-type-manage-list\"></div>
+                <div class="modal-list-title">등록된 유형 리스트 <span class="drag-hint">(드래그로 순서 변경 가능)</span></div>
+                <div id="custom-type-list" class="custom-type-manage-list"></div>
             </div>
         </div>
     </div>
