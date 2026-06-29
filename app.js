@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const folderAddForm = document.getElementById('sidebar-folder-add-form');
     const newFolderNameInput = document.getElementById('new-folder-name-input');
 
-    // 모바일 전용 반응형 토글 디바이스 제어
     if (btnCloseSidebar) {
         btnCloseSidebar.addEventListener('click', () => {
             mainSidebar.classList.add('collapsed');
@@ -43,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 네비게이션 탭 메뉴 전환 라우터
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
             menuItems.forEach(btn => btn.classList.remove('active'));
@@ -53,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(view.id === target) view.classList.remove('hidden');
                 else view.classList.add('hidden');
             });
-            // 데스크톱 사이드바 유지, 모바일 환경만 리스트 자동닫힘
             if(window.innerWidth <= 768) {
                 mainSidebar.classList.add('collapsed');
                 mainSidebar.classList.remove('active');
@@ -77,14 +74,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthSummaryList = document.getElementById('month-summary-list');
     const monthTodoCount = document.getElementById('month-todo-count');
 
-    // 🕒 정밀 시간대 정의 (05시부터 24시까지 완벽 개편)
+    // [수정] 하루 24H 단위 플래너 시간대 확장 스펙 정의 (05시~24시)
     const startHour = 5;
     const endHour = 24;
     const timelineContainer = document.getElementById('timeline-hours-container');
     const planReviewInput = document.getElementById('plan-review');
     const plannerSaveStatus = document.getElementById('planner-save-status');
 
-    // [추가] 24H 정밀 타임라인 인풋 필드 동적 UI 자동 빌더
+    // [수정] 24H 시간 레이아웃을 생성하여 HTML에 주입하는 모듈
     function createTimelineUI() {
         if (!timelineContainer) return;
         timelineContainer.innerHTML = '';
@@ -99,19 +96,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="text" id="plan-hr-${h}" class="planner-text-input" placeholder="${hourStr}의 계획 및 실행 기록을 작성하세요...">
             `;
             
-            // 입력 데이터 수정 시 즉각 클라우드 실시간 동기화
             row.querySelector('input').oninput = syncPlannerToCloud;
             timelineContainer.appendChild(row);
         }
     }
-    // 초기 구동 실행
     createTimelineUI();
 
-    // 상단 네비게이션 월 이동 트리거
     document.getElementById('btn-prev-month').addEventListener('click', () => { currentViewDate.setMonth(currentViewDate.getMonth() - 1); renderCalendarGrid(); });
     document.getElementById('btn-next-month').addEventListener('click', () => { currentViewDate.setMonth(currentViewDate.getMonth() + 1); renderCalendarGrid(); });
 
-    // 투두 아이템 생성 폼 제출 핸들러
     todoForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const newTodo = {
@@ -126,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         todoTimeInput.value = '';
     });
 
-    // 캘린더 엔진 핵심 렌더러
     function renderCalendarGrid() {
         const year = currentViewDate.getFullYear();
         const month = currentViewDate.getMonth();
@@ -138,7 +130,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastDate = new Date(year, month + 1, 0).getDate();
         const prevLastDate = new Date(year, month, 0).getDate();
 
-        // 1. 이전 달 짜투리 일수 처리
         for (let x = firstDayIndex; x > 0; x--) {
             const d = prevLastDate - x + 1;
             const cell = document.createElement('div');
@@ -147,12 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
             calendarDays.appendChild(cell);
         }
 
-        // 이번 달 기준 데이터 로드 및 닷 인디케이터 처리 준비
         db.ref('workspace/todos').once('value', (snapshot) => {
             const todos = snapshot.val() || {};
             const currentMonthStr = `${year}-${String(month+1).padStart(2,'0')}`;
-            
-            // 월 전체 스케줄 요약 전용 컬렉션 생성
             const monthAllList = [];
 
             for (let i = 1; i <= lastDate; i++) {
@@ -169,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 cell.innerHTML = `<span class="day-number">${i}</span><div class="day-indicators-row" id="ind-${fullDateStr}"></div>`;
                 
-                // 해당 셀 클릭 시 글로벌 싱크 업데이트 변경
                 cell.addEventListener('click', () => {
                     selectedFullDate = fullDateStr;
                     document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
@@ -180,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 calendarDays.appendChild(cell);
 
-                // 이번 달 통합 어그리게이션 데이터 취합 및 인디케이터 생성
                 const dayTodos = Object.keys(todos).map(id => ({id, ...todos[id]})).filter(t => t.date === fullDateStr);
                 if (dayTodos.length > 0) {
                     const indContainer = document.getElementById(`ind-${fullDateStr}`);
@@ -195,12 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // 하단 스크롤 한 달 모아보기 박스 채우기
             renderMonthSummaryData(monthAllList);
         });
     }
 
-    // 이번 달 요약 서브 패널 렌더러
     function renderMonthSummaryData(list) {
         monthSummaryList.innerHTML = '';
         const activeCount = list.filter(t => !t.done).length;
@@ -211,24 +195,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // 날짜순, 시간순 정렬 오버헤드 최적화
         list.sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
         list.forEach(item => {
             const dateShort = item.date.substring(5);
             const row = document.createElement('div');
             row.className = 'summary-todo-item';
-            row.innerHTML = `
-                <div class="summary-todo-left">
-                    <span class="summary-date-tag">${dateShort} ${item.time}</span>
-                    <span class="summary-todo-text ${item.done ? 'line-through' : ''}">${item.text}</span>
-                </div>
-                <div class="summary-status-dot ${item.done ? 'done' : ''}"></div>
-            `;
+            row.innerHTML = updateMonthSummaryItemHtml(dateShort, item);
             monthSummaryList.appendChild(row);
         });
     }
 
-    // 데일리 상세 로드 데이터 취합 연동 파트
+    function updateMonthSummaryItemHtml(dateShort, item) {
+        return `
+            <div class="summary-todo-left">
+                <span class="summary-date-tag">${dateShort} ${item.time}</span>
+                <span class="summary-todo-text ${item.done ? 'line-through' : ''}">${item.text}</span>
+            </div>
+            <div class="summary-status-dot ${item.done ? 'done' : ''}"></div>
+        `;
+    }
+
     function fetchDailyIntegratedData() {
         db.ref('workspace/todos').on('value', (snapshot) => {
             const todos = snapshot.val() || {};
@@ -236,11 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTodoListData(list);
         });
         
-        // 🕒 클라우드 연동 24시간 타임라인 플래너 복원
+        // [수정] 05시부터 24시까지 세분화된 플래너 데이터 로드 및 맵핑
         db.ref(`workspace/dayPlanners/${selectedFullDate}`).once('value', (snapshot) => {
             const data = snapshot.val() || {};
             
-            // 모든 시간대 폼 복구
             for (let h = startHour; h <= endHour; h++) {
                 const inputField = document.getElementById(`plan-hr-${h}`);
                 if (inputField) {
@@ -252,7 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 투두 카드 렌더러
     function renderTodoListData(list) {
         todoList.innerHTML = '';
         list.sort((a,b) => a.time.localeCompare(b.time));
@@ -285,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.toggleTodoStatus = (id, currentStatus) => { db.ref(`workspace/todos/${id}`).update({ done: !currentStatus }).then(() => renderCalendarGrid()); };
     window.deleteTodoItem = (id) => { if(confirm("이 일정을 영구 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
 
-    // 🕒 [추가] 변경 데이터를 취합하여 파이어베이스에 클라우드 업로드 (Debounce)
+    // [수정] 24H 모든 인풋창들의 값 일괄 취합 후 저장 처리 로직 (Debounce)
     let plannerTimeout;
     function syncPlannerToCloud() {
         if(plannerSaveStatus) plannerSaveStatus.textContent = "저장 중...";
@@ -294,14 +278,12 @@ document.addEventListener('DOMContentLoaded', () => {
         plannerTimeout = setTimeout(() => {
             const plannerData = {};
             
-            // 루프를 돌며 모든 시간대의 입력 데이터 취합
             for (let h = startHour; h <= endHour; h++) {
                 const inputField = document.getElementById(`plan-hr-${h}`);
                 if (inputField) {
                     plannerData[`hr_${h}`] = inputField.value;
                 }
             }
-            // 피드백 데이터 취합
             plannerData['review'] = planReviewInput ? planReviewInput.value : '';
 
             db.ref(`workspace/dayPlanners/${selectedFullDate}`).set(plannerData);
@@ -311,7 +293,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(planReviewInput) planReviewInput.oninput = syncPlannerToCloud;
 
-    // 초기 메인 데이터 연동 기동
     selectedDateLabel.textContent = selectedFullDate;
     renderCalendarGrid();
     fetchDailyIntegratedData();
@@ -344,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const memoList = Object.keys(memos).map(id => ({id, ...memos[id]})).sort((a,b) => b.timestamp - a.timestamp);
 
         if(memoList.length === 0) {
-            memoContainer.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:var(--text-muted); padding:40px; font-size:0.9rem;">등록된 클라우드 아이디어 가 없습니다.</div>`;
+            memoContainer.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:var(--text-muted); padding:40px; font-size:0.9rem;">등록된 클라우드 아이디어가 없습니다.</div>`;
             return;
         }
 
@@ -376,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mathItemsContainer = document.getElementById('math-items-container');
     const mathFolderListTitle = document.getElementById('math-folder-list-title');
 
-    // 오답노트 코어 인풋 엔티티 매핑 데이터
     const mathSource = document.getElementById('math-source');
     const mathNumber = document.getElementById('math-number');
     const mathDifficulty = document.getElementById('math-difficulty');
@@ -387,7 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const mathSaveBtn = document.getElementById('math-save-btn');
     const btnNewMathItem = document.getElementById('btn-new-math-item');
 
-    // 수학 대단원 실시간 구조 리스트 로더
     db.ref('workspace/mathFolders').on('value', (snapshot) => {
         if(!sidebarSubFolders) return;
         sidebarSubFolders.innerHTML = '';
@@ -408,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('.sub-folder-item').forEach(sf => sf.classList.remove('active'));
                 item.classList.add('active');
                 
-                // 수학 뷰 활성화 강제 전환 라우팅
                 document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
                 const mBtn = document.getElementById('menu-btn-math');
                 if(mBtn) mBtn.classList.add('active');
@@ -424,7 +402,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 신규 폴더 추가 바인딩
     if(folderAddForm) {
         folderAddForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -442,7 +419,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 폴더 타겟 하위 문항 리스트 바인딩 리스너
     function loadMathItemsForFolder() {
         if(!activeMathFolder) return;
         db.ref(`workspace/mathNotebooks/${activeMathFolder}/items`).on('value', (snapshot) => {
@@ -467,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="badge-unit status-${item.status ? item.status.substring(0,2) : '다시'}">${item.status || '미지정'}</span>
                         </div>
                     </div>
-                    <div class="math-card-core-question">${item.question || '요약 코멘트 가 없습니다.'}</div>
+                    <div class="math-card-core-question">${item.question || '요약 코멘트가 없습니다.'}</div>
                     <div class="math-card-bottom-row">
                         <span class="math-reason-tag"><i class="fa-solid fa-triangle-exclamation"></i> ${item.wrongReason || '원인 분석 미지정'}</span>
                         <button type="button" class="btn-math-delete" onclick="event.stopPropagation(); deleteMathItemUnit('${item.id}')"><i class="fa-regular fa-trash-can"></i></button>
@@ -559,19 +535,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const sortedTypes = Object.keys(types).map(id => ({id, ...types[id]})).sort((a,b) => (a.order || 0) - (b.order || 0));
 
             sortedTypes.forEach(t => {
-                // 셀렉트 박스 동적 빌드
                 const opt = document.createElement('option');
                 opt.value = t.id; opt.textContent = t.id;
                 mathTypeSelect.appendChild(opt);
 
-                // 모달 편집 가상 리스트 빌드
                 const row = document.createElement('div');
                 row.className = 'type-manage-item';
                 row.draggable = true;
                 row.dataset.id = t.id;
                 row.innerHTML = `<div><i class="fa-solid fa-bars"></i> <span>${t.id}</span></div><button type="button" class="btn-todo-delete" onclick="deleteCustomType('${t.id}')">&times;</button>`;
                 
-                // 드래그 앤 드롭 정렬 배치 이벤트 스펙 핸들링
                 row.addEventListener('dragstart', () => row.classList.add('dragging'));
                 row.addEventListener('dragend', () => { row.classList.remove('dragging'); saveNewTypeOrder(); });
                 customTypeList.appendChild(row);
