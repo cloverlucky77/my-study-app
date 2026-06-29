@@ -24,54 +24,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuItems = document.querySelectorAll('.menu-item');
     const contentViews = document.querySelectorAll('.content-view');
     const sidebarSubFolders = document.getElementById('sidebar-sub-folders');
-    const sidebarMemoFolders = document.getElementById('sidebar-memo-folders');
+    const folderAddForm = document.getElementById('sidebar-folder-add-form');
+    const newFolderNameInput = document.getElementById('new-folder-name-input');
 
-    function hideSidebar() {
-        mainSidebar.classList.add('collapsed');
-        outsideToggleButtons.forEach(btn => btn.classList.remove('hidden'));
+    // 모바일 전용 반응형 토글 디바이스 제어
+    if (btnCloseSidebar) {
+        btnCloseSidebar.addEventListener('click', () => {
+            mainSidebar.classList.add('collapsed');
+            mainSidebar.classList.remove('active');
+            if(btnOpenSidebar) btnOpenSidebar.classList.remove('hidden');
+        });
     }
-    
-    function showSidebar() {
-        mainSidebar.classList.remove('collapsed');
-        outsideToggleButtons.forEach(btn => btn.classList.add('hidden'));
+    if (btnOpenSidebar) {
+        btnOpenSidebar.addEventListener('click', () => {
+            mainSidebar.classList.remove('collapsed');
+            mainSidebar.classList.add('active');
+            btnOpenSidebar.classList.add('hidden');
+        });
     }
-    
-    if(btnCloseSidebar) btnCloseSidebar.addEventListener('click', hideSidebar);
-    if(btnOpenSidebar) btnOpenSidebar.addEventListener('click', showSidebar);
-    document.querySelectorAll('.aria-toggle-sidebar').forEach(btn => {
-        btn.addEventListener('click', showSidebar);
-    });
 
+    // 네비게이션 탭 메뉴 전환 라우터
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
             menuItems.forEach(btn => btn.classList.remove('active'));
             item.classList.add('active');
-            const targetId = item.getAttribute('data-target');
-            
+            const target = item.dataset.target;
             contentViews.forEach(view => {
-                if (view.id === targetId) view.classList.remove('hidden');
+                if(view.id === target) view.classList.remove('hidden');
                 else view.classList.add('hidden');
             });
-            
-            if (item.id === 'menu-btn-math') {
-                sidebarSubFolders.classList.remove('hidden');
-                sidebarMemoFolders.classList.add('hidden');
-            } else if (item.id === 'menu-btn-memo') {
-                sidebarMemoFolders.classList.remove('hidden');
-                sidebarSubFolders.classList.add('hidden');
-            } else {
-                sidebarSubFolders.classList.add('hidden');
-                sidebarMemoFolders.classList.add('hidden');
+            // 데스크톱 사이드바 유지, 모바일 환경만 리스트 자동닫힘
+            if(window.innerWidth <= 768) {
+                mainSidebar.classList.add('collapsed');
+                mainSidebar.classList.remove('active');
+                if(btnOpenSidebar) btnOpenSidebar.classList.remove('hidden');
             }
         });
     });
 
-    const clockDisplay = document.getElementById('live-clock');
-    if(clockDisplay) {
-        setInterval(() => { clockDisplay.textContent = new Date().toTimeString().split(' ')[0]; }, 1000);
-    }
 
-    // --- 📅 2. 달력 및 대제목 동기화 연동 모듈 (월간 모아보기 그룹화 확장) ---
+    // --- 📅 2. 달력 및 대제목 동기화 연동 모듈 변수 설정 ---
     const calendarDays = document.getElementById('calendar-days');
     const calendarMonthYear = document.getElementById('calendar-month-year');
     const calendarViewTitle = document.getElementById('calendar-view-title'); 
@@ -85,66 +77,158 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthSummaryList = document.getElementById('month-summary-list');
     const monthTodoCount = document.getElementById('month-todo-count');
 
-    const planAmInput = document.getElementById('plan-am');
-    const planPmInput = document.getElementById('plan-pm');
-    const planEveInput = document.getElementById('plan-eve');
+    // 🕒 정밀 시간대 정의 (05시부터 24시까지 완벽 개편)
+    const startHour = 5;
+    const endHour = 24;
+    const timelineContainer = document.getElementById('timeline-hours-container');
     const planReviewInput = document.getElementById('plan-review');
     const plannerSaveStatus = document.getElementById('planner-save-status');
 
-    function renderCalendar() {
-        if(!calendarDays) return;
-        calendarDays.innerHTML = '';
+    // [추가] 24H 정밀 타임라인 인풋 필드 동적 UI 자동 빌더
+    function createTimelineUI() {
+        if (!timelineContainer) return;
+        timelineContainer.innerHTML = '';
+        
+        for (let h = startHour; h <= endHour; h++) {
+            const hourStr = String(h).padStart(2, '0') + ':00';
+            const row = document.createElement('div');
+            row.className = 'timeline-row';
+            
+            row.innerHTML = `
+                <span class="timeline-hour">${hourStr}</span>
+                <input type="text" id="plan-hr-${h}" class="planner-text-input" placeholder="${hourStr}의 계획 및 실행 기록을 작성하세요...">
+            `;
+            
+            // 입력 데이터 수정 시 즉각 클라우드 실시간 동기화
+            row.querySelector('input').oninput = syncPlannerToCloud;
+            timelineContainer.appendChild(row);
+        }
+    }
+    // 초기 구동 실행
+    createTimelineUI();
+
+    // 상단 네비게이션 월 이동 트리거
+    document.getElementById('btn-prev-month').addEventListener('click', () => { currentViewDate.setMonth(currentViewDate.getMonth() - 1); renderCalendarGrid(); });
+    document.getElementById('btn-next-month').addEventListener('click', () => { currentViewDate.setMonth(currentViewDate.getMonth() + 1); renderCalendarGrid(); });
+
+    // 투두 아이템 생성 폼 제출 핸들러
+    todoForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newTodo = {
+            date: selectedFullDate,
+            time: todoTimeInput.value || "---",
+            text: todoInput.value.trim(),
+            done: false,
+            timestamp: Date.now()
+        };
+        db.ref('workspace/todos').push(newTodo);
+        todoInput.value = '';
+        todoTimeInput.value = '';
+    });
+
+    // 캘린더 엔진 핵심 렌더러
+    function renderCalendarGrid() {
         const year = currentViewDate.getFullYear();
         const month = currentViewDate.getMonth();
-        
-        if(calendarMonthYear) {
-            calendarMonthYear.textContent = `${year}년 ${month + 1}월`;
-        }
-        
-        if(calendarViewTitle) {
-            calendarViewTitle.textContent = `${year}년 ${String(month + 1).padStart(2, '0')}월`;
-        }
-        
-        const firstDay = new Date(year, month, 1).getDay();
+        calendarMonthYear.textContent = `${year}년 ${String(month + 1).padStart(2, '0')}월`;
+        if(calendarViewTitle) calendarViewTitle.textContent = `${year}년 ${month + 1}월 스케줄러 & 클라우드 워크스페이스`;
+
+        calendarDays.innerHTML = '';
+        const firstDayIndex = new Date(year, month, 1).getDay();
         const lastDate = new Date(year, month + 1, 0).getDate();
-        
-        ['일','월','화','수','목','금','토'].forEach(d => {
-            const div = document.createElement('div');
-            div.className = 'cal-day-label'; div.textContent = d;
-            calendarDays.appendChild(div);
-        });
+        const prevLastDate = new Date(year, month, 0).getDate();
 
-        for(let i=0; i<firstDay; i++) calendarDays.appendChild(document.createElement('div'));
-
-        for(let i=1; i<=lastDate; i++) {
-            const dateDiv = document.createElement('div');
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-            dateDiv.className = 'cal-date';
-            if(dateStr === getTodayDateString()) dateDiv.classList.add('today');
-            if(dateStr === selectedFullDate) dateDiv.classList.add('selected');
-            dateDiv.textContent = i;
-            
-            dateDiv.onclick = () => {
-                changeTargetDate(dateStr, month + 1, i);
-            };
-            calendarDays.appendChild(dateDiv);
+        // 1. 이전 달 짜투리 일수 처리
+        for (let x = firstDayIndex; x > 0; x--) {
+            const d = prevLastDate - x + 1;
+            const cell = document.createElement('div');
+            cell.className = 'day-cell other-month';
+            cell.innerHTML = `<span class="day-number">${d}</span>`;
+            calendarDays.appendChild(cell);
         }
 
-        fetchMonthSummaryData();
+        // 이번 달 기준 데이터 로드 및 닷 인디케이터 처리 준비
+        db.ref('workspace/todos').once('value', (snapshot) => {
+            const todos = snapshot.val() || {};
+            const currentMonthStr = `${year}-${String(month+1).padStart(2,'0')}`;
+            
+            // 월 전체 스케줄 요약 전용 컬렉션 생성
+            const monthAllList = [];
+
+            for (let i = 1; i <= lastDate; i++) {
+                const iStr = String(i).padStart(2, '0');
+                const fullDateStr = `${currentMonthStr}-${iStr}`;
+                
+                const cell = document.createElement('div');
+                cell.className = 'day-cell';
+                
+                const currentDayOfWeek = new Date(year, month, i).getDay();
+                if(currentDayOfWeek === 0) cell.classList.add('sun-cell');
+                if(fullDateStr === getTodayDateString()) cell.classList.add('today');
+                if(fullDateStr === selectedFullDate) cell.classList.add('selected');
+
+                cell.innerHTML = `<span class="day-number">${i}</span><div class="day-indicators-row" id="ind-${fullDateStr}"></div>`;
+                
+                // 해당 셀 클릭 시 글로벌 싱크 업데이트 변경
+                cell.addEventListener('click', () => {
+                    selectedFullDate = fullDateStr;
+                    document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('selected'));
+                    cell.classList.add('selected');
+                    selectedDateLabel.textContent = selectedFullDate;
+                    fetchDailyIntegratedData();
+                });
+
+                calendarDays.appendChild(cell);
+
+                // 이번 달 통합 어그리게이션 데이터 취합 및 인디케이터 생성
+                const dayTodos = Object.keys(todos).map(id => ({id, ...todos[id]})).filter(t => t.date === fullDateStr);
+                if (dayTodos.length > 0) {
+                    const indContainer = document.getElementById(`ind-${fullDateStr}`);
+                    if(indContainer) {
+                        dayTodos.slice(0, 3).forEach(t => {
+                            const dot = document.createElement('div');
+                            dot.className = `indicator-dot ${t.done ? 'completed' : ''}`;
+                            indContainer.appendChild(dot);
+                        });
+                    }
+                    dayTodos.forEach(t => monthAllList.push(t));
+                }
+            }
+
+            // 하단 스크롤 한 달 모아보기 박스 채우기
+            renderMonthSummaryData(monthAllList);
+        });
     }
 
-    function changeTargetDate(dateStr, monthNum, dayNum) {
-        selectedFullDate = dateStr;
-        if(selectedDateLabel) selectedDateLabel.textContent = `${monthNum}월 ${dayNum}일 일정 관리`;
-        renderCalendar();
-        fetchDailyIntegratedData();
+    // 이번 달 요약 서브 패널 렌더러
+    function renderMonthSummaryData(list) {
+        monthSummaryList.innerHTML = '';
+        const activeCount = list.filter(t => !t.done).length;
+        monthTodoCount.textContent = `${activeCount}개 일정 대기 중`;
+
+        if (list.length === 0) {
+            monthSummaryList.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); text-align:center; padding:12px;">이번 달에 등록된 일정이 없습니다.</div>`;
+            return;
+        }
+
+        // 날짜순, 시간순 정렬 오버헤드 최적화
+        list.sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+        list.forEach(item => {
+            const dateShort = item.date.substring(5);
+            const row = document.createElement('div');
+            row.className = 'summary-todo-item';
+            row.innerHTML = `
+                <div class="summary-todo-left">
+                    <span class="summary-date-tag">${dateShort} ${item.time}</span>
+                    <span class="summary-todo-text ${item.done ? 'line-through' : ''}">${item.text}</span>
+                </div>
+                <div class="summary-status-dot ${item.done ? 'done' : ''}"></div>
+            `;
+            monthSummaryList.appendChild(row);
+        });
     }
 
-    const prevMonthBtn = document.getElementById('prev-month');
-    const nextMonthBtn = document.getElementById('next-month');
-    if(prevMonthBtn) prevMonthBtn.onclick = () => { currentViewDate.setMonth(currentViewDate.getMonth()-1); renderCalendar(); };
-    if(nextMonthBtn) nextMonthBtn.onclick = () => { currentViewDate.setMonth(currentViewDate.getMonth()+1); renderCalendar(); };
-
+    // 데일리 상세 로드 데이터 취합 연동 파트
     function fetchDailyIntegratedData() {
         db.ref('workspace/todos').on('value', (snapshot) => {
             const todos = snapshot.val() || {};
@@ -152,552 +236,367 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTodoListData(list);
         });
         
+        // 🕒 클라우드 연동 24시간 타임라인 플래너 복원
         db.ref(`workspace/dayPlanners/${selectedFullDate}`).once('value', (snapshot) => {
-            const data = snapshot.val() || { am: '', pm: '', eve: '', review: '' };
-            if(planAmInput) planAmInput.value = data.am || '';
-            if(planPmInput) planPmInput.value = data.pm || '';
-            if(planEveInput) planEveInput.value = data.eve || '';
+            const data = snapshot.val() || {};
+            
+            // 모든 시간대 폼 복구
+            for (let h = startHour; h <= endHour; h++) {
+                const inputField = document.getElementById(`plan-hr-${h}`);
+                if (inputField) {
+                    inputField.value = data[`hr_${h}`] || '';
+                }
+            }
             if(planReviewInput) planReviewInput.value = data.review || '';
             if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
         });
     }
 
-    // ✨ [신규 고도화 팩] 한 달 일정을 같은 날짜끼리 그룹화(묶음)하여 트리형 구조로 출력하는 엔진
-    function fetchMonthSummaryData() {
-        if(!monthSummaryList) return;
+    // 투두 카드 렌더러
+    function renderTodoListData(list) {
+        todoList.innerHTML = '';
+        list.sort((a,b) => a.time.localeCompare(b.time));
+        
+        let doneCount = list.filter(t => t.done).length;
+        todoStats.textContent = `완료 ${doneCount} / 전체 ${list.length}`;
 
-        const targetYear = currentViewDate.getFullYear();
-        const targetMonthStr = String(currentViewDate.getMonth() + 1).padStart(2, '0');
-        const monthPrefix = `${targetYear}-${targetMonthStr}`;
+        if (list.length === 0) {
+            todoList.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:20px;">오늘의 일정이 비어있습니다.</div>`;
+            return;
+        }
 
-        db.ref('workspace/todos').once('value', (snapshot) => {
-            const todos = snapshot.val() || {};
-            
-            // 1. 이번 달에 해당되는 아이템 추출
-            const filtered = Object.keys(todos)
-                .map(id => ({ id, ...todos[id] }))
-                .filter(t => t.date && t.date.startsWith(monthPrefix));
-
-            if(monthTodoCount) monthTodoCount.textContent = `${filtered.length}개 등록됨`;
-
-            monthSummaryList.innerHTML = '';
-            if(filtered.length === 0) {
-                monthSummaryList.innerHTML = `<div class="month-empty-hint">이달에 예정되거나 등록된 일정이 없습니다.</div>`;
-                return;
-            }
-
-            // 2. 날짜별로 딕셔너리 그룹화 묶기 { "2026-06-15": [todo1, todo2], "2026-06-16": [...] }
-            const grouped = {};
-            filtered.forEach(todo => {
-                if(!grouped[todo.date]) grouped[todo.date] = [];
-                grouped[todo.date].push(todo);
-            });
-
-            // 3. 날짜 오름차순 정렬 후 렌더링 파이프라인 가동
-            const sortedDates = Object.keys(grouped).sort();
-
-            sortedDates.forEach(dateKey => {
-                const dayParts = dateKey.split('-');
-                const displayDay = `${parseInt(dayParts[1])}월 ${parseInt(dayParts[2])}일`;
-                
-                // 해당 날짜의 요일 구하기
-                const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
-                const dayOfWeek = weekDays[new Date(dateKey).getDay()];
-
-                // 하루 단위 묶음 박스 (Group container) 생성
-                const groupBlock = document.createElement('div');
-                groupBlock.className = 'month-date-group';
-                if(dateKey === selectedFullDate) groupBlock.classList.add('active-day-focus');
-
-                // 상단 날짜 타이틀 바 추가 (클릭하면 이 날짜로 이동)
-                const groupHeader = document.createElement('div');
-                groupHeader.className = 'month-group-header';
-                groupHeader.innerHTML = `<span><i class="fa-regular fa-calendar-check" style="color:#60a5fa;"></i> ${displayDay} (${dayOfWeek}요일)</span>`;
-                groupHeader.onclick = () => {
-                    changeTargetDate(dateKey, parseInt(dayParts[1]), parseInt(dayParts[2]));
-                };
-                groupBlock.appendChild(groupHeader);
-
-                // 내부 할 일 목록 시간순 정렬 후 추가
-                const dayTodos = grouped[dateKey];
-                dayTodos.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
-
-                const listWrapper = document.createElement('div');
-                listWrapper.className = 'month-group-sublist';
-
-                dayTodos.forEach(todo => {
-                    const row = document.createElement('div');
-                    row.className = `month-summary-inner-item ${todo.completed ? 'done' : ''}`;
-                    row.innerHTML = `
-                        <span class="summary-time-tag">${todo.time || '종일'}</span>
-                        <span class="summary-text-content">${todo.text}</span>
-                    `;
-                    // 상세 아이템을 눌러도 해당 날짜로 워프 이동 연동
-                    row.onclick = (e) => {
-                        e.stopPropagation(); // 중복 버블링 방지
-                        changeTargetDate(dateKey, parseInt(dayParts[1]), parseInt(dayParts[2]));
-                    };
-                    listWrapper.appendChild(row);
-                });
-
-                groupBlock.appendChild(listWrapper);
-                monthSummaryList.appendChild(groupBlock);
-            });
+        list.forEach(todo => {
+            const card = document.createElement('div');
+            card.className = 'todo-item-card';
+            card.innerHTML = `
+                <div class="todo-item-left">
+                    <span class="todo-checkbox-wrapper ${todo.done ? 'checked' : ''}" onclick="toggleTodoStatus('${todo.id}', ${todo.done})">
+                        <i class="${todo.done ? 'fa-solid fa-square-check' : 'fa-regular fa-square'}"></i>
+                    </span>
+                    <span class="todo-card-time">${todo.time}</span>
+                    <span class="todo-card-text ${todo.done ? 'completed' : ''}">${todo.text}</span>
+                </div>
+                <button type="button" class="btn-todo-delete" onclick="deleteTodoItem('${todo.id}')"><i class="fa-regular fa-trash-can"></i></button>
+            `;
+            todoList.appendChild(card);
         });
     }
 
+    window.toggleTodoStatus = (id, currentStatus) => { db.ref(`workspace/todos/${id}`).update({ done: !currentStatus }).then(() => renderCalendarGrid()); };
+    window.deleteTodoItem = (id) => { if(confirm("이 일정을 영구 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
+
+    // 🕒 [추가] 변경 데이터를 취합하여 파이어베이스에 클라우드 업로드 (Debounce)
     let plannerTimeout;
     function syncPlannerToCloud() {
         if(plannerSaveStatus) plannerSaveStatus.textContent = "저장 중...";
         clearTimeout(plannerTimeout);
+        
         plannerTimeout = setTimeout(() => {
-            db.ref(`workspace/dayPlanners/${selectedFullDate}`).set({
-                am: planAmInput.value,
-                pm: planPmInput.value,
-                eve: planEveInput.value,
-                review: planReviewInput.value
-            });
+            const plannerData = {};
+            
+            // 루프를 돌며 모든 시간대의 입력 데이터 취합
+            for (let h = startHour; h <= endHour; h++) {
+                const inputField = document.getElementById(`plan-hr-${h}`);
+                if (inputField) {
+                    plannerData[`hr_${h}`] = inputField.value;
+                }
+            }
+            // 피드백 데이터 취합
+            plannerData['review'] = planReviewInput ? planReviewInput.value : '';
+
+            db.ref(`workspace/dayPlanners/${selectedFullDate}`).set(plannerData);
             if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
         }, 500);
     }
-    if(planAmInput) planAmInput.oninput = syncPlannerToCloud;
-    if(planPmInput) planPmInput.oninput = syncPlannerToCloud;
-    if(planEveInput) planEveInput.oninput = syncPlannerToCloud;
+    
     if(planReviewInput) planReviewInput.oninput = syncPlannerToCloud;
 
-    function renderTodoListData(filteredList) {
-        if(!todoList) return;
-        todoList.innerHTML = '';
-        if(todoStats) todoStats.textContent = `${filteredList.filter(t => t.completed).length} / ${filteredList.length} 완료`;
-        if(filteredList.length === 0) {
-            todoList.innerHTML = `<li style="color:#71717a; font-size:0.8rem; text-align:center; padding:10px;">등록된 일정이 없습니다.</li>`;
+    // 초기 메인 데이터 연동 기동
+    selectedDateLabel.textContent = selectedFullDate;
+    renderCalendarGrid();
+    fetchDailyIntegratedData();
+
+
+    // --- 💡 3. 아이디어 메모장 연동 모듈 ---
+    const memoTitle = document.getElementById('memo-title');
+    const memoContent = document.getElementById('memo-content');
+    const btnSaveMemo = document.getElementById('btn-save-memo');
+    const memoContainer = document.getElementById('memo-container');
+
+    if(btnSaveMemo) {
+        btnSaveMemo.addEventListener('click', () => {
+            const title = memoTitle.value.trim();
+            const body = memoContent.value.trim();
+            if(!title || !body) { alert("제목과 내용을 모두 빠짐없이 입력하세요!"); return; }
+
+            const newMemo = { title, body, date: getTodayDateString(), timestamp: Date.now() };
+            db.ref('workspace/memos').push(newMemo).then(() => {
+                memoTitle.value = '';
+                memoContent.value = '';
+            });
+        });
+    }
+
+    db.ref('workspace/memos').on('value', (snapshot) => {
+        if(!memoContainer) return;
+        memoContainer.innerHTML = '';
+        const memos = snapshot.val() || {};
+        const memoList = Object.keys(memos).map(id => ({id, ...memos[id]})).sort((a,b) => b.timestamp - a.timestamp);
+
+        if(memoList.length === 0) {
+            memoContainer.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:var(--text-muted); padding:40px; font-size:0.9rem;">등록된 클라우드 아이디어 가 없습니다.</div>`;
             return;
         }
-        filteredList.forEach(todo => {
-            const li = document.createElement('li');
-            li.className = `item-row ${todo.completed ? 'done' : ''}`;
-            li.innerHTML = `
-                <div class="item-left">
-                    <span class="time-tag">${todo.time || '종일'}</span>
-                    <span class="item-text" onclick="toggleTodoState('${todo.id}', ${todo.completed})">${todo.text}</span>
+
+        memoList.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'memo-card';
+            card.innerHTML = `
+                <div>
+                    <div class="memo-card-header">
+                        <h4 class="memo-card-title">${m.title}</h4>
+                        <button class="btn-memo-delete" onclick="deleteMemoItem('${m.id}')">&times;</button>
+                    </div>
+                    <p class="memo-card-body">${m.body.replace(/\n/g, '<br>')}</p>
                 </div>
-                <button class="compact-del-btn" onclick="deleteTodoState('${todo.id}')"><i class="fa-regular fa-trash-can"></i></button>
+                <div class="memo-card-footer">${m.date}</div>
             `;
-            todoList.appendChild(li);
+            memoContainer.appendChild(card);
         });
-    }
-
-    if(todoForm) {
-        todoForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            db.ref('workspace/todos').push({
-                date: selectedFullDate, time: todoTimeInput.value.trim() || '기한없음', text: todoInput.value.trim(), completed: false
-            }).then(() => {
-                fetchMonthSummaryData(); 
-            });
-            todoInput.value = ''; todoTimeInput.value = '';
-        });
-    }
-    window.toggleTodoState = (id, curStatus) => db.ref(`workspace/todos/${id}`).update({ completed: !curStatus }).then(() => fetchMonthSummaryData());
-    window.deleteTodoState = (id) => db.ref(`workspace/todos/${id}`).remove().then(() => fetchMonthSummaryData());
-
-
-    // --- 📝 3. 고정 단일 메모 및 보관함 분류 모듈 ---
-    const pinnedTextarea = document.getElementById('pinned-memo-textarea');
-    const pinnedStatus = document.getElementById('pinned-save-status');
-    const folderExplorerZone = document.getElementById('folder-explorer-zone');
-    const memoEditorZone = document.getElementById('memo-editor-zone');
-    const folderGridContainer = document.getElementById('folder-grid-container');
-    const createFolderBtn = document.getElementById('create-folder-btn');
-    const backToFoldersBtn = document.getElementById('back-to-folders-btn');
-    const currentFolderTitle = document.getElementById('current-folder-title');
-    const memoTitleInput = document.getElementById('memo-title-input');
-    const memoTextarea = document.getElementById('memo-textarea');
-    const saveMemoBtn = document.getElementById('save-memo-btn');
-    const savedMemosContainer = document.getElementById('saved-memos-container');
-
-    let activeFolderName = null; let editingMemoId = null;
-
-    if(pinnedTextarea) {
-        db.ref('workspace/pinnedMemo').on('value', (snap) => {
-            if (snap.val() !== null && document.activeElement !== pinnedTextarea) pinnedTextarea.value = snap.val();
-        });
-        let saveTimeout;
-        pinnedTextarea.oninput = () => {
-            if(pinnedStatus) pinnedStatus.textContent = "입력 중...";
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                db.ref('workspace/pinnedMemo').set(pinnedTextarea.value);
-                if(pinnedStatus) pinnedStatus.textContent = "저장됨";
-            }, 600);
-        };
-    }
-
-    db.ref('workspace/folders').on('value', (snapshot) => {
-        const foldersData = snapshot.val() || {};
-        renderFolderDashboard(foldersData);
-        renderSidebarMemoFolders(foldersData);
-        if (activeFolderName) {
-            if (!foldersData[activeFolderName]) { exitFolderScope(); } 
-            else { renderFolderMemos(foldersData[activeFolderName].memos || {}); }
-        }
     });
 
-    function renderFolderDashboard(foldersData) {
-        if(!folderGridContainer) return;
-        folderGridContainer.innerHTML = '';
-        const sorted = Object.keys(foldersData).map(name => ({
-            name, ...foldersData[name], order: foldersData[name].order !== undefined ? foldersData[name].order : 999
-        })).sort((a,b) => a.order - b.order);
-
-        sorted.forEach(folder => {
-            const card = document.createElement('div');
-            card.className = 'folder-card'; card.setAttribute('draggable', 'true'); card.dataset.id = folder.name;
-            card.innerHTML = `
-                <button class="btn-folder-delete-absolute" onclick="deleteEntireFolder(event, '${folder.name}')"><i class="fa-regular fa-trash-can"></i></button>
-                <div class="folder-icon"><i class="fa-solid fa-folder"></i></div>
-                <div class="folder-name">${folder.name}</div>
-                <div class="folder-memo-count">${Object.keys(folder.memos || {}).length}개 문서</div>
-            `;
-            card.addEventListener('click', (e) => { if(!e.target.closest('.btn-folder-delete-absolute')) enterFolderScope(folder.name); });
-            card.addEventListener('dragstart', () => card.classList.add('dragging'));
-            card.addEventListener('dragend', () => { card.classList.remove('dragging'); saveNewMemoFolderOrder(); });
-            folderGridContainer.appendChild(card);
-        });
-    }
-
-    if(folderGridContainer) {
-        folderGridContainer.addEventListener('dragover', e => {
-            e.preventDefault();
-            const afterElement = getDragAfterElement(folderGridContainer, '.folder-card', e.clientX, e.clientY);
-            const draggingCard = document.querySelector('#folder-grid-container .folder-card.dragging');
-            if(draggingCard) {
-                if (afterElement == null) folderGridContainer.appendChild(draggingCard);
-                else folderGridContainer.insertBefore(draggingCard, afterElement);
-            }
-        });
-    }
-
-    function saveNewMemoFolderOrder() {
-        const cards = [...folderGridContainer.querySelectorAll('.folder-card')];
-        const updates = {};
-        cards.forEach((card, index) => { updates[`workspace/folders/${card.dataset.id}/order`] = index; });
-        db.ref().update(updates);
-    }
-
-    function renderSidebarMemoFolders(foldersData) {
-        if(!sidebarMemoFolders) return;
-        sidebarMemoFolders.innerHTML = '';
-        Object.keys(foldersData).map(name => ({ name, order: foldersData[name].order ?? 999 })).sort((a,b) => a.order - b.order).forEach(folder => {
-            const btn = document.createElement('button');
-            btn.className = 'sub-menu-item'; btn.innerHTML = `<i class="fa-regular fa-folder"></i> ${folder.name}`;
-            btn.addEventListener('click', () => {
-                menuItems.forEach(b => b.classList.remove('active'));
-                document.getElementById('menu-btn-memo').classList.add('active');
-                contentViews.forEach(v => v.id === 'view-memo' ? v.classList.remove('hidden') : v.classList.add('hidden'));
-                sidebarMemoFolders.classList.remove('hidden');
-                enterFolderScope(folder.name);
-            });
-            sidebarMemoFolders.appendChild(btn);
-        });
-    }
-
-    if(createFolderBtn) {
-        createFolderBtn.addEventListener('click', () => {
-            const name = prompt('새 분류 보관함 이름 입력:');
-            if (!name) return;
-            const cleaned = name.trim().replace(/[.#$\[\]]/g, "");
-            if (cleaned) db.ref('workspace/folders/' + cleaned).set({ createdAt: Date.now(), order: 999, memos: {} });
-        });
-    }
-
-    window.deleteEntireFolder = (event, folderName) => {
-        event.stopPropagation();
-        if (confirm(`[${folderName}] 보관함 내부의 메모 파일이 전부 삭제됩니다.`)) db.ref('workspace/folders/' + folderName).remove();
-    };
-
-    function enterFolderScope(folderName) {
-        activeFolderName = folderName; resetMemoEditor();
-        if(folderExplorerZone) folderExplorerZone.classList.add('hidden');
-        if(memoEditorZone) memoEditorZone.classList.remove('hidden');
-        if(currentFolderTitle) currentFolderTitle.innerHTML = `<i class="fa-regular fa-folder-open"></i> ${activeFolderName}`;
-    }
-    if(backToFoldersBtn) backToFoldersBtn.addEventListener('click', exitFolderScope);
-    function exitFolderScope() { activeFolderName = null; if(memoEditorZone) memoEditorZone.classList.add('hidden'); if(folderExplorerZone) folderExplorerZone.classList.remove('hidden'); }
-
-    function renderFolderMemos(memosObj) {
-        if(!savedMemosContainer) return;
-        savedMemosContainer.innerHTML = '';
-        const list = Object.keys(memosObj).map(id => ({ id, ...memosObj[id] }));
-        if(list.length === 0){
-            savedMemosContainer.innerHTML = `<div style="color:#71717a; font-size:0.8rem; text-align:center;">보관함이 비어있습니다.</div>`;
-            return;
-        }
-        list.forEach(memo => {
-            const card = document.createElement('div'); card.className = 'item-row';
-            card.innerHTML = `
-                <span class="item-text" onclick="loadMemoData('${memo.id}')">📄 ${memo.title}</span>
-                <button class="compact-del-btn" onclick="deleteMemoData(event, '${memo.id}')"><i class="fa-regular fa-trash-can"></i></button>
-            `;
-            savedMemosContainer.appendChild(card);
-        });
-    }
-
-    window.loadMemoData = (id) => {
-        db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).once('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) { memoTitleInput.value = data.title; memoTextarea.value = data.content; editingMemoId = id; }
-        });
-    };
-
-    window.deleteMemoData = (event, id) => {
-        event.stopPropagation();
-        db.ref(`workspace/folders/${activeFolderName}/memos/${id}`).remove();
-        if(editingMemoId===id) resetMemoEditor();
-    };
-
-    function resetMemoEditor() { memoTitleInput.value = ''; memoTextarea.value = ''; editingMemoId = null; }
-
-    if(saveMemoBtn) {
-        saveMemoBtn.addEventListener('click', () => {
-            const text = memoTextarea.value.trim(); if (!text) return;
-            const payload = { title: memoTitleInput.value.trim() || text.substring(0,12), content: text, date: getTodayDateString() };
-            if (editingMemoId) db.ref(`workspace/folders/${activeFolderName}/memos/${editingMemoId}`).update(payload);
-            else db.ref(`workspace/folders/${activeFolderName}/memos`).push(payload);
-            resetMemoEditor();
-        });
-    }
+    window.deleteMemoItem = (id) => { if(confirm("이 메모 카드를 삭제할까요?")) db.ref(`workspace/memos/${id}`).remove(); };
 
 
-    // --- 📚 4. 과목별 오답노트 & 유형 엔진 ---
-    const mathExplorerZone = document.getElementById('math-explorer-zone');
-    const mathEditorZone = document.getElementById('math-editor-zone');
-    const mathFolderGrid = document.getElementById('math-folder-grid');
-    const mathCreateFolderBtn = document.getElementById('math-create-folder-btn');
-    const mathBackBtn = document.getElementById('math-back-btn');
-    const mathCurrentFolderTitle = document.getElementById('math-current-folder-title');
-    const mathProbTitle = document.getElementById('math-prob-title');
-    const mathProbType = document.getElementById('math-prob-type');
-    const mathProbWrong = document.getElementById('math-prob-wrong');
-    const mathProbApproach = document.getElementById('math-prob-approach');
-    const mathProbSolution = document.getElementById('math-prob-solution');
-    const mathSaveBtn = document.getElementById('math-save-btn');
-    const mathProblemsContainer = document.getElementById('math-problems-container');
-    const mathNewProbBtn = document.getElementById('math-new-prob-btn');
-    
-    const btnOpenTypeModal = document.getElementById('btn-open-type-modal');
-    const modalOverlay = document.getElementById('type-modal');
-    const closeTypeModal = document.getElementById('close-type-modal');
-    const newTypeInput = document.getElementById('new-type-input');
-    const btnAddType = document.getElementById('btn-add-type');
+    // --- 🧮 4. 수학 오답노트 연동 모듈 패널 ---
+    let activeMathFolder = '';
+    let activeMathItemId = '';
     const customTypeList = document.getElementById('custom-type-list');
+    const mathTypeSelect = document.getElementById('math-type-select');
+    const mathItemsContainer = document.getElementById('math-items-container');
+    const mathFolderListTitle = document.getElementById('math-folder-list-title');
 
-    let activeMathFolder = null; let editingProbId = null;
+    // 오답노트 코어 인풋 엔티티 매핑 데이터
+    const mathSource = document.getElementById('math-source');
+    const mathNumber = document.getElementById('math-number');
+    const mathDifficulty = document.getElementById('math-difficulty');
+    const mathWrongReason = document.getElementById('math-wrong-reason');
+    const mathStatus = document.getElementById('math-status');
+    const mathQuestion = document.getElementById('math-question');
+    const mathSolution = document.getElementById('math-solution');
+    const mathSaveBtn = document.getElementById('math-save-btn');
+    const btnNewMathItem = document.getElementById('btn-new-math-item');
 
-    db.ref('workspace/mathNotebooks').on('value', (snapshot) => {
-        const mathData = snapshot.val() || {};
-        renderMathDashboard(mathData);
-        renderSidebarMathFolders(mathData);
-        
-        if(activeMathFolder && mathData[activeMathFolder]) {
-            renderTypeSelectOptions(mathData[activeMathFolder].customTypes || {});
-            renderTypeManageItems(mathData[activeMathFolder].customTypes || {});
-            renderMathProblemsList(mathData[activeMathFolder].problems || {});
-        }
-    });
-
-    function renderMathDashboard(mathData) {
-        if(!mathFolderGrid) return;
-        mathFolderGrid.innerHTML = '';
-        Object.keys(mathData).map(name => ({ name, ...mathData[name], order: mathData[name].order ?? 999 })).sort((a,b) => a.order - b.order).forEach(folder => {
-            const card = document.createElement('div');
-            card.className = 'folder-card'; card.setAttribute('draggable', 'true'); card.dataset.id = folder.name;
-            card.innerHTML = `
-                <button class="btn-folder-delete-absolute" onclick="deleteEntireMathFolder(event, '${folder.name}')"><i class="fa-regular fa-trash-can"></i></button>
-                <div class="folder-icon" style="color:#60a5fa;"><i class="fa-solid fa-book"></i></div>
-                <div class="folder-name">${folder.name}</div>
-                <div class="folder-memo-count">${Object.keys(folder.problems || {}).length}개 오답</div>
-            `;
-            card.addEventListener('click', (e) => { if(!e.target.closest('.btn-folder-delete-absolute')) enterMathFolderScope(folder.name); });
-            card.addEventListener('dragstart', () => card.classList.add('dragging'));
-            card.addEventListener('dragend', () => { card.classList.remove('dragging'); saveNewMathFolderOrder(); });
-            mathFolderGrid.appendChild(card);
-        });
-    }
-
-    if(mathFolderGrid) {
-        mathFolderGrid.addEventListener('dragover', e => {
-            e.preventDefault();
-            const draggingCard = document.querySelector('#math-folder-grid .folder-card.dragging');
-            if(!draggingCard) return;
-            const afterElement = getDragAfterElement(mathFolderGrid, '.folder-card', e.clientX, e.clientY);
-            if (afterElement == null) mathFolderGrid.appendChild(draggingCard);
-            else mathFolderGrid.insertBefore(draggingCard, afterElement);
-        });
-    }
-
-    function saveNewMathFolderOrder() {
-        const cards = [...mathFolderGrid.querySelectorAll('.folder-card')];
-        const updates = {};
-        cards.forEach((card, index) => { updates[`workspace/mathNotebooks/${card.dataset.id}/order`] = index; });
-        db.ref().update(updates);
-    }
-
-    function renderSidebarMathFolders(mathData) {
+    // 수학 대단원 실시간 구조 리스트 로더
+    db.ref('workspace/mathFolders').on('value', (snapshot) => {
         if(!sidebarSubFolders) return;
         sidebarSubFolders.innerHTML = '';
-        Object.keys(mathData).map(name => ({ name, order: mathData[name].order ?? 999 })).sort((a,b) => a.order - b.order).forEach(folder => {
-            const btn = document.createElement('button');
-            btn.className = 'sub-menu-item'; btn.innerHTML = `<i class="fa-solid fa-book-open"></i> ${folder.name}`;
-            btn.addEventListener('click', () => {
-                menuItems.forEach(b => b.classList.remove('active'));
-                document.getElementById('menu-btn-math').classList.add('active');
-                contentViews.forEach(v => v.id === 'view-math' ? v.classList.remove('hidden') : v.classList.add('hidden'));
-                sidebarSubFolders.classList.remove('hidden');
-                enterMathFolderScope(folder.name);
-            });
-            sidebarSubFolders.appendChild(btn);
-        });
-    }
-
-    if(mathCreateFolderBtn) {
-        mathCreateFolderBtn.addEventListener('click', () => {
-            const name = prompt('새 오답노트 과목 이름 입력:'); if(!name) return;
-            const cleaned = name.trim().replace(/[.#$\[\]]/g, "");
-            if(cleaned) db.ref('workspace/mathNotebooks/' + cleaned).set({ createdAt: Date.now(), order: 999, problems: {} });
-        });
-    }
-
-    window.deleteEntireMathFolder = (event, folderName) => {
-        event.stopPropagation();
-        if(confirm(`[${folderName}] 과목의 모든 데이터가 영구 삭제됩니다.`)) db.ref('workspace/mathNotebooks/' + folderName).remove();
-    };
-
-    function enterMathFolderScope(folderName) {
-        activeMathFolder = folderName; 
-        resetMathEditor();
-        if(mathExplorerZone) mathExplorerZone.classList.add('hidden');
-        if(mathEditorZone) mathEditorZone.classList.remove('hidden');
-        if(mathCurrentFolderTitle) mathCurrentFolderTitle.innerHTML = `<i class="fa-solid fa-book-open"></i> ${activeMathFolder}`;
+        const folders = snapshot.val() || {};
         
-        db.ref(`workspace/mathNotebooks/${activeMathFolder}`).on('value', (snapshot) => {
-            const data = snapshot.val() || {};
-            renderTypeSelectOptions(data.customTypes || {});
-            renderTypeManageItems(data.customTypes || {});
-            renderMathProblemsList(data.problems || {}); 
-        });
-    }
-    
-    if(mathBackBtn) mathBackBtn.addEventListener('click', exitMathFolderScope);
-    function exitMathFolderScope() { activeMathFolder = null; if(mathEditorZone) mathEditorZone.classList.add('hidden'); if(mathExplorerZone) mathExplorerZone.classList.remove('hidden'); }
-
-    function renderMathProblemsList(probsObj) {
-        if(!mathProblemsContainer) return;
-        mathProblemsContainer.innerHTML = '';
-        const list = Object.keys(probsObj).map(id => ({ id, ...probsObj[id] }));
-        if(list.length === 0) {
-            mathProblemsContainer.innerHTML = `<div style="color:#71717a; font-size:0.8rem; text-align:center;">오답 문항이 없습니다.</div>`;
-            return;
-        }
-        list.forEach(prob => {
-            const typeLabel = prob.type ? `[${prob.type}] ` : '';
-            const card = document.createElement('div'); card.className = 'item-row';
-            card.innerHTML = `
-                <span class="item-text" onclick="loadMathProbData('${prob.id}')"><b style="color:#f87171;">${typeLabel}</b>${prob.title}</span>
-                <button class="compact-del-btn" onclick="deleteMathProbData(event, '${prob.id}')"><i class="fa-regular fa-trash-can"></i></button>
+        Object.keys(folders).forEach(id => {
+            const f = folders[id];
+            const item = document.createElement('div');
+            item.className = `sub-folder-item ${activeMathFolder === id ? 'active' : ''}`;
+            item.dataset.id = id;
+            item.innerHTML = `
+                <div><i class="fa-regular fa-folder"></i> <span>${f.name}</span></div>
+                <button type="button" class="btn-del-folder" onclick="event.stopPropagation(); deleteMathFolder('${id}')"><i class="fa-regular fa-trash-can"></i></button>
             `;
-            mathProblemsContainer.appendChild(card);
+            
+            item.addEventListener('click', () => {
+                activeMathFolder = id;
+                document.querySelectorAll('.sub-folder-item').forEach(sf => sf.classList.remove('active'));
+                item.classList.add('active');
+                
+                // 수학 뷰 활성화 강제 전환 라우팅
+                document.querySelectorAll('.menu-item').forEach(btn => btn.classList.remove('active'));
+                const mBtn = document.getElementById('menu-btn-math');
+                if(mBtn) mBtn.classList.add('active');
+                contentViews.forEach(view => { if(view.id === 'view-math') view.classList.remove('hidden'); else view.classList.add('hidden'); });
+
+                mathFolderListTitle.innerHTML = `<i class="fa-solid fa-folder-open"></i> [${f.name}] 단원 리스트`;
+                initMathEditorForm();
+                loadMathItemsForFolder();
+                listenToCustomTypes();
+            });
+
+            sidebarSubFolders.appendChild(item);
+        });
+    });
+
+    // 신규 폴더 추가 바인딩
+    if(folderAddForm) {
+        folderAddForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = newFolderNameInput.value.trim();
+            if(!name) return;
+            db.ref('workspace/mathFolders').push({ name, timestamp: Date.now() }).then(() => { newFolderNameInput.value = ''; });
         });
     }
 
-    window.loadMathProbData = (id) => {
-        db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).once('value', (snap) => {
-            const data = snap.val();
-            if(data) {
-                mathProbTitle.value = data.title || ''; mathProbType.value = data.type || '';
-                mathProbWrong.value = data.wrongReason || ''; mathProbApproach.value = data.approach || '';
-                mathProbSolution.value = data.solution || ''; editingProbId = id;
-            }
-        });
-    };
-
-    window.deleteMathProbData = (event, id) => {
-        event.stopPropagation();
-        if(confirm('이 오답 문항을 삭제하시겠습니까?')) {
-            db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${id}`).remove();
-            if(editingProbId === id) resetMathEditor();
+    window.deleteMathFolder = (id) => {
+        if(confirm("단원을 삭제하면 해당 단원 내의 모든 오답 문항 데이터가 영구 소멸됩니다. 정말 삭제하시겠습니까?")) {
+            db.ref(`workspace/mathFolders/${id}`).remove();
+            db.ref(`workspace/mathNotebooks/${id}`).remove();
+            if(activeMathFolder === id) { activeMathFolder = ''; mathItemsContainer.innerHTML = ''; initMathEditorForm(); mathFolderListTitle.innerHTML = `<i class="fa-solid fa-folder-open"></i> 선택된 단원 문항 리스트`; }
         }
     };
 
-    function resetMathEditor() {
-        mathProbTitle.value = ''; mathProbWrong.value = ''; mathProbApproach.value = ''; mathProbSolution.value = ''; editingProbId = null;
-        if(mathProbType.options.length > 0) mathProbType.selectedIndex = 0;
+    // 폴더 타겟 하위 문항 리스트 바인딩 리스너
+    function loadMathItemsForFolder() {
+        if(!activeMathFolder) return;
+        db.ref(`workspace/mathNotebooks/${activeMathFolder}/items`).on('value', (snapshot) => {
+            if(!mathItemsContainer) return;
+            mathItemsContainer.innerHTML = '';
+            const items = snapshot.val() || {};
+            const list = Object.keys(items).map(id => ({id, ...items[id]})).sort((a,b) => b.timestamp - a.timestamp);
+
+            if(list.length === 0) {
+                mathItemsContainer.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:40px; font-size:0.85rem;">단원에 등록된 오답 문항이 없습니다. <br>상단 우측 '새 문항 등록' 버튼을 누르세요.</div>`;
+                return;
+            }
+
+            list.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `math-item-card ${activeMathItemId === item.id ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="math-card-top-meta">
+                        <span class="math-card-identity">${item.source || '미정출처'} - ${item.number || '0'}번</span>
+                        <div class="math-card-badges">
+                            <span class="badge-unit diff-${item.difficulty}">${item.difficulty || '중'}</span>
+                            <span class="badge-unit status-${item.status ? item.status.substring(0,2) : '다시'}">${item.status || '미지정'}</span>
+                        </div>
+                    </div>
+                    <div class="math-card-core-question">${item.question || '요약 코멘트 가 없습니다.'}</div>
+                    <div class="math-card-bottom-row">
+                        <span class="math-reason-tag"><i class="fa-solid fa-triangle-exclamation"></i> ${item.wrongReason || '원인 분석 미지정'}</span>
+                        <button type="button" class="btn-math-delete" onclick="event.stopPropagation(); deleteMathItemUnit('${item.id}')"><i class="fa-regular fa-trash-can"></i></button>
+                    </div>
+                `;
+
+                card.addEventListener('click', () => {
+                    activeMathItemId = item.id;
+                    document.querySelectorAll('.math-item-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    bindMathItemToEditor(item);
+                });
+
+                mathItemsContainer.appendChild(card);
+            });
+        });
     }
-    if(mathNewProbBtn) mathNewProbBtn.addEventListener('click', resetMathEditor);
+
+    function initMathEditorForm() {
+        activeMathItemId = '';
+        if(mathSource) mathSource.value = '';
+        if(mathNumber) mathNumber.value = '';
+        if(mathDifficulty) mathDifficulty.value = '중';
+        if(mathWrongReason) mathWrongReason.value = '개념 부족';
+        if(mathStatus) mathStatus.value = '다시 풀어야 함';
+        if(mathQuestion) mathQuestion.value = '';
+        if(mathSolution) mathSolution.value = '';
+        const label = document.getElementById('math-editor-title-label');
+        if(label) label.innerHTML = `<i class="fa-solid fa-square-poll-horizontal"></i> 신규 오답 문항 등록 모드`;
+    }
+
+    if(btnNewMathItem) { btnNewMathItem.addEventListener('click', () => { initMathEditorForm(); document.querySelectorAll('.math-item-card').forEach(c => c.classList.remove('active')); }); }
+
+    function bindMathItemToEditor(item) {
+        if(mathSource) mathSource.value = item.source || '';
+        if(mathNumber) mathNumber.value = item.number || '';
+        if(mathDifficulty) mathDifficulty.value = item.difficulty || '중';
+        if(mathWrongReason) mathWrongReason.value = item.wrongReason || '개념 부족';
+        if(mathStatus) mathStatus.value = item.status || '다시 풀어야 함';
+        if(mathQuestion) mathQuestion.value = item.question || '';
+        if(mathSolution) mathSolution.value = item.solution || '';
+        const label = document.getElementById('math-editor-title-label');
+        if(label) label.innerHTML = `<i class="fa-solid fa-square-poll-horizontal"></i> 문항 상세 데이터 수정 중`;
+    }
 
     if(mathSaveBtn) {
         mathSaveBtn.addEventListener('click', () => {
-            const title = mathProbTitle.value.trim(); if(!title) return alert('문제 제목을 입력해주세요.');
+            if(!activeMathFolder) { alert("좌측 사이드바에서 타겟 단원 폴더를 먼저 개설하고 선택해주세요!"); return; }
             const payload = {
-                title, type: mathProbType.value, wrongReason: mathProbWrong.value.trim(),
-                approach: mathProbApproach.value.trim(), solution: mathProbSolution.value.trim(), updatedAt: Date.now()
+                source: mathSource.value.trim(),
+                number: mathNumber.value.trim(),
+                difficulty: mathDifficulty.value,
+                wrongReason: mathWrongReason.value,
+                status: mathStatus.value,
+                question: mathQuestion.value.trim(),
+                solution: mathSolution.value.trim(),
+                timestamp: Date.now()
             };
-            if(editingProbId) db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems/${editingProbId}`).update(payload);
-            else db.ref(`workspace/mathNotebooks/${activeMathFolder}/problems`).push(payload);
-            resetMathEditor();
+
+            if(activeMathItemId) {
+                db.ref(`workspace/mathNotebooks/${activeMathFolder}/items/${activeMathItemId}`).update(payload).then(() => alert("클라우드 오답노트 수정 반영 완료!"));
+            } else {
+                db.ref(`workspace/mathNotebooks/${activeMathFolder}/items`).push(payload).then((snap) => { activeMathItemId = snap.key; alert("새로운 오답 문항이 성공적으로 클라우드에 안착되었습니다!"); });
+            }
         });
     }
 
-    function renderTypeSelectOptions(typesObj) {
-        if(!mathProbType) return;
-        const currentSelected = mathProbType.value;
-        mathProbType.innerHTML = '';
-        const sorted = Object.keys(typesObj).map(id => ({ id, order: typesObj[id].order ?? 999 })).sort((a,b) => a.order - b.order);
-        
-        if(sorted.length === 0) {
-            mathProbType.innerHTML = `<option value="">등록된 유형 없음</option>`;
-            return;
-        }
-        sorted.forEach(t => {
-            const opt = document.createElement('option'); opt.value = t.id; opt.textContent = t.id;
-            if(t.id === currentSelected) opt.selected = true;
-            mathProbType.appendChild(opt);
+    window.deleteMathItemUnit = (id) => { if(confirm("해당 오답 문항을 목록에서 지우시겠습니까?")) { db.ref(`workspace/mathNotebooks/${activeMathFolder}/items/${id}`).remove().then(() => { if(activeMathItemId === id) initMathEditorForm(); }); } };
+
+
+    // --- 🪟 5. 드래그 레이아웃 제어 유형관리 모달 제어 서브 파트 ---
+    const typeModal = document.getElementById('type-modal');
+    const btnOpenTypeModal = document.getElementById('btn-open-type-modal');
+    const btnCloseTypeModal = document.getElementById('close-type-modal');
+    const btnAddType = document.getElementById('btn-add-type');
+    const newTypeInput = document.getElementById('new-type-input');
+
+    if(btnOpenTypeModal) { btnOpenTypeModal.addEventListener('click', () => { if(!activeMathFolder){ alert("단원 폴더를 먼저 지정하세요!"); return; } typeModal.classList.remove('hidden'); }); }
+    if(btnCloseTypeModal) { btnCloseTypeModal.addEventListener('click', () => typeModal.classList.add('hidden')); }
+
+    function listenToCustomTypes() {
+        if(!activeMathFolder) return;
+        db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes`).orderByChild('order').on('value', (snapshot) => {
+            if(!customTypeList || !mathTypeSelect) return;
+            customTypeList.innerHTML = '';
+            mathTypeSelect.innerHTML = `<option value="미지정">일반 기본 유형</option>`;
+
+            const types = snapshot.val() || {};
+            const sortedTypes = Object.keys(types).map(id => ({id, ...types[id]})).sort((a,b) => (a.order || 0) - (b.order || 0));
+
+            sortedTypes.forEach(t => {
+                // 셀렉트 박스 동적 빌드
+                const opt = document.createElement('option');
+                opt.value = t.id; opt.textContent = t.id;
+                mathTypeSelect.appendChild(opt);
+
+                // 모달 편집 가상 리스트 빌드
+                const row = document.createElement('div');
+                row.className = 'type-manage-item';
+                row.draggable = true;
+                row.dataset.id = t.id;
+                row.innerHTML = `<div><i class="fa-solid fa-bars"></i> <span>${t.id}</span></div><button type="button" class="btn-todo-delete" onclick="deleteCustomType('${t.id}')">&times;</button>`;
+                
+                // 드래그 앤 드롭 정렬 배치 이벤트 스펙 핸들링
+                row.addEventListener('dragstart', () => row.classList.add('dragging'));
+                row.addEventListener('dragend', () => { row.classList.remove('dragging'); saveNewTypeOrder(); });
+                customTypeList.appendChild(row);
+            });
+
+            initDragAndDropEvents();
         });
     }
-
-    if(btnOpenTypeModal) btnOpenTypeModal.onclick = () => modalOverlay.classList.remove('hidden');
-    if(closeTypeModal) closeTypeModal.onclick = () => modalOverlay.classList.add('hidden');
 
     if(btnAddType) {
-        btnAddType.onclick = () => {
-            const val = newTypeInput.value.trim().replace(/[.#$\[\]]/g, ""); if(!val) return;
-            db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes/${val}`).set({ order: 999 });
-            newTypeInput.value = '';
-        };
-    }
-
-    function renderTypeManageItems(typesObj) {
-        if(!customTypeList) return;
-        customTypeList.innerHTML = '';
-        Object.keys(typesObj).map(id => ({ id, order: typesObj[id].order ?? 999 })).sort((a,b) => a.order - b.order).forEach(t => {
-            const item = document.createElement('div'); item.className = 'type-manage-item'; item.setAttribute('draggable', 'true'); item.dataset.id = t.id;
-            item.innerHTML = `
-                <span><i class="fa-solid fa-bars" style="color:#4b5563; margin-right:10px; cursor:grab;"></i> ${t.id}</span>
-                <button class="compact-del-btn" onclick="deleteCustomType('${t.id}')"><i class="fa-regular fa-trash-can"></i></button>
-            `;
-            item.addEventListener('dragstart', () => item.classList.add('dragging'));
-            item.addEventListener('dragend', () => { item.classList.remove('dragging'); saveNewTypeOrder(); });
-            customTypeList.appendChild(item);
+        btnAddType.addEventListener('click', () => {
+            const val = newTypeInput.value.trim();
+            if(!val) return;
+            db.ref(`workspace/mathNotebooks/${activeMathFolder}/customTypes/${val}`).set({ order: 999 }).then(() => { newTypeInput.value = ''; });
         });
     }
 
-    if(customTypeList) {
-        customTypeList.addEventListener('dragover', e => {
+    function initDragAndDropEvents() {
+        if(!customTypeList) return;
+        customTypeList.addEventListener('dragover', (e) => {
             e.preventDefault();
-            const draggingItem = document.querySelector('#custom-type-list .type-manage-item.dragging');
-            if(!draggingItem) return;
             const afterElement = getDragAfterElement(customTypeList, '.type-manage-item', e.clientX, e.clientY);
-            if(afterElement == null) customTypeList.appendChild(draggingItem);
+            const draggingItem = document.querySelector('.dragging');
+            if(!draggingItem) return;
+            if (afterElement == null) customTypeList.appendChild(draggingItem);
             else customTypeList.insertBefore(draggingItem, afterElement);
         });
     }
@@ -731,7 +630,4 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     }
-
-    renderCalendar();
-    fetchDailyIntegratedData();
 });
