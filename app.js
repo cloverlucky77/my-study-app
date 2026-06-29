@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 🌟 플래너 전용 폼 등록 처리 이벤트 추가
+    // 플래너 전용 폼 등록 처리 이벤트 추가
     if (plannerDirectForm) {
         plannerDirectForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -135,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cell = document.createElement('div');
                 cell.className = 'day-cell';
                 
-                const currentDayOfWeek = new Date(year, month, i).getDay();
                 if(fullDateStr === getTodayDateString()) cell.classList.add('today');
                 if(fullDateStr === selectedFullDate) cell.classList.add('selected');
 
@@ -206,17 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fetchDailyIntegratedData() {
-        // 투두리스트 데이터를 실시간으로 제어
         db.ref('workspace/todos').on('value', (snapshot) => {
             const todos = snapshot.val() || {};
             const list = Object.keys(todos).map(id => ({id, ...todos[id]})).filter(t => t.date === selectedFullDate);
             renderTodoListData(list);
         });
         
-        // 🌟 플래너 전용 데이터 감시 및 정렬 처리 함수 실행
         fetchTimelinePlannerData();
 
-        // 하루 성찰 리뷰 가져오기
         db.ref(`workspace/dayPlanners/${selectedFullDate}/review`).once('value', (snapshot) => {
             if(planReviewInput) planReviewInput.value = snapshot.val() || '';
         });
@@ -252,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 🌟 [핵심] 플래너 일정 불러오기 및 시간 오름차순 자동 정렬 처리 함수
+    // 플래너 일정 불러오기 및 시간 오름차순 자동 정렬 처리 함수
     function fetchTimelinePlannerData() {
         db.ref('workspace/timelinePlanners').on('value', (snapshot) => {
             if (!timelineHoursContainer) return;
@@ -268,7 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 오름차순 정렬 (빠른 시간부터 순서대로)
             dayPlans.sort((a, b) => a.time.localeCompare(b.time));
 
             dayPlans.forEach(plan => {
@@ -292,14 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.toggleTodoStatus = (id, currentStatus) => { db.ref(`workspace/todos/${id}`).update({ done: !currentStatus }).then(() => renderCalendarGrid()); };
     window.deleteTodoItem = (id) => { if(confirm("이 할 일을 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
     
-    // 🌟 플래너 일정 개별 삭제 글로벌 바인딩
     window.deleteTimelinePlan = (id) => {
         if (confirm("이 플래너 일정을 삭제하시겠습니까?")) {
             db.ref(`workspace/timelinePlanners/${id}`).remove();
         }
     };
 
-    // 오늘의 피드백 저장 바인딩
     if(planReviewInput) {
         let reviewTimeout;
         planReviewInput.oninput = () => {
