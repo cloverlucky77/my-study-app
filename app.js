@@ -1,4 +1,4 @@
-/* Ultimate Premium Cloud Workspace JS */
+/* Ultimate Cloud Workspace JS - Optimized Hub Script */
 const firebaseConfig = {
     apiKey: "AIzaSyC1cf1kMJlsYHz7O-YPNDc-4MKpGL_fM3s",
     authDomain: "my-workspace-app-7163f.firebaseapp.com",
@@ -42,35 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 🕒 2. 타임라인 베이스 시간 레이아웃 및 커스텀 삽입 기틀 ---
-    const timelineContainer = document.getElementById('timeline-hours-container');
-    const customTimeInput = document.getElementById('custom-timeline-time');
-    const customTextInput = document.getElementById('custom-timeline-text');
-    const btnAddCustomTimeline = document.getElementById('btn-add-custom-timeline');
-
-    // 기본 매칭용 정수 시간 리스트 (06시 ~ 24시)
-    const baseHours = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
-
-    // [💡개선] 사용자가 원하는 특별한 시간대(예: 12:30 등) 커스텀 행을 동적으로 삽입하는 이벤트
-    if(btnAddCustomTimeline) {
-        btnAddCustomTimeline.addEventListener('click', () => {
-            const timeVal = customTimeInput.value; // "14:30" 형태
-            const textVal = customTextInput.value.trim();
-            if(!timeVal || !textVal) { alert("시간과 내용을 모두 입력해 주세요."); return; }
-
-            // 파이어베이스 경로에 해당 시간 데이터 즉각 저장
-            const safeKey = timeVal.replace(':', '_');
-            db.ref(`workspace/dayPlanners/${selectedFullDate}/customHours/${safeKey}`).set({
-                time: timeVal,
-                text: textVal
-            }).then(() => {
-                customTextInput.value = '';
-                fetchDailyIntegratedData(); // 타임라인 다시 그리기
-            });
-        });
-    }
-
-    // --- 📅 3. 인터랙티브 달력 & 할 일(To-Do) 연동 엔진 ---
+    // --- 📅 2. 인터랙티브 달력 & 할 일(To-Do) 연동 엔진 및 자동 정렬 타임라인 ---
     const calendarDays = document.getElementById('calendar-days');
     const calendarMonthYear = document.getElementById('calendar-month-year');
     const calendarViewTitle = document.getElementById('calendar-view-title'); 
@@ -82,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const todoStats = document.getElementById('todo-stats');
     const monthSummaryList = document.getElementById('month-summary-list');
     const monthTodoCount = document.getElementById('month-todo-count');
+    const timelineHoursContainer = document.getElementById('timeline-hours-container');
     const planReviewInput = document.getElementById('plan-review');
     const plannerSaveStatus = document.getElementById('planner-save-status');
 
@@ -91,9 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if(todoForm) {
         todoForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            // 시간 미선택 시 23:59 처리하여 순서 상 최하단 배치 예방 및 깔끔한 출력 지원
+            const rawTime = todoTimeInput.value;
+            const finalTime = rawTime ? rawTime : "23:59";
+
             const newTodo = {
                 date: selectedFullDate,
-                time: todoTimeInput.value || "---",
+                time: finalTime,
                 text: todoInput.value.trim(),
                 done: false,
                 timestamp: Date.now()
@@ -189,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.className = 'summary-todo-item';
             row.innerHTML = `
                 <div class="summary-todo-left">
-                    <span class="summary-date-tag">${dateShort} ${item.time}</span>
+                    <span class="summary-date-tag">${dateShort} ${item.time === "23:59" ? "미지정" : item.time}</span>
                     <span class="summary-todo-text ${item.done ? 'line-through' : ''}">${item.text}</span>
                 </div>
                 <div class="summary-status-dot ${item.done ? 'done' : ''}"></div>
@@ -209,51 +186,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fetchDailyIntegratedData() {
-        // 투두리스트 동기화
+        // 투두리스트 데이터를 실시간으로 감시 및 처리
         db.ref('workspace/todos').on('value', (snapshot) => {
             const todos = snapshot.val() || {};
             const list = Object.keys(todos).map(id => ({id, ...todos[id]})).filter(t => t.date === selectedFullDate);
+            
+            // 1. To-Do 카드 리스트 출력
             renderTodoListData(list);
+
+            // 2. [🎨 핵심 개선 및 요구사항 해결] 등록된 플래너 시간 순서대로 순정렬 매핑 출력
+            renderTimelinePlanner(list);
         });
         
-        // [🕒 타임라인 빌드 핵심] 고정 시간대 + 사용자가 임의로 삽입한 커스텀 시간대 병합 렌더링
-        db.ref(`workspace/dayPlanners/${selectedFullDate}`).once('value', (snapshot) => {
-            const data = snapshot.val() || {};
-            if(!timelineContainer) return;
-            timelineContainer.innerHTML = '';
-
-            // 1. 고정 시간대 라인 형성
-            baseHours.forEach(h => {
-                const hourStr = String(h).padStart(2, '0') + ':00';
-                const row = document.createElement('div');
-                row.className = 'timeline-row';
-                row.innerHTML = `
-                    <span class="timeline-hour">${hourStr}</span>
-                    <input type="text" id="plan-hr-${h}" class="planner-text-input" placeholder="${hourStr} 일정을 기록하세요...">
-                `;
-                const input = row.querySelector('input');
-                input.value = data[`hr_${h}`] || '';
-                input.oninput = syncPlannerToCloud;
-                timelineContainer.appendChild(row);
-            });
-
-            // 2. 사용자가 직접 집어넣은 커스텀 시간대 리스트 매핑
-            const customHours = data.customHours || {};
-            Object.keys(customHours).forEach(key => {
-                const item = customHours[key];
-                const row = document.createElement('div');
-                row.className = 'timeline-row custom-inserted-row';
-                row.style.borderColor = 'rgba(255,255,255,0.12)';
-                row.innerHTML = `
-                    <span class="timeline-hour" style="background: rgba(255,255,255,0.1); color:#fff;">${item.time}</span>
-                    <input type="text" class="planner-text-input" value="${item.text}" disabled>
-                    <button type="button" class="btn-todo-delete" onclick="deleteCustomHourItem('${key}')"><i class="fa-regular fa-trash-can"></i></button>
-                `;
-                timelineContainer.appendChild(row);
-            });
-
-            if(planReviewInput) planReviewInput.value = data.review || '';
-            if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
+        // 하루 성찰 리뷰 가져오기
+        db.ref(`workspace/dayPlanners/${selectedFullDate}/review`).once('value', (snapshot) => {
+            if(planReviewInput) planReviewInput.value = snapshot.val() || '';
         });
     }
 
@@ -266,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(todoStats) todoStats.textContent = `완료 ${doneCount} / 전체 ${list.length}`;
 
         if (list.length === 0) {
-            todoList.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:20px;">오늘의 일정이 비어있습니다.</div>`;
+            todoList.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:20px;">오늘 등록된 일정이 존재하지 않습니다.</div>`;
             return;
         }
 
@@ -278,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="todo-checkbox-wrapper ${todo.done ? 'checked' : ''}" onclick="toggleTodoStatus('${todo.id}', ${todo.done})">
                         <i class="${todo.done ? 'fa-solid fa-square-check' : 'fa-regular fa-square'}"></i>
                     </span>
-                    <span class="todo-card-time">${todo.time}</span>
+                    <span class="todo-card-time">${todo.time === "23:59" ? "종일" : todo.time}</span>
                     <span class="todo-card-text ${todo.done ? 'completed' : ''}">${todo.text}</span>
                 </div>
                 <button type="button" class="btn-todo-delete" onclick="deleteTodoItem('${todo.id}')"><i class="fa-regular fa-trash-can"></i></button>
@@ -287,44 +234,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // [🕒 실시간 시간 순 정렬 플래너 연동 엔진 함수]
+    function renderTimelinePlanner(list) {
+        if(!timelineHoursContainer) return;
+        timelineHoursContainer.innerHTML = '';
+
+        if(list.length === 0) {
+            timelineHoursContainer.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:40px 10px;">상단 일정 폼에서 등록하면 이곳에 시간 순서대로 정렬되어 출력됩니다.</div>`;
+            return;
+        }
+
+        // 오름차순 시간 정렬 (00:00 -> 23:59 순)
+        const sortedList = [...list].sort((a, b) => a.time.localeCompare(b.time));
+
+        sortedList.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'timeline-row';
+            
+            const timeLabel = item.time === "23:59" ? "종일" : item.time;
+            const completedClass = item.done ? 'completed' : '';
+
+            row.innerHTML = `
+                <div class="timeline-left-group">
+                    <span class="timeline-hour">${timeLabel}</span>
+                    <span class="timeline-text-display ${completedClass}">${item.text}</span>
+                </div>
+            `;
+            timelineHoursContainer.appendChild(row);
+        });
+
+        if(plannerSaveStatus) plannerSaveStatus.textContent = "동기화 완료";
+    }
+
     window.toggleTodoStatus = (id, currentStatus) => { db.ref(`workspace/todos/${id}`).update({ done: !currentStatus }).then(() => renderCalendarGrid()); };
     window.deleteTodoItem = (id) => { if(confirm("이 일정을 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
     
-    // 커스텀 지정 시간대 행 삭제 함수
-    window.deleteCustomHourItem = (key) => {
-        if(confirm("지정된 커스텀 시간 계획을 삭제하시겠습니까?")) {
-            db.ref(`workspace/dayPlanners/${selectedFullDate}/customHours/${key}`).remove().then(() => fetchDailyIntegratedData());
-        }
-    };
-
-    let plannerTimeout;
-    function syncPlannerToCloud() {
-        if(plannerSaveStatus) plannerSaveStatus.textContent = "저장 중...";
-        clearTimeout(plannerTimeout);
-        
-        plannerTimeout = setTimeout(() => {
-            const updates = {};
-            baseHours.forEach(h => {
-                const inputField = document.getElementById(`plan-hr-${h}`);
-                if (inputField) {
-                    updates[`hr_${h}`] = inputField.value;
-                }
-            });
-            updates['review'] = planReviewInput ? planReviewInput.value : '';
-
-            db.ref(`workspace/dayPlanners/${selectedFullDate}`).update(updates);
-            if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
-        }, 400);
+    // 오늘의 피드백 저장 바인딩
+    if(planReviewInput) {
+        let reviewTimeout;
+        planReviewInput.oninput = () => {
+            clearTimeout(reviewTimeout);
+            reviewTimeout = setTimeout(() => {
+                db.ref(`workspace/dayPlanners/${selectedFullDate}`).update({ review: planReviewInput.value });
+            }, 400);
+        };
     }
-    
-    if(planReviewInput) planReviewInput.oninput = syncPlannerToCloud;
 
     if(selectedDateLabel) selectedDateLabel.textContent = selectedFullDate;
     renderCalendarGrid();
     fetchDailyIntegratedData();
 
 
-    // --- 💡 4. 아이디어 메모장 모듈 ---
+    // --- 💡 3. 아이디어 메모장 모듈 ---
     const memoTitle = document.getElementById('memo-title');
     const memoContent = document.getElementById('memo-content');
     const btnSaveMemo = document.getElementById('btn-save-memo');
@@ -375,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteMemoItem = (id) => { if(confirm("이 메모를 지울까요?")) db.ref(`workspace/memos/${id}`).remove(); };
 
 
-    // --- 🧮 5. 수학 오답노트 모듈 ---
+    // --- 🧮 4. 수학 오답노트 모듈 ---
     let activeMathFolder = '';
     let activeMathItemId = '';
     const customTypeList = document.getElementById('custom-type-list');
@@ -529,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.deleteMathItemUnit = (id) => { if(confirm("문항을 지우시겠습니까?")) db.ref(`workspace/mathNotebooks/${activeMathFolder}/items/${id}`).remove(); };
 
-    // --- 🪟 6. 유형 관리 모달 제어 ---
+    // --- 🪟 5. 유형 관리 모달 제어 ---
     const typeModal = document.getElementById('type-modal');
     const btnOpenTypeModal = document.getElementById('btn-open-type-modal');
     const btnCloseTypeModal = document.getElementById('close-type-modal');
