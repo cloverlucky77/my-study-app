@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 📅 2. 인터랙티브 달력 & 할 일(To-Do) 연동 엔진 및 자동 정렬 타임라인 ---
+    // --- 📅 2. 인터랙티브 달력 & 플래너 기능 모듈 ---
     const calendarDays = document.getElementById('calendar-days');
     const calendarMonthYear = document.getElementById('calendar-month-year');
     const calendarViewTitle = document.getElementById('calendar-view-title'); 
@@ -54,6 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const todoStats = document.getElementById('todo-stats');
     const monthSummaryList = document.getElementById('month-summary-list');
     const monthTodoCount = document.getElementById('month-todo-count');
+    
+    // 플래너 신규 연동 바인딩 요소
+    const plannerDirectForm = document.getElementById('planner-direct-form');
+    const plannerDirectTime = document.getElementById('planner-direct-time');
+    const plannerDirectText = document.getElementById('planner-direct-text');
     const timelineHoursContainer = document.getElementById('timeline-hours-container');
     const planReviewInput = document.getElementById('plan-review');
     const plannerSaveStatus = document.getElementById('planner-save-status');
@@ -64,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(todoForm) {
         todoForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            // 시간 미선택 시 23:59 처리하여 순서 상 최하단 배치 예방 및 깔끔한 출력 지원
             const rawTime = todoTimeInput.value;
             const finalTime = rawTime ? rawTime : "23:59";
 
@@ -78,6 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
             db.ref('workspace/todos').push(newTodo);
             todoInput.value = '';
             todoTimeInput.value = '';
+        });
+    }
+
+    // 🌟 플래너 전용 폼 등록 처리 이벤트 추가
+    if (plannerDirectForm) {
+        plannerDirectForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newPlan = {
+                date: selectedFullDate,
+                time: plannerDirectTime.value,
+                text: plannerDirectText.value.trim(),
+                timestamp: Date.now()
+            };
+            db.ref('workspace/timelinePlanners').push(newPlan).then(() => {
+                plannerDirectText.value = '';
+                plannerDirectTime.value = '';
+            });
         });
     }
 
@@ -115,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.className = 'day-cell';
                 
                 const currentDayOfWeek = new Date(year, month, i).getDay();
-                if(currentDayOfWeek === 0) cell.classList.add('sun-cell');
                 if(fullDateStr === getTodayDateString()) cell.classList.add('today');
                 if(fullDateStr === selectedFullDate) cell.classList.add('selected');
 
@@ -186,18 +206,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fetchDailyIntegratedData() {
-        // 투두리스트 데이터를 실시간으로 감시 및 처리
+        // 투두리스트 데이터를 실시간으로 제어
         db.ref('workspace/todos').on('value', (snapshot) => {
             const todos = snapshot.val() || {};
             const list = Object.keys(todos).map(id => ({id, ...todos[id]})).filter(t => t.date === selectedFullDate);
-            
-            // 1. To-Do 카드 리스트 출력
             renderTodoListData(list);
-
-            // 2. [🎨 핵심 개선 및 요구사항 해결] 등록된 플래너 시간 순서대로 순정렬 매핑 출력
-            renderTimelinePlanner(list);
         });
         
+        // 🌟 플래너 전용 데이터 감시 및 정렬 처리 함수 실행
+        fetchTimelinePlannerData();
+
         // 하루 성찰 리뷰 가져오기
         db.ref(`workspace/dayPlanners/${selectedFullDate}/review`).once('value', (snapshot) => {
             if(planReviewInput) planReviewInput.value = snapshot.val() || '';
@@ -234,41 +252,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // [🕒 실시간 시간 순 정렬 플래너 연동 엔진 함수]
-    function renderTimelinePlanner(list) {
-        if(!timelineHoursContainer) return;
-        timelineHoursContainer.innerHTML = '';
+    // 🌟 [핵심] 플래너 일정 불러오기 및 시간 오름차순 자동 정렬 처리 함수
+    function fetchTimelinePlannerData() {
+        db.ref('workspace/timelinePlanners').on('value', (snapshot) => {
+            if (!timelineHoursContainer) return;
+            timelineHoursContainer.innerHTML = '';
 
-        if(list.length === 0) {
-            timelineHoursContainer.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:40px 10px;">상단 일정 폼에서 등록하면 이곳에 시간 순서대로 정렬되어 출력됩니다.</div>`;
-            return;
-        }
+            const data = snapshot.val() || {};
+            const dayPlans = Object.keys(data)
+                .map(id => ({ id, ...data[id] }))
+                .filter(p => p.date === selectedFullDate);
 
-        // 오름차순 시간 정렬 (00:00 -> 23:59 순)
-        const sortedList = [...list].sort((a, b) => a.time.localeCompare(b.time));
+            if (dayPlans.length === 0) {
+                timelineHoursContainer.innerHTML = `<div style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:40px 10px;">등록된 플랜 일정이 없습니다. 시간을 입력해 추가해보세요!</div>`;
+                return;
+            }
 
-        sortedList.forEach(item => {
-            const row = document.createElement('div');
-            row.className = 'timeline-row';
-            
-            const timeLabel = item.time === "23:59" ? "종일" : item.time;
-            const completedClass = item.done ? 'completed' : '';
+            // 오름차순 정렬 (빠른 시간부터 순서대로)
+            dayPlans.sort((a, b) => a.time.localeCompare(b.time));
 
-            row.innerHTML = `
-                <div class="timeline-left-group">
-                    <span class="timeline-hour">${timeLabel}</span>
-                    <span class="timeline-text-display ${completedClass}">${item.text}</span>
-                </div>
-            `;
-            timelineHoursContainer.appendChild(row);
+            dayPlans.forEach(plan => {
+                const row = document.createElement('div');
+                row.className = 'timeline-row';
+                row.innerHTML = `
+                    <div class="timeline-left-group">
+                        <span class="timeline-hour">${plan.time}</span>
+                        <span class="timeline-text-display">${plan.text}</span>
+                    </div>
+                    <button type="button" class="btn-timeline-delete" onclick="deleteTimelinePlan('${plan.id}')">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                `;
+                timelineHoursContainer.appendChild(row);
+            });
+            if(plannerSaveStatus) plannerSaveStatus.textContent = "동기화 완료";
         });
-
-        if(plannerSaveStatus) plannerSaveStatus.textContent = "동기화 완료";
     }
 
     window.toggleTodoStatus = (id, currentStatus) => { db.ref(`workspace/todos/${id}`).update({ done: !currentStatus }).then(() => renderCalendarGrid()); };
-    window.deleteTodoItem = (id) => { if(confirm("이 일정을 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
+    window.deleteTodoItem = (id) => { if(confirm("이 할 일을 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
     
+    // 🌟 플래너 일정 개별 삭제 글로벌 바인딩
+    window.deleteTimelinePlan = (id) => {
+        if (confirm("이 플래너 일정을 삭제하시겠습니까?")) {
+            db.ref(`workspace/timelinePlanners/${id}`).remove();
+        }
+    };
+
     // 오늘의 피드백 저장 바인딩
     if(planReviewInput) {
         let reviewTimeout;
