@@ -16,11 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentViewDate = new Date(); 
     let selectedFullDate = getTodayDateString(); 
 
-    // 가변 시간대용 유저 상태값 변수
-    let plannerStartHour = 6;
-    let plannerEndHour = 24;
-
-    // --- 🧭 1. 사이드바 & 모바일 토글 컨트롤러 ---
+    // --- 🧭 1. 사이드바 및 토글 제어 ---
     const mainSidebar = document.getElementById('main-sidebar');
     const btnCloseSidebar = document.getElementById('btn-close-sidebar');
     const btnOpenSidebar = document.getElementById('btn-open-sidebar');
@@ -30,16 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const folderAddForm = document.getElementById('sidebar-folder-add-form');
     const newFolderNameInput = document.getElementById('new-folder-name-input');
 
-    if (btnCloseSidebar) {
-        btnCloseSidebar.addEventListener('click', () => {
-            mainSidebar.classList.remove('active');
-        });
-    }
-    if (btnOpenSidebar) {
-        btnOpenSidebar.addEventListener('click', () => {
-            mainSidebar.classList.add('active');
-        });
-    }
+    if (btnCloseSidebar) btnCloseSidebar.addEventListener('click', () => mainSidebar.classList.remove('active'));
+    if (btnOpenSidebar) btnOpenSidebar.addEventListener('click', () => mainSidebar.classList.add('active'));
 
     menuItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -50,70 +38,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(view.id === target) view.classList.remove('hidden');
                 else view.classList.add('hidden');
             });
-            mainSidebar.classList.remove('active'); // 이동 시 사이드바 닫기(모바일)
+            mainSidebar.classList.remove('active');
         });
     });
 
-    // --- 🕒 2. 가변 커스텀 시간대 셀렉터 빌더 ---
-    const selectStartHour = document.getElementById('select-start-hour');
-    const selectEndHour = document.getElementById('select-end-hour');
+    // --- 🕒 2. 타임라인 베이스 시간 레이아웃 및 커스텀 삽입 기틀 ---
     const timelineContainer = document.getElementById('timeline-hours-container');
+    const customTimeInput = document.getElementById('custom-timeline-time');
+    const customTextInput = document.getElementById('custom-timeline-text');
+    const btnAddCustomTimeline = document.getElementById('btn-add-custom-timeline');
 
-    function initCustomHoursSelector() {
-        if(!selectStartHour || !selectEndHour) return;
-        selectStartHour.innerHTML = '';
-        selectEndHour.innerHTML = '';
+    // 기본 매칭용 정수 시간 리스트 (06시 ~ 24시)
+    const baseHours = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
 
-        for(let i=0; i<=24; i++) {
-            const optStart = document.createElement('option');
-            optStart.value = i; optStart.textContent = `${String(i).padStart(2,'0')}시`;
-            if(i === plannerStartHour) optStart.selected = true;
-            selectStartHour.appendChild(optStart);
+    // [💡개선] 사용자가 원하는 특별한 시간대(예: 12:30 등) 커스텀 행을 동적으로 삽입하는 이벤트
+    if(btnAddCustomTimeline) {
+        btnAddCustomTimeline.addEventListener('click', () => {
+            const timeVal = customTimeInput.value; // "14:30" 형태
+            const textVal = customTextInput.value.trim();
+            if(!timeVal || !textVal) { alert("시간과 내용을 모두 입력해 주세요."); return; }
 
-            const optEnd = document.createElement('option');
-            optEnd.value = i; optEnd.textContent = `${String(i).padStart(2,'0')}시`;
-            if(i === plannerEndHour) optEnd.selected = true;
-            selectEndHour.appendChild(optEnd);
-        }
-
-        selectStartHour.addEventListener('change', (e) => {
-            plannerStartHour = parseInt(e.target.value);
-            createTimelineUI();
-            fetchDailyIntegratedData();
-        });
-        selectEndHour.addEventListener('change', (e) => {
-            plannerEndHour = parseInt(e.target.value);
-            createTimelineUI();
-            fetchDailyIntegratedData();
+            // 파이어베이스 경로에 해당 시간 데이터 즉각 저장
+            const safeKey = timeVal.replace(':', '_');
+            db.ref(`workspace/dayPlanners/${selectedFullDate}/customHours/${safeKey}`).set({
+                time: timeVal,
+                text: textVal
+            }).then(() => {
+                customTextInput.value = '';
+                fetchDailyIntegratedData(); // 타임라인 다시 그리기
+            });
         });
     }
-
-    function createTimelineUI() {
-        if (!timelineContainer) return;
-        timelineContainer.innerHTML = '';
-        
-        let start = plannerStartHour;
-        let end = plannerEndHour;
-
-        if (start > end) { // 익일새벽까지 넘어가는 경우 예외 안전화 처리
-            end = 24; 
-        }
-        
-        for (let h = start; h <= end; h++) {
-            const hourStr = String(h).padStart(2, '0') + ':00';
-            const row = document.createElement('div');
-            row.className = 'timeline-row';
-            row.innerHTML = `
-                <span class="timeline-hour">${hourStr}</span>
-                <input type="text" id="plan-hr-${h}" class="planner-text-input" placeholder="${hourStr} 일정을 기록하세요...">
-            `;
-            row.querySelector('input').oninput = syncPlannerToCloud;
-            timelineContainer.appendChild(row);
-        }
-    }
-
-    initCustomHoursSelector();
-    createTimelineUI();
 
     // --- 📅 3. 인터랙티브 달력 & 할 일(To-Do) 연동 엔진 ---
     const calendarDays = document.getElementById('calendar-days');
@@ -254,20 +209,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fetchDailyIntegratedData() {
+        // 투두리스트 동기화
         db.ref('workspace/todos').on('value', (snapshot) => {
             const todos = snapshot.val() || {};
             const list = Object.keys(todos).map(id => ({id, ...todos[id]})).filter(t => t.date === selectedFullDate);
             renderTodoListData(list);
         });
         
+        // [🕒 타임라인 빌드 핵심] 고정 시간대 + 사용자가 임의로 삽입한 커스텀 시간대 병합 렌더링
         db.ref(`workspace/dayPlanners/${selectedFullDate}`).once('value', (snapshot) => {
             const data = snapshot.val() || {};
-            for (let h = 0; h <= 24; h++) {
-                const inputField = document.getElementById(`plan-hr-${h}`);
-                if (inputField) {
-                    inputField.value = data[`hr_${h}`] || '';
-                }
-            }
+            if(!timelineContainer) return;
+            timelineContainer.innerHTML = '';
+
+            // 1. 고정 시간대 라인 형성
+            baseHours.forEach(h => {
+                const hourStr = String(h).padStart(2, '0') + ':00';
+                const row = document.createElement('div');
+                row.className = 'timeline-row';
+                row.innerHTML = `
+                    <span class="timeline-hour">${hourStr}</span>
+                    <input type="text" id="plan-hr-${h}" class="planner-text-input" placeholder="${hourStr} 일정을 기록하세요...">
+                `;
+                const input = row.querySelector('input');
+                input.value = data[`hr_${h}`] || '';
+                input.oninput = syncPlannerToCloud;
+                timelineContainer.appendChild(row);
+            });
+
+            // 2. 사용자가 직접 집어넣은 커스텀 시간대 리스트 매핑
+            const customHours = data.customHours || {};
+            Object.keys(customHours).forEach(key => {
+                const item = customHours[key];
+                const row = document.createElement('div');
+                row.className = 'timeline-row custom-inserted-row';
+                row.style.borderColor = 'rgba(255,255,255,0.12)';
+                row.innerHTML = `
+                    <span class="timeline-hour" style="background: rgba(255,255,255,0.1); color:#fff;">${item.time}</span>
+                    <input type="text" class="planner-text-input" value="${item.text}" disabled>
+                    <button type="button" class="btn-todo-delete" onclick="deleteCustomHourItem('${key}')"><i class="fa-regular fa-trash-can"></i></button>
+                `;
+                timelineContainer.appendChild(row);
+            });
+
             if(planReviewInput) planReviewInput.value = data.review || '';
             if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
         });
@@ -305,6 +289,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.toggleTodoStatus = (id, currentStatus) => { db.ref(`workspace/todos/${id}`).update({ done: !currentStatus }).then(() => renderCalendarGrid()); };
     window.deleteTodoItem = (id) => { if(confirm("이 일정을 삭제하시겠습니까?")) db.ref(`workspace/todos/${id}`).remove().then(() => renderCalendarGrid()); };
+    
+    // 커스텀 지정 시간대 행 삭제 함수
+    window.deleteCustomHourItem = (key) => {
+        if(confirm("지정된 커스텀 시간 계획을 삭제하시겠습니까?")) {
+            db.ref(`workspace/dayPlanners/${selectedFullDate}/customHours/${key}`).remove().then(() => fetchDailyIntegratedData());
+        }
+    };
 
     let plannerTimeout;
     function syncPlannerToCloud() {
@@ -312,16 +303,16 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(plannerTimeout);
         
         plannerTimeout = setTimeout(() => {
-            const plannerData = {};
-            for (let h = 0; h <= 24; h++) {
+            const updates = {};
+            baseHours.forEach(h => {
                 const inputField = document.getElementById(`plan-hr-${h}`);
                 if (inputField) {
-                    plannerData[`hr_${h}`] = inputField.value;
+                    updates[`hr_${h}`] = inputField.value;
                 }
-            }
-            plannerData['review'] = planReviewInput ? planReviewInput.value : '';
+            });
+            updates['review'] = planReviewInput ? planReviewInput.value : '';
 
-            db.ref(`workspace/dayPlanners/${selectedFullDate}`).set(plannerData);
+            db.ref(`workspace/dayPlanners/${selectedFullDate}`).update(updates);
             if(plannerSaveStatus) plannerSaveStatus.textContent = "자동 저장됨";
         }, 400);
     }
@@ -333,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchDailyIntegratedData();
 
 
-    // --- 💡 4. 아이디어 메모장 동기화 모듈 ---
+    // --- 💡 4. 아이디어 메모장 모듈 ---
     const memoTitle = document.getElementById('memo-title');
     const memoContent = document.getElementById('memo-content');
     const btnSaveMemo = document.getElementById('btn-save-memo');
@@ -475,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="math-card-core-question">${item.question || '코멘트 없음'}</div>
                     <div class="math-card-bottom-row">
-                        <span class="math-reason-tag"><i class="fa-solid fa-triangle-exclamation"></i> ${item.wrongReason}</span>
+                        <span class="math-reason-tag">${item.wrongReason}</span>
                         <button type="button" class="btn-math-delete" onclick="event.stopPropagation(); deleteMathItemUnit('${item.id}')"><i class="fa-regular fa-trash-can"></i></button>
                     </div>
                 `;
