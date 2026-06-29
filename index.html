@@ -33,8 +33,7 @@
                     <button type="button" class="menu-item" id="menu-btn-math" data-target="view-math">
                         <i class="fa-solid fa-calculator"></i> <span>오답노트 홈</span>
                     </button>
-                    <div class="sidebar-sub-folder-list" id="sidebar-sub-folders">
-                        </div>
+                    <div class="sidebar-sub-folder-list" id="sidebar-sub-folders"></div>
                     <form id="sidebar-folder-add-form" class="sidebar-add-folder-input-group" onsubmit="event.preventDefault();">
                         <input type="text" id="new-folder-name-input" placeholder="+ 새 단원 폴더 추가..." required>
                     </form>
@@ -72,16 +71,14 @@
                             <div class="weekday">금</div>
                             <div class="weekday sat">토</div>
                         </div>
-                        <div class="calendar-days-grid" id="calendar-days">
-                            </div>
+                        <div class="calendar-days-grid" id="calendar-days"></div>
 
                         <div class="month-summary-panel">
                             <div class="summary-header">
-                                <span class="summary-title"><i class="fa-solid fa-chart-pie-simple"></i> 이번 달 일정 요약 <span class="click-tip">(클릭 시 해당 일자로 즉시 이동)</span></span>
+                                <span class="summary-title"><i class="fa-solid fa-chart-pie-simple"></i> 이번 달 일정 요약 <span class="click-tip">(클릭 시 해당 일자로 이동)</span></span>
                                 <span class="summary-badge" id="month-todo-count">0개 대기 중</span>
                             </div>
-                            <div class="item-list" id="month-summary-list">
-                                </div>
+                            <div class="item-list" id="month-summary-list"></div>
                         </div>
                     </section>
 
@@ -99,25 +96,24 @@
                                 <button type="submit" class="todo-submit-btn"><i class="fa-solid fa-plus"></i></button>
                             </form>
 
-                            <div class="item-list" id="todo-list">
-                                </div>
+                            <div class="item-list" id="todo-list"></div>
                         </section>
 
                         <section class="panel">
-                            <div class="panel-header glass-header">
+                            <div class="panel-header">
                                 <span class="panel-title"><i class="fa-regular fa-clock"></i> 정밀 타임라인 플래너</span>
-                                <div class="timeline-customizer">
-                                    <select id="select-start-hour" class="hours-selector"></select>
-                                    <span class="selector-dash">~</span>
-                                    <select id="select-end-hour" class="hours-selector"></select>
-                                    <div class="planner-config-mini">
-                                        <span id="planner-save-status">자동 저장됨</span>
-                                    </div>
+                                <div class="planner-config-mini">
+                                    <span id="planner-save-status">자동 저장됨</span>
                                 </div>
                             </div>
                             
-                            <div class="timeline-planner-wrapper" id="timeline-hours-container">
-                                </div>
+                            <div class="custom-time-adder-bar">
+                                <input type="time" id="custom-timeline-time" class="dark-time-input">
+                                <input type="text" id="custom-timeline-text" class="dark-text-input" placeholder="원하는 시간의 계획을 즉시 타임라인에 삽입...">
+                                <button type="button" id="btn-add-custom-timeline" class="dark-add-btn"><i class="fa-solid fa-plus"></i> 추가</button>
+                            </div>
+                            
+                            <div class="timeline-planner-wrapper" id="timeline-hours-container"></div>
 
                             <div class="timeline-review-zone">
                                 <span class="timeline-review-title">오늘 하루 총평 및 피드백</span>
@@ -146,8 +142,7 @@
                         <div class="panel-header">
                             <span class="panel-title"><i class="fa-solid fa-box-archive"></i> 실시간 연동 보관 리스트</span>
                         </div>
-                        <div class="memo-cards-container" id="memo-container">
-                            </div>
+                        <div class="memo-cards-container" id="memo-container"></div>
                     </section>
                 </div>
             </div>
@@ -164,8 +159,7 @@
                             <span class="panel-title" id="math-folder-list-title"><i class="fa-solid fa-folder-open"></i> 선택된 단원 문항 리스트</span>
                             <button id="btn-new-math-item" class="btn-accent-sm"><i class="fa-solid fa-plus"></i> 새 문항 등록</button>
                         </div>
-                        <div class="math-items-scroller" id="math-items-container">
-                            </div>
+                        <div class="math-items-scroller" id="math-items-container"></div>
                     </section>
 
                     <div class="math-detail-side-stack">
@@ -187,8 +181,7 @@
                                 <div class="form-group-row">
                                     <div class="form-field-unit">
                                         <label for="math-type-select">문항 유형</label>
-                                        <select id="math-type-select">
-                                            </select>
+                                        <select id="math-type-select"></select>
                                     </div>
                                     <div class="form-field-unit">
                                         <label for="math-difficulty">난이도 설정</label>
@@ -247,7 +240,7 @@
                     <input type="text" id="new-type-input" placeholder="새로운 유형 이름을 입력하세요...">
                     <button type="button" id="btn-add-type" class="icon-btn-add"><i class="fa-solid fa-plus"></i></button>
                 </form>
-                <div class="modal-list-title">등록된 유형 리스트 <span class="drag-hint">(드래그로 순서 변경 가능)</span></div>
+                <div class="modal-list-title">등록된 유형 리스트</div>
                 <div id="custom-type-list" class="custom-type-manage-list"></div>
             </div>
         </div>
