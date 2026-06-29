@@ -135,75 +135,29 @@ body {
 .summary-status-dot { width: 6px; height: 6px; border-radius: 50%; background-color: var(--warning); }
 .summary-status-dot.done { background-color: var(--success); }
 
-/* To-Do 폼 */
+/* To-Do 및 일정 등록 폼 */
 .todo-stats-mini { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
 .todo-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
-.todo-input-row input[type="time"] { background-color: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-main); padding: 12px; border-radius: 10px; outline: none; }
-.todo-input-row input[type="text"] { flex: 1; background-color: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-main); padding: 12px 16px; border-radius: 10px; outline: none; }
+.todo-input-row input[type="time"] { background-color: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-main); padding: 12px; border-radius: 10px; outline: none; font-size: 0.85rem; }
+.todo-input-row input[type="text"] { flex: 1; background-color: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-main); padding: 12px 16px; border-radius: 10px; outline: none; font-size: 0.85rem; }
 .todo-submit-btn { background-color: var(--accent); color: var(--bg); border: none; width: 42px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
 .todo-item-card { display: flex; align-items: center; justify-content: space-between; background-color: #09090b; border: 1px solid var(--panel-border); padding: 12px 16px; border-radius: 10px; }
 .todo-item-left { display: flex; align-items: center; gap: 12px; }
 .todo-checkbox-wrapper { cursor: pointer; color: var(--text-muted); font-size: 1.1rem; }
 .todo-checkbox-wrapper.checked { color: var(--success); }
-.todo-card-time { font-size: 0.75rem; color: #a1a1aa; background-color: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 5px; }
+.todo-card-time { font-size: 0.75rem; color: #a1a1aa; background-color: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 5px; font-weight: 600; }
 .todo-card-text.completed { text-decoration: line-through; color: var(--text-muted); }
-.btn-todo-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; }
+.btn-todo-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; }
 .btn-todo-delete:hover { color: var(--danger); }
 
-/* [🎨 완전 해결] 배경에 스며드는 완벽한 딥 다크 커스텀 시간대 추가 바 */
-.custom-time-adder-bar {
-    display: flex;
-    gap: 10px;
-    background-color: #09090b;
-    border: 1px solid var(--panel-border);
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-.dark-time-input {
-    background-color: var(--input-bg);
-    border: 1px solid var(--panel-border);
-    color: var(--text-main);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    outline: none;
-}
-.dark-text-input {
-    flex: 1;
-    background-color: var(--input-bg);
-    border: 1px solid var(--panel-border);
-    color: var(--text-main);
-    padding: 8px 14px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    outline: none;
-}
-.dark-text-input:focus, .dark-time-input:focus {
-    border-color: var(--panel-border-focus);
-}
-.dark-add-btn {
-    background-color: #1c1c1f;
-    border: 1px solid var(--panel-border);
-    color: var(--text-main);
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.dark-add-btn:hover {
-    background-color: rgba(255,255,255,0.04);
-    border-color: var(--panel-border-focus);
-}
-
-/* 타임라인 플래너 리스트 디자인 */
+/* 🕒 [완벽 구현] 정렬된 타임라인 플래너 컴포넌트 디자인 */
 .timeline-planner-wrapper { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 6px; margin-bottom: 20px; }
-.timeline-row { display: flex; align-items: center; gap: 16px; background-color: #070709; border: 1px solid var(--panel-border); border-radius: 10px; padding: 10px 16px; }
-.timeline-hour { font-size: 0.75rem; font-weight: 600; color: #a1a1aa; width: 58px; text-align: center; background: rgba(255,255,255,0.06); padding: 3px 6px; border-radius: 5px; }
-.planner-text-input { flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 0.85rem; outline: none; }
+.timeline-row { display: flex; align-items: center; justify-content: space-between; background-color: #070709; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 16px; }
+.timeline-left-group { display: flex; align-items: center; gap: 16px; flex: 1; }
+.timeline-hour { font-size: 0.75rem; font-weight: 700; color: #ffffff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 5px; min-width: 54px; text-align: center; }
+.timeline-text-display { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; }
+.timeline-text-display.completed { text-decoration: line-through; color: var(--text-muted); }
 .planner-config-mini { font-size: 0.75rem; color: var(--text-muted); }
 
 .timeline-review-zone { border-top: 1px solid var(--panel-border); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -288,5 +242,4 @@ body {
     .view-title { font-size: 1.2rem; }
     .day-cell { padding: 4px; }
     .form-group-row { flex-direction: column; gap: 16px; }
-    .custom-time-adder-bar { flex-direction: column; }
 }
