@@ -135,7 +135,7 @@ body {
 .summary-status-dot { width: 6px; height: 6px; border-radius: 50%; background-color: var(--warning); }
 .summary-status-dot.done { background-color: var(--success); }
 
-/* To-Do 및 일정 등록 폼 */
+/* To-Do 폼 */
 .todo-stats-mini { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
 .todo-input-row { display: flex; gap: 10px; margin-bottom: 16px; }
 .todo-input-row input[type="time"] { background-color: var(--input-bg); border: 1px solid var(--panel-border); color: var(--text-main); padding: 12px; border-radius: 10px; outline: none; font-size: 0.85rem; }
@@ -151,13 +151,57 @@ body {
 .btn-todo-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; }
 .btn-todo-delete:hover { color: var(--danger); }
 
-/* 🕒 [완벽 구현] 정렬된 타임라인 플래너 컴포넌트 디자인 */
-.timeline-planner-wrapper { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 6px; margin-bottom: 20px; }
-.timeline-row { display: flex; align-items: center; justify-content: space-between; background-color: #070709; border: 1px solid var(--panel-border); border-radius: 10px; padding: 12px 16px; }
-.timeline-left-group { display: flex; align-items: center; gap: 16px; flex: 1; }
-.timeline-hour { font-size: 0.75rem; font-weight: 700; color: #ffffff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 5px; min-width: 54px; text-align: center; }
-.timeline-text-display { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; }
-.timeline-text-display.completed { text-decoration: line-through; color: var(--text-muted); }
+/* 🕒 믹스매치되지 않는 고급스러운 플래너 전용 인라인 입력 폼 */
+.planner-inline-add-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    background-color: #09090b;
+    border: 1px solid var(--panel-border);
+    padding: 8px;
+    border-radius: 10px;
+}
+.planner-inline-add-row input[type="time"] {
+    background-color: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    outline: none;
+}
+.planner-inline-add-row input[type="text"] {
+    flex: 1;
+    background-color: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    color: var(--text-main);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    outline: none;
+}
+.planner-direct-btn {
+    background-color: var(--text-main);
+    color: var(--bg);
+    border: none;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 타임라인 정렬 리스트 스타일 */
+.timeline-planner-wrapper { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; margin-bottom: 20px; padding-right: 4px; }
+.timeline-row { display: flex; align-items: center; justify-content: space-between; background-color: #070709; border: 1px solid var(--panel-border); border-radius: 8px; padding: 10px 14px; }
+.timeline-left-group { display: flex; align-items: center; gap: 14px; }
+.timeline-hour { font-size: 0.75rem; font-weight: 700; color: #ffffff; background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 4px; }
+.timeline-text-display { font-size: 0.85rem; color: var(--text-main); }
+.btn-timeline-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; }
+.btn-timeline-delete:hover { color: var(--danger); }
 .planner-config-mini { font-size: 0.75rem; color: var(--text-muted); }
 
 .timeline-review-zone { border-top: 1px solid var(--panel-border); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -227,7 +271,7 @@ body {
 .custom-type-manage-list { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
 .type-manage-item { display: flex; align-items: center; justify-content: space-between; background-color: #070709; border: 1px solid var(--panel-border); padding: 12px; border-radius: 8px; }
 
-/* 📱 모바일 반응형 미디어 쿼리 */
+/* 📱 반응형 */
 @media (max-width: 1024px) {
     .planner-integrated-grid, .memo-grid-layout, .math-dashboard-grid { grid-template-columns: 1fr !important; gap: 24px; }
     .main-content { padding: 24px; }
