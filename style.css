@@ -16,9 +16,9 @@
 
 * { 
     margin: 0; 
-    padding: 0; \n    box-sizing: border-box; 
-    font-family: 'Inter', -apple-system, sans-serif; 
-}
+    padding: 0; 
+    box-sizing: border-box; 
+    font-family: 'Inter', -apple-system, sans-serif; \n}
 
 body { 
     background-color: var(--bg); 
@@ -283,16 +283,16 @@ body {
     color: var(--text-muted); 
 }
 
-/* 📅 1. 통합 플래너 전용 컴포넌트 스펙 (높이 보정 및 스크롤 잘림 대책 최적화) */
+/* 📅 [수정] 통합 플래너 레이아웃 - 스크롤 짤림 보완책 반영 */
 .planner-integrated-grid { 
     display: grid; 
     grid-template-columns: 1.25fr 1fr; 
     gap: 24px; 
     align-items: start;
-    max-height: calc(100vh - 120px); /* 화면을 초과해 잘리는 문제 절대 방지 */
+    max-height: calc(100vh - 120px); /* 화면을 초과해 밑이 짤리는 문제 절대 방지 */
 }
 
-/* 오른쪽 상세 패널 스택이 브라우저 끝까지 늘어나 터지지 않도록 전용 스크롤 장착 */
+/* 오른쪽 상세 스택 내부 스크롤바 장착으로 안정성 고도화 */
 .daily-detail-stack { 
     display: flex; 
     flex-direction: column; 
@@ -425,7 +425,7 @@ body {
     background-color: var(--success); 
 }
 
-/* 이번 달 일정 종합 모아보기 패널 (일정 과부하 대응 스크롤 패치 완료) */
+/* 이번 달 일정 종합 모아보기 패널 - 내부 스크롤 보완책 */
 .month-summary-panel { 
     margin-top: 24px; 
     border-top: 1px solid var(--panel-border); 
@@ -454,7 +454,7 @@ body {
     color: #a1a1aa; 
 }
 .month-summary-panel .item-list { 
-    max-height: 180px; /* 많은 데이터 등록 시 한계 지정 후 내부 스크롤 활성화 */
+    max-height: 180px; /* 일정이 유동적으로 늘어나도 무조건 스크롤 처리되도록 락 지정 */
     overflow-y: auto; 
     padding-right: 4px;
 }
@@ -622,7 +622,7 @@ body {
     color: var(--danger); 
 }
 
-/* 🕒 24H 시간대별 정밀 플래너 인터페이스 세부 스타일 선언 */
+/* 🕒 [수정] 24H 정밀 타임라인 인풋 전용 스타일 선언 (기존 배경 테마와 싱크 일치) */
 .save-status { 
     font-size: 0.75rem; 
     color: var(--text-muted); 
@@ -632,7 +632,7 @@ body {
     display: flex; 
     flex-direction: column; 
     gap: 8px; 
-    max-height: 380px; /* 많은 시간 수용 및 스크롤 유연 구동 가이드라인 */
+    max-height: 380px; /* 고도화된 시간대를 수용하기 위한 전용 스크롤 구현 */
     overflow-y: auto;
     padding-right: 6px;
     margin-bottom: 16px;
@@ -652,7 +652,7 @@ body {
     display: flex; 
     align-items: center; 
     gap: 12px; 
-    background-color: #111113; 
+    background-color: #111113; /* 기존 다른 서브 카드들과 일치 */
     border: 1px solid var(--panel-border); 
     border-radius: 8px; 
     padding: 6px 12px; 
