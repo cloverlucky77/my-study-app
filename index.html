@@ -14,7 +14,7 @@
         
         <aside class="sidebar" id="main-sidebar">
             <div class="sidebar-brand">
-                <div><i class="fa-solid fa-cloud-bolt text-accent-glow"></i> <span>WORKSPACE</span></div>
+                <div><i class="fa-solid fa-cloud text-accent-glow"></i> <span>WORKSPACE</span></div>
                 <button type="button" id="btn-close-sidebar" class="sidebar-toggle-inside"><i class="fa-solid fa-angles-left"></i></button>
             </div>
             <nav class="sidebar-menu">
@@ -86,13 +86,13 @@
                         
                         <section class="panel">
                             <div class="panel-header">
-                                <span class="panel-title"><i class="fa-solid fa-list-check"></i> <span id="selected-date-label">0000-00-00</span> 일정 등록 및 관리</span>
+                                <span class="panel-title"><i class="fa-solid fa-list-check"></i> <span id="selected-date-label">0000-00-00</span> 체크리스트</span>
                                 <div class="todo-stats-mini" id="todo-stats">완료 0 / 전체 0</div>
                             </div>
                             
                             <form id="todo-form" class="todo-input-row" onsubmit="event.preventDefault();">
                                 <input type="time" id="todo-time-input">
-                                <input type="text" id="todo-input" placeholder="시간을 설정하고 일정을 입력하세요..." required>
+                                <input type="text" id="todo-input" placeholder="체크리스트 할 일을 입력하세요..." required>
                                 <button type="submit" class="todo-submit-btn"><i class="fa-solid fa-plus"></i></button>
                             </form>
 
@@ -103,10 +103,16 @@
                             <div class="panel-header">
                                 <span class="panel-title"><i class="fa-regular fa-clock"></i> 시간 순 정렬 플래너</span>
                                 <div class="planner-config-mini">
-                                    <span id="planner-save-status">실시간 연동 완료</span>
+                                    <span id="planner-save-status">실시간 클라우드 연동</span>
                                 </div>
                             </div>
                             
+                            <form id="planner-direct-form" class="planner-inline-add-row" onsubmit="event.preventDefault();">
+                                <input type="time" id="planner-direct-time" required>
+                                <input type="text" id="planner-direct-text" placeholder="해당 시간에 진행할 플랜을 입력하세요..." required>
+                                <button type="submit" class="planner-direct-btn"><i class="fa-solid fa-plus"></i> 추가</button>
+                            </form>
+
                             <div class="timeline-planner-wrapper" id="timeline-hours-container"></div>
 
                             <div class="timeline-review-zone">
